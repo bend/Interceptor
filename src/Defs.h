@@ -12,6 +12,6 @@ typedef std::shared_ptr<InboundConnection> InboundConnectionPtr;
 typedef std::shared_ptr<HttpRequest> HttpRequestPtr;
 typedef std::shared_ptr<HttpReply> HttpReplyPtr;
 
-typedef std::string Host; 
+typedef std::string Host;
 
 #endif //DEFS_H__

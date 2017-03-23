@@ -6,43 +6,47 @@
 class HttpHeaders;
 
 class HttpRequest {
-  public:
-	enum Method {
-	  GET,
-	  HEAD,
-	  POST,
-	  PUT,
-	  DELETE,
-	  TRACE,
-	  OPTIONS,
-	  CONNECT,
-	  PATCH
-	};
-	
-	HttpRequest(InterceptorSessionPtr session);
-	~HttpRequest();
+public:
+  enum Method {
+    GET,
+    HEAD,
+    POST,
+    PUT,
+    DELETE,
+    TRACE,
+    OPTIONS,
+    CONNECT,
+    PATCH
+  };
 
-	void appendData(const unsigned char* data, size_t length);
+  HttpRequest(InterceptorSessionPtr session);
+  ~HttpRequest();
 
-	Method method() const;
-	Host host() const;
-	std::string index() const;
-	std::string httpVersion() const;
+  void appendData(const unsigned char* data, size_t length);
 
-	void process();
-	bool headersReceived() const;
+  Method method() const;
+  Host host() const;
+  std::string index() const;
+  std::string httpVersion() const;
+  InterceptorSessionPtr session() const;
 
-  private:
-	void parse();
-	void parseMethod(const std::string& method);
+  void process();
+  bool headersReceived() const;
 
-  private:
-	Method m_method;
-	std::string m_index;
-	std::string m_request;
-	std::string m_httpVersion;
-	InterceptorSessionPtr m_session;
-	HttpHeaders *m_headers;
+private:
+  void parse();
+  void parseMethod(const std::string& method);
+
+private:
+  Method m_method;
+  std::string m_index;
+  std::string m_request;
+  std::string m_httpVersion;
+  InterceptorSessionPtr m_session;
+  HttpHeaders* m_headers;
+
+  friend class HttpReply;
+
 };
 
 #endif //HTTP_REQUEST_H__

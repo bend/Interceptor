@@ -3,12 +3,22 @@
 
 #include "Defs.h"
 
-class HttpReply {
-  
-  public:
-	HttpReply(HttpRequestPtr request);
+#include <boost/asio.hpp>
 
-	void process();
+class HttpReply {
+
+public:
+  HttpReply(HttpRequestPtr request);
+
+  void process();
+
+private:
+  void handleGetRequest();
+
+private:
+  HttpRequestPtr m_request;
+  std::string m_response;
+  void handleHttpResponseSent(const boost::system::error_code& error, size_t bytesTransferred);
 
 };
 

@@ -3,21 +3,21 @@
 
 #include <boost/lexical_cast.hpp>
 
-class LogEntry
-{
+class LogEntry {
 public:
-  LogEntry(const std::string &type);
-  LogEntry(const LogEntry &o);
+  LogEntry(const std::string& type);
+  LogEntry(const LogEntry& o);
 
   ~LogEntry();
 
-  LogEntry& operator<< (const char *);
+  LogEntry& operator<< (const char*);
   LogEntry& operator<< (const std::string&);
   LogEntry& operator<< (int);
   LogEntry& operator<< (double);
 
   template <typename T>
-  LogEntry &operator<< (T t) {
+  LogEntry& operator<< (T t)
+  {
     return (*this) << boost::lexical_cast<std::string>(t);
   }
 
@@ -26,7 +26,8 @@ private:
   mutable std::stringstream ss_;
 };
 
-static inline LogEntry trace(const std::string& type) {
+static inline LogEntry trace(const std::string& type)
+{
   return LogEntry(type);
 }
 

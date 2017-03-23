@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 class HttpHeaders {
-  public:
+public:
   HttpHeaders() = default;
   HttpHeaders(const std::string& headers);
   ~HttpHeaders() = default;
@@ -13,11 +13,11 @@ class HttpHeaders {
   void addHeader(const std::string& key, const std::string& value);
   const std::string* getHeader(const std::string& key) const;
 
-  private:
-	void parse(const std::string& headers);
+private:
+  void parse(const std::string& headers);
 
-  private:
-	std::unordered_map<std::string, std::string> m_headers;
+private:
+  std::unordered_map<std::string, std::string> m_headers;
 
 
 };

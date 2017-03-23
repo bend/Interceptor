@@ -4,17 +4,17 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-LogEntry::LogEntry(const std::string &type)
+LogEntry::LogEntry(const std::string& type)
 {
   std::stringstream ss;
   ss << '[' <<
-    boost::posix_time::to_simple_string(
-	    boost::posix_time::microsec_clock::local_time()
-    ) << ']' << ' ' << type << ' ';
+     boost::posix_time::to_simple_string(
+       boost::posix_time::microsec_clock::local_time()
+     ) << ']' << ' ' << type << ' ';
   preamble_ = ss.str();
 }
 
-LogEntry::LogEntry(const LogEntry &o)
+LogEntry::LogEntry(const LogEntry& o)
   : preamble_(o.preamble_)
 {
   if (preamble_.empty()) return;
@@ -34,14 +34,14 @@ LogEntry::~LogEntry()
   }
 }
 
-LogEntry& LogEntry::operator <<(const char *s)
+LogEntry& LogEntry::operator <<(const char* s)
 {
   if (preamble_.empty()) return *this;
   ss_ << s;
   return *this;
 }
 
-LogEntry& LogEntry::operator <<(const std::string &s)
+LogEntry& LogEntry::operator <<(const std::string& s)
 {
   if (preamble_.empty()) return *this;
   ss_ << s;

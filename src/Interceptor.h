@@ -10,18 +10,18 @@
 
 class Interceptor {
 
-  public:
-	Interceptor(short port);
-	~Interceptor();
-	void init();
+public:
+  Interceptor(short port);
+  ~Interceptor();
+  void init();
 
-  private:
-	void listen();
-	void handleAccept(InterceptorSessionPtr session, const boost::system::error_code& error);
+private:
+  void listen();
+  void handleAccept(InterceptorSessionPtr session, const boost::system::error_code& error);
 
-  private:
-	boost::asio::io_service m_ioService;
-	boost::asio::ip::tcp::acceptor m_acceptor;
+private:
+  boost::asio::io_service m_ioService;
+  boost::asio::ip::tcp::acceptor m_acceptor;
 
 };
 

@@ -4,10 +4,11 @@
 #include "Logger.h"
 
 #include <boost/algorithm/string.hpp>
+#include <regex>
 
 HttpRequest::HttpRequest(InterceptorSessionPtr session)
   : m_session(session),
-  m_headers(nullptr)
+    m_headers(nullptr)
 {
 }
 
@@ -18,16 +19,16 @@ HttpRequest::~HttpRequest()
 
 void HttpRequest::appendData(const unsigned char* data, size_t length)
 {
-
+  m_request.append(std::string(data, data + length));
 }
 
 bool HttpRequest::headersReceived() const
 {
-  return true; //TODO
+  return m_request.find("\r\n\r\n") != std::string::npos;
 }
 
 Host HttpRequest::host() const
-{ 
+{
   std::string host = *m_headers->getHeader("Host");
   return host;
 }
@@ -47,29 +48,28 @@ std::string HttpRequest::httpVersion() const
   return m_httpVersion;
 }
 
+InterceptorSessionPtr HttpRequest::session() const
+{
+  return m_session;
+}
+
 void HttpRequest::parse()
 {
   size_t pos = m_request.find_first_of("\r\n");
-  if (pos == std::string::npos) 
-  {
-	trace("error") << "HttpRequest missing separator.. aborting";
-	//TODO handle error
-	return;
+  if (pos == std::string::npos) {
+    trace("error") << "HttpRequest missing separator.. aborting";
+    //TODO handle error
+    return;
   }
-
   std::string get = m_request.substr(0, pos);
   m_request = m_request.substr(pos);
-
   std::vector<std::string> getParts;
   boost::split(getParts, get , boost::is_any_of(" "));
-
-  if (getParts.size() != 3) 
-  {
-	trace("error") << "Missing Method part";
-	//TODO handle error
-	return;
+  if (getParts.size() != 3) {
+    trace("error") << "Missing Method part";
+    //TODO handle error
+    return;
   }
-
   parseMethod(getParts[0]);
   m_index = getParts[1];
   m_httpVersion = getParts[2]; //TODO parse and check
@@ -78,11 +78,11 @@ void HttpRequest::parse()
 
 void HttpRequest::parseMethod(const std::string& method)
 {
-  if(method == "GET")
-	m_method = Method::GET;
+  if (method == "GET")
+    m_method = Method::GET;
   else if (method == "HEAD")
-	m_method = HEAD;
-  else if(method == "POST")
-	m_method = POST;
+    m_method = HEAD;
+  else if (method == "POST")
+    m_method = POST;
 }
 

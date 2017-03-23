@@ -12,17 +12,17 @@ public:
 
   virtual ~InboundConnection() = default;
 
-  virtual void asyncRead( void *data, size_t size,
+  virtual void asyncRead( void* data, size_t size,
                           boost::function2<void, boost::system::error_code, size_t> callback) = 0;
 
-  virtual void asyncWrite( const void *data, size_t size,
+  virtual void asyncWrite( const void* data, size_t size,
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) = 0;
-  virtual void asyncReadUntil(boost::asio::streambuf& buf, const boost::regex& delim, 
-                          boost::function2<void, boost::system::error_code, size_t> callback) = 0;
+  virtual void asyncReadUntil(boost::asio::streambuf& buf, const boost::regex& delim,
+                              boost::function2<void, boost::system::error_code, size_t> callback) = 0;
 
-  virtual void asyncReadSome(void *data, size_t size, 
-                          boost::function2<void, boost::system::error_code, size_t> callback) = 0;
+  virtual void asyncReadSome(void* data, size_t size,
+                             boost::function2<void, boost::system::error_code, size_t> callback) = 0;
 
   virtual void disconnect() = 0;
 
@@ -37,20 +37,23 @@ public:
   virtual ~TcpInboundConnection() = default;
 
   TcpInboundConnection(boost::asio::io_service& io_service);
-  virtual void asyncRead( void *data, size_t size,
+  virtual void asyncRead( void* data, size_t size,
                           boost::function2<void, boost::system::error_code, size_t> callback) override;
 
-  virtual void asyncReadUntil(boost::asio::streambuf& buf, const boost::regex& delim, 
-                          boost::function2<void, boost::system::error_code, size_t> callback) override;
-  
-  virtual void asyncReadSome(void *data, size_t size, 
-                          boost::function2<void, boost::system::error_code, size_t> callback) override;
+  virtual void asyncReadUntil(boost::asio::streambuf& buf, const boost::regex& delim,
+                              boost::function2<void, boost::system::error_code, size_t> callback) override;
 
-  virtual void asyncWrite( const void *data, size_t size,
+  virtual void asyncReadSome(void* data, size_t size,
+                             boost::function2<void, boost::system::error_code, size_t> callback) override;
+
+  virtual void asyncWrite( const void* data, size_t size,
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) override;
 
-  virtual tcp::socket& socket() override { return m_spSocket; }
+  virtual tcp::socket& socket() override
+  {
+    return m_spSocket;
+  }
 
   virtual void disconnect() override;
 

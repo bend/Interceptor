@@ -24,14 +24,14 @@ public:
   virtual void asyncConnect(boost::function1<void, boost::system::error_code>
                             callback) = 0;
 
-  virtual void asyncRead( void *data, size_t size,
+  virtual void asyncRead( void* data, size_t size,
                           boost::function2<void, boost::system::error_code, size_t> callback) = 0;
 
-  virtual void asyncWrite( const void *data, size_t size,
+  virtual void asyncWrite( const void* data, size_t size,
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) = 0;
 
-  virtual boost::system::error_code write(const void *data, size_t size) = 0;
+  virtual boost::system::error_code write(const void* data, size_t size) = 0;
 
   virtual tcp::socket& socket() = 0;
 
@@ -56,16 +56,19 @@ public:
   virtual void asyncConnect(boost::function1<void, boost::system::error_code>
                             callback) override;
 
-  virtual void asyncRead( void *data, size_t size,
+  virtual void asyncRead( void* data, size_t size,
                           boost::function2<void, boost::system::error_code, size_t> callback) override;
 
-  virtual boost::system::error_code write(const void *data, size_t size) override;
+  virtual boost::system::error_code write(const void* data, size_t size) override;
 
-  virtual void asyncWrite( const void *data, size_t size,
+  virtual void asyncWrite( const void* data, size_t size,
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) override;
 
-  virtual tcp::socket& socket() override { return *m_spSocket; }
+  virtual tcp::socket& socket() override
+  {
+    return *m_spSocket;
+  }
 
   virtual void disconnect() override;
 

@@ -31,23 +31,23 @@ ClientTcpConnection::ClientTcpConnection(boost::asio::io_service& io_service,
 {
 }
 
-void ClientTcpConnection::asyncRead( void *b, size_t size,
+void ClientTcpConnection::asyncRead( void* b, size_t size,
                                      boost::function2<void, boost::system::error_code, size_t> callback)
 {
-  async_read(*m_spSocket, 
-      boost::asio::buffer(b, size), 
-      boost::asio::transfer_at_least(size),
-      callback);
+  async_read(*m_spSocket,
+             boost::asio::buffer(b, size),
+             boost::asio::transfer_at_least(size),
+             callback);
 }
 
-void ClientTcpConnection::asyncWrite( const void *data, size_t size,
+void ClientTcpConnection::asyncWrite( const void* data, size_t size,
                                       boost::function2<void, boost::system::error_code,
                                       size_t> callback)
 {
   async_write(*m_spSocket, boost::asio::buffer(data, size), callback);
 }
 
-boost::system::error_code ClientTcpConnection::write(const void *data, size_t size)
+boost::system::error_code ClientTcpConnection::write(const void* data, size_t size)
 {
   boost::system::error_code ec;
   boost::asio::write(*m_spSocket, boost::asio::buffer(data, size), ec);
@@ -62,7 +62,6 @@ void ClientTcpConnection::disconnect()
     m_spSocket->cancel();
     m_spSocket->close();
   } catch (std::exception& e) {
-
   }
 }
 
