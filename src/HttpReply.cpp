@@ -1,15 +1,25 @@
 #include "HttpReply.h"
 
 #include "HttpRequest.h"
+#include "HttpHeaders.h"
 #include "InterceptorSession.h"
 #include "InboundConnection.h"
+#include "Utils.h"
+#include "Config.h"
+
 
 #include <boost/bind.hpp>
 
 
 HttpReply::HttpReply(HttpRequestPtr request)
-  : m_request(request)
+  : m_request(request),
+    m_replyHeaders(nullptr)
 {
+}
+
+HttpReply::~HttpReply()
+{
+  delete m_replyHeaders;
 }
 
 
@@ -32,19 +42,39 @@ void HttpReply::process()
 
 void HttpReply::handleGetRequest()
 {
+  if (m_replyHeaders)
+    delete m_replyHeaders;
+  m_replyHeaders = new HttpHeaders();
+  m_replyHeaders->addGeneralHeaders();
   std::stringstream response;
-  response << m_request->httpVersion() << 200 << " OK\r\n";
-  response << "Content-Type: text/html; charset=UTF-8\r\n";
-  response << "Server: Interceptor/0.1 (Unix) (Ubuntu)\r\n";
-  std::string html = "<html><head><title>Test page</title></head><body>Hello world, this is Interceptor 0.1 talking</body></html>";
-  response << "Content-length: " << html.length() << "\r\n";
-  response << "\r\n";
-  response << html;
-  m_response = response.str();
-  m_request->session()->connection()->asyncWrite(m_response.data(), m_response.length(), boost::bind(
-        &HttpReply::handleHttpResponseSent, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+  std::string page = SConfig.docRoot() + m_request->index();
+  size_t pageLength = 0;
+  unsigned char* pageData;
+  if (!Utils::readFile(page, &pageData, pageLength)) {
+    //TODO error
+    response << m_request->httpVersion() << " " << 404 << " Not  Found\r\n";
+    send(response);
+    return;
+  }
+  response << m_request->httpVersion() << " " << 200 << " OK\r\n";
+  m_replyHeaders->addHeader("Content-Type", Utils::getMimeType(page));
+  m_replyHeaders->addHeader("Content-Length", pageLength);
+  m_replyHeaders->serialize(response);
+  send(response);
+  InterceptorSession::Packet* packet = new InterceptorSession::Packet();
+  packet = new InterceptorSession::Packet(pageData, pageLength);
+  m_request->session()->postResponse(packet);
+  m_request->setCompleted(true);
 }
 
-void HttpReply::handleHttpResponseSent(const boost::system::error_code& error, size_t bytesTransferred)
+void HttpReply::send(std::stringstream& stream)
 {
+  InterceptorSession::Packet* packet = new InterceptorSession::Packet();
+  size_t size = stream.str().length();
+  unsigned char* data = new unsigned char[size];
+  memcpy(data, stream.str().data(), size);
+  packet->m_data = data;
+  packet->m_size = size;
+  m_request->session()->postResponse(packet);
 }
+

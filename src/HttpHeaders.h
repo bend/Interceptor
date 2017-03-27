@@ -11,7 +11,11 @@ public:
   ~HttpHeaders() = default;
 
   void addHeader(const std::string& key, const std::string& value);
+  void addHeader(const std::string& key, int i);
   const std::string* getHeader(const std::string& key) const;
+
+  void addGeneralHeaders();
+  void serialize(std::stringstream& response) const;
 
 private:
   void parse(const std::string& headers);

@@ -7,6 +7,9 @@ set(src
   HttpReply.cpp
   #  OutboundConnection.cpp
   Logger.cpp
+  Server.cpp
+  Utils.cpp
+  Config.cpp
   main.cpp
 )
 

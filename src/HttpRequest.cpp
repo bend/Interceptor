@@ -8,7 +8,8 @@
 
 HttpRequest::HttpRequest(InterceptorSessionPtr session)
   : m_session(session),
-    m_headers(nullptr)
+    m_headers(nullptr),
+    m_completed(false)
 {
 }
 
@@ -53,6 +54,16 @@ InterceptorSessionPtr HttpRequest::session() const
   return m_session;
 }
 
+bool HttpRequest::completed() const
+{
+  return m_completed;
+}
+
+void HttpRequest::setCompleted(bool completed)
+{
+  m_completed = completed;
+}
+
 void HttpRequest::parse()
 {
   size_t pos = m_request.find_first_of("\r\n");
@@ -71,8 +82,24 @@ void HttpRequest::parse()
     return;
   }
   parseMethod(getParts[0]);
+  switch (m_method) {
+  case Method::GET: {
+      size_t st = getParts[1].find("?");
+      if (st != std::string::npos) {
+        parseParameters(getParts[1].substr(st));
+        getParts[1] = getParts[1].substr(0, st);
+      }
+    }
+    break;
+  case Method::POST:
+    //pase from form
+    break;
+  default:
+    break;
+  }
   m_index = getParts[1];
   m_httpVersion = getParts[2]; //TODO parse and check
+  trace("debug") << get;
   m_headers = new HttpHeaders(m_request);
 }
 
@@ -86,3 +113,7 @@ void HttpRequest::parseMethod(const std::string& method)
     m_method = POST;
 }
 
+void HttpRequest::parseParameters(const std::string& params)
+{
+  trace("debug") << "Parsing parameters " << params;
+}

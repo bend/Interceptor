@@ -1,6 +1,7 @@
 #include "HttpHeaders.h"
 
 #include "Logger.h"
+#include "Server.h"
 
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
@@ -38,3 +39,25 @@ const std::string* HttpHeaders::getHeader(const std::string& key) const
   return nullptr;
 }
 
+void HttpHeaders::addHeader(const std::string& key, const std::string& value)
+{
+  m_headers[key] = value;
+}
+
+void HttpHeaders::addHeader(const std::string& key, int i)
+{
+  addHeader(key, std::to_string(i));
+}
+
+void HttpHeaders::addGeneralHeaders()
+{
+  addHeader("Server", Server::getCommonName());
+}
+
+void HttpHeaders::serialize(std::stringstream& response) const
+{
+  for (const auto& kv : m_headers) {
+    response << kv.first << ": " << kv.second << "\r\n";
+  }
+  response << "\r\n";
+}

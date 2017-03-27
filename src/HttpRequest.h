@@ -32,10 +32,13 @@ public:
 
   void process();
   bool headersReceived() const;
+  bool completed() const;
+  void setCompleted(bool completed);
 
 private:
   void parse();
   void parseMethod(const std::string& method);
+  void parseParameters(const std::string& parameters);
 
 private:
   Method m_method;
@@ -44,6 +47,7 @@ private:
   std::string m_httpVersion;
   InterceptorSessionPtr m_session;
   HttpHeaders* m_headers;
+  bool m_completed;
 
   friend class HttpReply;
 

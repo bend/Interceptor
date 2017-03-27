@@ -9,8 +9,20 @@
 #include <boost/bind.hpp>
 #include <boost/regex.hpp>
 
+InterceptorSession::Packet::Packet(unsigned char* data, size_t size)
+  : m_data(data),
+    m_size(size)
+{
+}
+
+InterceptorSession::Packet::~Packet()
+{
+  delete[] m_data;
+}
+
 InterceptorSession::InterceptorSession(boost::asio::io_service& ioService)
-  : m_ioService(ioService)
+  : m_ioService(ioService),
+    m_strand(m_ioService)
 {
   m_connection = std::make_shared<TcpInboundConnection>(m_ioService);
 }
@@ -23,6 +35,25 @@ boost::asio::ip::tcp::socket& InterceptorSession::socket() const
 InboundConnectionPtr InterceptorSession::connection() const
 {
   return m_connection;
+}
+
+void InterceptorSession::postResponse(Packet* packet)
+{
+  m_ioService.post(
+    m_strand.wrap(
+      boost::bind(&InterceptorSession::sendResponse, shared_from_this(), packet)));
+}
+
+void InterceptorSession::sendResponse(Packet* packet)
+{
+  m_connection->asyncWrite(packet->m_data, packet->m_size, std::bind([ = ](auto error, auto size) {
+    if (!error)  {
+      delete packet;
+    } else {
+      trace("error") << "Could not send reponse";
+      //TODO handle
+    }
+  }, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 }
 
 void InterceptorSession::start()
@@ -52,8 +83,7 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code& 
 {
   if (!error) {
     trace("info") << "Request read from " << m_connection->ip();
-    trace("info") << "Bytes transfered " << bytesTransferred;
-    if (!m_request) {
+    if (!m_request || m_request->completed() ) {
       // Create Request
       m_request = std::make_shared<HttpRequest>(shared_from_this());
     }
@@ -62,15 +92,12 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code& 
       start();
     } else  {
       // complete headers received
-      trace("info") << "Complete headers received from " << m_connection->ip();
       m_reply = std::make_shared<HttpReply>(m_request);
       m_reply->process();
+      start();
     }
   } else {
     trace("error") << "Error reading request from " << m_connection->ip();
   }
 }
 
-void InterceptorSession::parseHttpRequest(const std::string& request)
-{
-}
