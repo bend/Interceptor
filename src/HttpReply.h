@@ -2,6 +2,7 @@
 #define HTTP_REPLY_H__
 
 #include "Defs.h"
+#include "Http.h"
 
 #include <boost/asio.hpp>
 
@@ -18,6 +19,7 @@ public:
 private:
   void handleGetRequest();
   void send(std::stringstream& stream);
+  void sendErrorResponse(Http::ErrorCode error, std::stringstream& response, bool closeConnection = false);
 
 private:
   HttpRequestPtr m_request;

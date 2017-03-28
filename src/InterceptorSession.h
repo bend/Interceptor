@@ -3,6 +3,8 @@
 
 #include "Defs.h"
 
+#include "Config.h"
+
 #include <boost/asio.hpp>
 #include <deque>
 
@@ -20,16 +22,21 @@ public:
     size_t m_size;
   };
 
-  InterceptorSession(boost::asio::io_service& ioService);
+  InterceptorSession(const Config::ServerConfig* config, boost::asio::io_service& ioService);
   ~InterceptorSession() = default;
 
   boost::asio::ip::tcp::socket& socket() const;
 
   InboundConnectionPtr connection() const;
 
+  const Config::ServerConfig* config() const;
+
   void start();
 
   void postResponse(Packet* packet);
+
+  void closeConnection();
+
 
 private:
   // handlers
@@ -41,6 +48,7 @@ private:
 
 
 private:
+  const Config::ServerConfig* m_config;
   boost::asio::io_service& m_ioService;
   boost::asio::strand m_strand;
   InboundConnectionPtr m_connection;

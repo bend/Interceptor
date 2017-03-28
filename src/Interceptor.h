@@ -6,12 +6,13 @@
 #include "Defs.h"
 
 #include <boost/asio.hpp>
+#include "Config.h"
 
 
-class Interceptor {
+class Interceptor : public std::enable_shared_from_this<Interceptor> {
 
 public:
-  Interceptor(short port);
+  Interceptor(const Config::ServerConfig* config, boost::asio::io_service& ioService);
   ~Interceptor();
   void init();
 
@@ -20,7 +21,8 @@ private:
   void handleAccept(InterceptorSessionPtr session, const boost::system::error_code& error);
 
 private:
-  boost::asio::io_service m_ioService;
+  const Config::ServerConfig* m_config;
+  boost::asio::io_service& m_ioService;
   boost::asio::ip::tcp::acceptor m_acceptor;
 
 };

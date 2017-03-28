@@ -1,5 +1,7 @@
-#include <boost/lexical_cast.hpp>
 #include "InboundConnection.h"
+
+#include <boost/lexical_cast.hpp>
+#include "Logger.h"
 
 std::string InboundConnection::ip()
 {
@@ -48,6 +50,7 @@ void TcpInboundConnection::asyncWrite( const void* data, size_t size,
 void TcpInboundConnection::disconnect()
 {
   try {
+	trace("debug") << "closing connection with " << ip();
     boost::system::error_code ec;
     m_spSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
     m_spSocket.cancel();

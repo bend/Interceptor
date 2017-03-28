@@ -2,6 +2,8 @@
 #define HTTP_REQUEST_H__
 
 #include "Defs.h"
+#include "Config.h"
+#include "Http.h"
 
 class HttpHeaders;
 
@@ -34,11 +36,15 @@ public:
   bool headersReceived() const;
   bool completed() const;
   void setCompleted(bool completed);
+  bool hasMatchingSite() const;
+  const Config::ServerConfig::Site* matchingSite() const;
 
 private:
   void parse();
   void parseMethod(const std::string& method);
   void parseParameters(const std::string& parameters);
+  void setStatus(Http::ErrorCode error);
+  Http::ErrorCode status() const;
 
 private:
   Method m_method;
@@ -48,6 +54,8 @@ private:
   InterceptorSessionPtr m_session;
   HttpHeaders* m_headers;
   bool m_completed;
+  Host m_host;
+  Http::ErrorCode m_status;
 
   friend class HttpReply;
 

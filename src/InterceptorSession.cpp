@@ -20,9 +20,10 @@ InterceptorSession::Packet::~Packet()
   delete[] m_data;
 }
 
-InterceptorSession::InterceptorSession(boost::asio::io_service& ioService)
-  : m_ioService(ioService),
-    m_strand(m_ioService)
+InterceptorSession::InterceptorSession(const Config::ServerConfig* config, boost::asio::io_service& ioService)
+  : m_config(config),
+    m_ioService(ioService),
+    m_strand(ioService)
 {
   m_connection = std::make_shared<TcpInboundConnection>(m_ioService);
 }
@@ -37,6 +38,11 @@ InboundConnectionPtr InterceptorSession::connection() const
   return m_connection;
 }
 
+const Config::ServerConfig* InterceptorSession::config() const
+{
+  return m_config;
+}
+
 void InterceptorSession::postResponse(Packet* packet)
 {
   m_ioService.post(
@@ -44,16 +50,34 @@ void InterceptorSession::postResponse(Packet* packet)
       boost::bind(&InterceptorSession::sendResponse, shared_from_this(), packet)));
 }
 
+
 void InterceptorSession::sendResponse(Packet* packet)
 {
-  m_connection->asyncWrite(packet->m_data, packet->m_size, std::bind([ = ](auto error, auto size) {
+  m_connection->asyncWrite(packet->m_data, packet->m_size, m_strand.wrap
+	(boost::bind
+	  (&InterceptorSession::handleTransmissionCompleted, 
+	   shared_from_this(), 
+	   packet,
+	   boost::asio::placeholders::error, 
+	   boost::asio::placeholders::bytes_transferred)));
+}
+
+void InterceptorSession::handleTransmissionCompleted(Packet* packet, const boost::system::error_code& error, size_t bytesTransferred)
+{
     if (!error)  {
+	  trace("debug") << "Response sent " ;
       delete packet;
     } else {
-      trace("error") << "Could not send reponse";
+      trace("error") << "Could not send reponse " << error.message();
       //TODO handle
     }
-  }, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+}
+
+void InterceptorSession::closeConnection()
+{
+  m_ioService.post(
+	  m_strand.wrap(
+		boost::bind(&InboundConnection::disconnect, m_connection)));
 }
 
 void InterceptorSession::start()
@@ -63,14 +87,6 @@ void InterceptorSession::start()
   // Read preamble Size from mobile
   InterceptorSessionPtr isp = shared_from_this();
   if (m_connection) {
-    /*
-    	m_conn
-    ection->asyncReadUntil(m_requestBuffer4096, boost::regex("^(\r\n)"),
-    								 boost::bind(&InterceptorSession::handleHttpRequestRead, isp,
-    								        	 boost::asio::placeholders::error,
-    											 boost::asio::placeholders::bytes_transferred)
-    								);
-    */
     m_connection->asyncReadSome(m_requestBuffer, sizeof(m_requestBuffer),
                                 boost::bind(&InterceptorSession::handleHttpRequestRead, isp,
                                             boost::asio::placeholders::error,

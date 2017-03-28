@@ -1,0 +1,49 @@
+{
+  "global" :  {
+	"server-timeout" : 200, /* send timeout in seconds */
+	"client-timeout" : 200, /* read timeout in seconds */
+	
+	"error-pages" : [
+	  501 : "/usr/share/nginx/homepage/501.html",
+	  502 : "/usr/share/nginx/homepage/502.html"
+
+	]
+
+
+  },
+
+  "servers": [
+	{ 
+	  "listen-host": "0.0.0.0",
+	  "listen-port": 8000,
+
+	  "sites": [
+		{
+		  "try-files" : [
+			"index.php",
+			"index.html"
+		  ],
+		  "host": "0xff.xyz",
+		  "docroot": "/usr/share/nginx/homepage/"
+		}
+	  ]
+	},
+	{ 
+	  "listen-host": "0.0.0.0",
+	  "listen-port": 8002,
+
+	  "sites": [
+		{
+		  "try-files" : [
+			"index.php",
+			"index.html"
+		  ],
+		  "host": "0xff.xyz",
+		  "docroot": "/home/ben/docker-data/cv-data/"
+		}
+	  ]
+	}
+
+
+  ]
+}

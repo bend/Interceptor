@@ -2,14 +2,18 @@
 
 #include "InterceptorSession.h"
 #include "Logger.h"
+#include "Server.h"
 
 #include <boost/bind.hpp>
 
 using boost::asio::ip::tcp;
 
-Interceptor::Interceptor(short port)
-  : m_acceptor(m_ioService, tcp::endpoint(tcp::v4(), port))
+Interceptor::Interceptor(const Config::ServerConfig* config, boost::asio::io_service& ioService)
+  : m_config(config),
+    m_ioService(ioService),
+    m_acceptor(m_ioService, tcp::endpoint(boost::asio::ip::address::from_string(m_config->m_listenHost), m_config->m_listenPort))
 {
+  trace("info") << "Launching " << Server::getName() << "/" << Server::getVersion() << " on " << m_config->m_listenHost << ":" << m_config->m_listenPort;
 }
 
 Interceptor::~Interceptor()
@@ -19,15 +23,13 @@ Interceptor::~Interceptor()
 void Interceptor::init()
 {
   listen();
-  boost::asio::io_service::work work(m_ioService);
-  m_ioService.run();
 }
 
 void Interceptor::listen()
 {
-  InterceptorSessionPtr newSession = std::make_shared<InterceptorSession>(m_ioService);
+  InterceptorSessionPtr newSession = std::make_shared<InterceptorSession>(m_config, m_ioService);
   m_acceptor.async_accept(newSession->socket(),
-                          boost::bind(&Interceptor::handleAccept, this, newSession, boost::asio::placeholders::error)
+                          boost::bind(&Interceptor::handleAccept, shared_from_this(), newSession, boost::asio::placeholders::error)
                          );
 }
 

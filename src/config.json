@@ -1,0 +1,54 @@
+{
+  "global" :  {
+	"server-timeout" : 200, 
+	"client-timeout" : 200,
+	
+	"error-pages" : [
+	  { "404" : "/home/ben/projects/interceptor/config/404.html" }, 
+		{ "400" : "/home/ben/projects/interceptor/config/400.html" }
+	]
+
+
+  },
+
+  "servers": [
+	{ 
+	  "listen-host": "0.0.0.0",
+	  "listen-port": 8000,
+
+	  "sites": [
+		{
+		  "try-files" : [
+			"index.php",
+			"index.html"
+		  ],
+		  "host": "0xff.xyz",
+		  "docroot": "/usr/share/nginx/homepage/",
+
+		  "error-pages" : [
+			{ "404" : "404.html" },
+			{ "400" : "400.html" }
+		  ]
+
+		}
+	  ]
+	},
+	{ 
+	  "listen-host": "0.0.0.0",
+	  "listen-port": 8002,
+
+	  "sites": [
+		{
+		  "try-files" : [
+			"index.php",
+			"index.html"
+		  ],
+		  "host": "0xff.xyz",
+		  "docroot": "/home/ben/docker-data/cv-data/"
+		}
+	  ]
+	}
+
+
+  ]
+}
