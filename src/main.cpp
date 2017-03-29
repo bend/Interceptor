@@ -10,6 +10,7 @@ int main(int argc, char** argv)
 
   if (argc != 2)
     return -1;
+
   try {
     Config* config = new Config(std::string(argv[1]));
     boost::asio::io_service ioService;

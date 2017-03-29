@@ -9,13 +9,13 @@
 
 class HttpHeaders;
 
-class HttpReply : public std::enable_shared_from_this<HttpReply>{
+class HttpReply : public std::enable_shared_from_this<HttpReply> {
 
 public:
   enum Flag {
-	Closing,
-	Encoded,
-	Chunked
+    Closing,
+    Encoded,
+    Chunked
   };
 
   HttpReply(HttpRequestPtr request);

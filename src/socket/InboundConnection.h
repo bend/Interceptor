@@ -18,7 +18,7 @@ public:
   virtual void asyncWrite( const void* data, size_t size,
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) = 0;
-  
+
   virtual void asyncWrite( const std::vector<boost::asio::const_buffer>& buffers,
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) = 0;
@@ -54,10 +54,10 @@ public:
   virtual void asyncWrite( const void* data, size_t size,
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) override;
-  
+
   virtual void asyncWrite(const std::vector<boost::asio::const_buffer>& buffers,
-                           boost::function2<void, boost::system::error_code,
-                           size_t> callback) override;
+                          boost::function2<void, boost::system::error_code,
+                          size_t> callback) override;
 
   virtual tcp::socket& socket() override
   {

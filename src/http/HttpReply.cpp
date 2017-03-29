@@ -26,44 +26,48 @@ HttpReply::~HttpReply()
 void HttpReply::process()
 {
   std::stringstream stream;
+
   if (m_replyHeaders) {
     delete m_replyHeaders;
   }
 
   m_replyHeaders = new HttpHeaders();
   m_replyHeaders->addGeneralHeaders();
-  
+
   if ( !m_request->headersReceived() ) {
     std::stringstream stream;
-	buildErrorResponse(Http::ErrorCode::BadRequest, stream, true);
-	return;
+    buildErrorResponse(Http::ErrorCode::BadRequest, stream, true);
+    return;
   }
-  
+
   Http::ErrorCode status =  m_request->parse();
 
   if (status != Http::ErrorCode::Ok) {
-	if(m_request->m_headers)
-	  m_replyHeaders->fillFrom(m_request->m_headers);
+    if (m_request->m_headers)
+      m_replyHeaders->fillFrom(m_request->m_headers);
+
     buildErrorResponse(status, stream, true);
     return;
   }
 
   switch (m_request->method()) {
-  case HttpRequest::GET:
-    handleGetRequest();
-    break;
-  case HttpRequest::POST:
-    break;
-  default:
-    break;
+    case HttpRequest::GET:
+      handleGetRequest();
+      break;
+
+    case HttpRequest::POST:
+      break;
+
+    default:
+      break;
   }
 }
-  
+
 const std::vector<boost::asio::const_buffer>& HttpReply::buffers() const
 {
   return m_buffers;
 }
-  
+
 void HttpReply::setFlag(Flag flag, bool value)
 {
   m_flags.set(flag, value);
@@ -88,11 +92,12 @@ void HttpReply::handleGetRequest()
   std::string page;
   size_t pageLength = 0;
 
-  if ( m_request->index() == "" 
-	  || m_request->index() == "/") {
+  if ( m_request->index() == ""
+       || m_request->index() == "/") {
     // This request does not contain a filename, we will use a page from try-file
     std::vector<std::string> tryFiles = site->m_tryFiles;
     bool found = false;
+
     for (const auto& index : tryFiles) {
       page = site->m_docroot + index;
 
@@ -126,8 +131,8 @@ void HttpReply::handleGetRequest()
 
 void HttpReply::post(std::stringstream& stream)
 {
-  if(getFlag(Flag::Chunked))
-	chunkResponse(stream);
+  if (getFlag(Flag::Chunked))
+    chunkResponse(stream);
 
   m_buffers.clear();
   m_buffers.push_back({});
@@ -162,10 +167,10 @@ void HttpReply::buildHeaders()
   stream << m_request->httpVersion() << " ";
   Http::stringValue(Http::ErrorCode::Ok, stream);
 
-  if(getFlag(Flag::Chunked))
-	m_replyHeaders->addHeader("Transfer-Encoding", "Chunked");
+  if (getFlag(Flag::Chunked))
+    m_replyHeaders->addHeader("Transfer-Encoding", "Chunked");
   else
-	m_replyHeaders->addHeader("Content-Length", boost::asio::buffer_size(m_buffers[1]));
+    m_replyHeaders->addHeader("Content-Length", boost::asio::buffer_size(m_buffers[1]));
 
   m_replyHeaders->serialize(stream);
   const std::string& resp = stream.str();

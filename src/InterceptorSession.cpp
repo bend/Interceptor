@@ -44,14 +44,14 @@ void InterceptorSession::postReply(HttpReplyPtr reply)
 void InterceptorSession::sendReply(HttpReplyPtr reply)
 {
   m_connection->asyncWrite(reply->buffers(), m_strand.wrap
-  (boost::bind
-    (&InterceptorSession::handleTransmissionCompleted,
-     shared_from_this(),
-	 reply,
-     boost::asio::placeholders::error,
-     boost::asio::placeholders::bytes_transferred)
-	)
-  );
+                           (boost::bind
+                            (&InterceptorSession::handleTransmissionCompleted,
+                             shared_from_this(),
+                             reply,
+                             boost::asio::placeholders::error,
+                             boost::asio::placeholders::bytes_transferred)
+                           )
+                          );
 }
 
 void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply, const boost::system::error_code& error, size_t bytesTransferred)
@@ -62,8 +62,9 @@ void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply, const b
     trace("error") << "Could not send reponse " << error.message();
     //TODO handle
   }
-  if(reply->getFlag(HttpReply::Closing))
-	closeConnection();
+
+  if (reply->getFlag(HttpReply::Closing))
+    closeConnection();
 }
 
 void InterceptorSession::closeConnection()
@@ -79,6 +80,7 @@ void InterceptorSession::start()
   // no preamble received
   // Read preamble Size from mobile
   InterceptorSessionPtr isp = shared_from_this();
+
   if (m_connection) {
     m_connection->asyncReadSome(m_requestBuffer, sizeof(m_requestBuffer),
                                 boost::bind(&InterceptorSession::handleHttpRequestRead, isp,
@@ -92,11 +94,14 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code& 
 {
   if (!error) {
     trace("info") << "Request read from " << m_connection->ip();
+
     if (!m_request || m_request->completed() ) {
       // Create Request
       m_request = std::make_shared<HttpRequest>(shared_from_this());
     }
+
     m_request->appendData(m_requestBuffer, bytesTransferred);
+
     if (!m_request->headersReceived()) {
       start();
     } else  {

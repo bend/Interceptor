@@ -42,5 +42,6 @@ void Interceptor::handleAccept(InterceptorSessionPtr session, const boost::syste
   } else {
     trace("error") << "Could not accept connection " << error.message();
   }
+
   listen();
 }

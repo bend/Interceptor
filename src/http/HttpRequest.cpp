@@ -84,23 +84,26 @@ Http::ErrorCode HttpRequest::parse()
     return Http::ErrorCode::BadRequest;
   }
 
-  if(!parseMethod(getParts[0])) 
-  	return Http::ErrorCode::BadRequest;
+  if (!parseMethod(getParts[0]))
+    return Http::ErrorCode::BadRequest;
 
   switch (m_method) {
-  case Method::GET: {
-      size_t st = getParts[1].find("?");
-      if (st != std::string::npos) {
-        parseParameters(getParts[1].substr(st));
-        getParts[1] = getParts[1].substr(0, st);
+    case Method::GET: {
+        size_t st = getParts[1].find("?");
+
+        if (st != std::string::npos) {
+          parseParameters(getParts[1].substr(st));
+          getParts[1] = getParts[1].substr(0, st);
+        }
       }
-    }
-    break;
-  case Method::POST:
-    //pase from form
-    break;
-  default:
-    break;
+      break;
+
+    case Method::POST:
+      //pase from form
+      break;
+
+    default:
+      break;
   }
 
   m_index = getParts[1];
@@ -113,7 +116,7 @@ Http::ErrorCode HttpRequest::parse()
   const std::string* host = m_headers->getHeader("Host");
 
   if (!host ) {
-	trace("error") << "Missing Host" ;
+    trace("error") << "Missing Host" ;
     return Http::ErrorCode::BadRequest;
   }
 
@@ -124,7 +127,7 @@ Http::ErrorCode HttpRequest::parse()
 
 bool HttpRequest::parseHttpVersion(const std::string& version)
 {
-  m_httpVersion = version; 
+  m_httpVersion = version;
   return true;
 }
 
@@ -132,14 +135,15 @@ bool HttpRequest::parseMethod(const std::string& method)
 {
   if (method == "GET") {
     m_method = Method::GET;
-	return true;
+    return true;
   } else if (method == "HEAD") {
     m_method = HEAD;
-	return true;
+    return true;
   } else if (method == "POST") {
     m_method = POST;
-	return true;
+    return true;
   }
+
   return false;
 }
 
@@ -157,9 +161,11 @@ bool HttpRequest::hasMatchingSite() const
 const Config::ServerConfig::Site* HttpRequest::matchingSite() const
 {
   const std::string host = m_host;
+
   for (const auto& site : session()->config()->m_sites) {
     if (site->m_host == host)
       return site;
   }
+
   return nullptr;
 }
