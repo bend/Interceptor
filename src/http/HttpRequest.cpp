@@ -11,8 +11,7 @@ HttpRequest::HttpRequest(InterceptorSessionPtr session)
   : m_session(session),
     m_headers(nullptr),
     m_completed(false),
-    m_host(""),
-    m_status(Http::ErrorCode::Ok)
+    m_host("")
 {
 }
 
@@ -66,34 +65,28 @@ void HttpRequest::setCompleted(bool completed)
   m_completed = completed;
 }
 
-void HttpRequest::setStatus(Http::ErrorCode error)
-{
-  m_status = error;
-}
-
-Http::ErrorCode HttpRequest::status() const
-{
-  return m_status;
-}
-
-void HttpRequest::parse()
+Http::ErrorCode HttpRequest::parse()
 {
   size_t pos = m_request.find_first_of("\r\n");
+
   if (pos == std::string::npos) {
     trace("error") << "HttpRequest missing separator.. aborting";
-    setStatus(Http::ErrorCode::BadRequest);
-    return;
+    return Http::ErrorCode::BadRequest;
   }
+
   std::string get = m_request.substr(0, pos);
   m_request = m_request.substr(pos);
   std::vector<std::string> getParts;
   boost::split(getParts, get , boost::is_any_of(" "));
+
   if (getParts.size() != 3) {
     trace("error") << "Missing Method part";
-    setStatus(Http::ErrorCode::BadRequest);
-    return;
+    return Http::ErrorCode::BadRequest;
   }
-  parseMethod(getParts[0]);
+
+  if(!parseMethod(getParts[0])) 
+  	return Http::ErrorCode::BadRequest;
+
   switch (m_method) {
   case Method::GET: {
       size_t st = getParts[1].find("?");
@@ -109,35 +102,51 @@ void HttpRequest::parse()
   default:
     break;
   }
+
   m_index = getParts[1];
-  m_httpVersion = getParts[2]; //TODO parse and check
+  parseHttpVersion(getParts[2]);
+
   trace("debug") << get;
   m_headers = new HttpHeaders(m_request);
 
   // parse host
   const std::string* host = m_headers->getHeader("Host");
 
-  if (!host )
-    //TODO error
-    return;
+  if (!host ) {
+	trace("error") << "Missing Host" ;
+    return Http::ErrorCode::BadRequest;
+  }
 
   size_t spos = host->find(":");
   m_host = host->substr(0, spos);
+  return Http::ErrorCode::Ok;
 }
 
-void HttpRequest::parseMethod(const std::string& method)
+bool HttpRequest::parseHttpVersion(const std::string& version)
 {
-  if (method == "GET")
-    m_method = Method::GET;
-  else if (method == "HEAD")
-    m_method = HEAD;
-  else if (method == "POST")
-    m_method = POST;
+  m_httpVersion = version; 
+  return true;
 }
 
-void HttpRequest::parseParameters(const std::string& params)
+bool HttpRequest::parseMethod(const std::string& method)
+{
+  if (method == "GET") {
+    m_method = Method::GET;
+	return true;
+  } else if (method == "HEAD") {
+    m_method = HEAD;
+	return true;
+  } else if (method == "POST") {
+    m_method = POST;
+	return true;
+  }
+  return false;
+}
+
+bool HttpRequest::parseParameters(const std::string& params)
 {
   trace("debug") << "Parsing parameters " << params;
+  return true;
 }
 
 bool HttpRequest::hasMatchingSite() const

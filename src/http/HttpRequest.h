@@ -40,11 +40,10 @@ public:
   const Config::ServerConfig::Site* matchingSite() const;
 
 private:
-  void parse();
-  void parseMethod(const std::string& method);
-  void parseParameters(const std::string& parameters);
-  void setStatus(Http::ErrorCode error);
-  Http::ErrorCode status() const;
+  Http::ErrorCode parse();
+  bool parseMethod(const std::string& method);
+  bool parseParameters(const std::string& parameters);
+  bool parseHttpVersion(const std::string& version);
 
 private:
   Method m_method;
@@ -55,7 +54,6 @@ private:
   HttpHeaders* m_headers;
   bool m_completed;
   Host m_host;
-  Http::ErrorCode m_status;
 
   friend class HttpReply;
 

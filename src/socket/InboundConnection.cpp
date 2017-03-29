@@ -46,6 +46,13 @@ void TcpInboundConnection::asyncWrite( const void* data, size_t size,
 {
   async_write(m_spSocket, boost::asio::buffer(data, size), callback);
 }
+  
+void TcpInboundConnection::asyncWrite(const std::vector<boost::asio::const_buffer>& buffers,
+                           boost::function2<void, boost::system::error_code,
+                           size_t> callback)
+{
+  async_write(m_spSocket, buffers, callback);
+}
 
 void TcpInboundConnection::disconnect()
 {

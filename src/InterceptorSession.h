@@ -14,14 +14,6 @@ class InterceptorSession : public std::enable_shared_from_this<InterceptorSessio
 
 public:
 
-  struct Packet {
-    Packet(unsigned char* data, size_t size);
-    Packet() = default;
-    ~Packet();
-    unsigned char* m_data;
-    size_t m_size;
-  };
-
   InterceptorSession(const Config::ServerConfig* config, boost::asio::io_service& ioService);
   ~InterceptorSession() = default;
 
@@ -55,7 +47,6 @@ private:
   unsigned char m_requestBuffer[4096];
   HttpRequestPtr m_request;
   HttpReplyPtr m_reply;
-  std::deque<Packet*> m_outbox;
 };
 
 #endif //INTERCEPTOR_SESSION_H__

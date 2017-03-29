@@ -10,17 +10,6 @@
 #include <boost/bind.hpp>
 #include <boost/regex.hpp>
 
-InterceptorSession::Packet::Packet(unsigned char* data, size_t size)
-  : m_data(data),
-    m_size(size)
-{
-}
-
-InterceptorSession::Packet::~Packet()
-{
-  delete[] m_data;
-}
-
 InterceptorSession::InterceptorSession(const Config::ServerConfig* config, boost::asio::io_service& ioService)
   : m_config(config),
     m_ioService(ioService),
@@ -54,15 +43,15 @@ void InterceptorSession::postReply(HttpReplyPtr reply)
 
 void InterceptorSession::sendReply(HttpReplyPtr reply)
 {
-  /*
-  m_connection->asyncWrite(packet->m_data, packet->m_size, m_strand.wrap
+  m_connection->asyncWrite(reply->buffers(), m_strand.wrap
   (boost::bind
     (&InterceptorSession::handleTransmissionCompleted,
      shared_from_this(),
-     packet,
+	 reply,
      boost::asio::placeholders::error,
-     boost::asio::placeholders::bytes_transferred)));
-     */
+     boost::asio::placeholders::bytes_transferred)
+	)
+  );
 }
 
 void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply, const boost::system::error_code& error, size_t bytesTransferred)
@@ -73,6 +62,8 @@ void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply, const b
     trace("error") << "Could not send reponse " << error.message();
     //TODO handle
   }
+  if(reply->getFlag(HttpReply::Closing))
+	closeConnection();
 }
 
 void InterceptorSession::closeConnection()

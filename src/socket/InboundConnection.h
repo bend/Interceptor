@@ -18,6 +18,11 @@ public:
   virtual void asyncWrite( const void* data, size_t size,
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) = 0;
+  
+  virtual void asyncWrite( const std::vector<boost::asio::const_buffer>& buffers,
+                           boost::function2<void, boost::system::error_code,
+                           size_t> callback) = 0;
+
   virtual void asyncReadUntil(boost::asio::streambuf& buf, const boost::regex& delim,
                               boost::function2<void, boost::system::error_code, size_t> callback) = 0;
 
@@ -47,6 +52,10 @@ public:
                              boost::function2<void, boost::system::error_code, size_t> callback) override;
 
   virtual void asyncWrite( const void* data, size_t size,
+                           boost::function2<void, boost::system::error_code,
+                           size_t> callback) override;
+  
+  virtual void asyncWrite(const std::vector<boost::asio::const_buffer>& buffers,
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) override;
 
