@@ -33,7 +33,7 @@ public:
 
   void start();
 
-  void postResponse(Packet* packet);
+  void postReply(HttpReplyPtr reply);
 
   void closeConnection();
 
@@ -41,10 +41,10 @@ public:
 private:
   // handlers
   void handleHttpRequestRead(const boost::system::error_code& error, size_t bytesTransferred);
-  void handleTransmissionCompleted(Packet* packet, const boost::system::error_code& error, size_t bytesTransferred);
+  void handleTransmissionCompleted(HttpReplyPtr reply, const boost::system::error_code& error, size_t bytesTransferred);
 
   // internal logic
-  void sendResponse(Packet* packet);
+  void sendReply(HttpReplyPtr reply);
 
 
 private:

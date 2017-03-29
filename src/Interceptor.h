@@ -1,8 +1,6 @@
 #ifndef INTERCEPTOR_H__
 #define INTERCEPTOR_H__
 
-#include "InboundConnection.h"
-
 #include "Defs.h"
 
 #include <boost/asio.hpp>

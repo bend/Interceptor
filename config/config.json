@@ -1,12 +1,11 @@
 {
   "global" :  {
-	"server-timeout" : 200, /* send timeout in seconds */
-	"client-timeout" : 200, /* read timeout in seconds */
+	"server-timeout" : 200, 
+	"client-timeout" : 200,
 	
 	"error-pages" : [
-	  501 : "/usr/share/nginx/homepage/501.html",
-	  502 : "/usr/share/nginx/homepage/502.html"
-
+	  { "404" : "/home/ben/projects/interceptor/config/404.html" }, 
+		{ "400" : "/home/ben/projects/interceptor/config/400.html" }
 	]
 
 
@@ -24,7 +23,13 @@
 			"index.html"
 		  ],
 		  "host": "0xff.xyz",
-		  "docroot": "/usr/share/nginx/homepage/"
+		  "docroot": "/usr/share/nginx/homepage/",
+
+		  "error-pages" : [
+			{ "404" : "404.html" },
+			{ "400" : "400.html" }
+		  ]
+
 		}
 	  ]
 	},

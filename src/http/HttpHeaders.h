@@ -16,6 +16,7 @@ public:
 
   void addGeneralHeaders();
   void serialize(std::stringstream& response) const;
+  void fillFrom(const HttpHeaders* headers);
 
 private:
   void parse(const std::string& headers);

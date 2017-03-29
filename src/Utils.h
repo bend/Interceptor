@@ -9,6 +9,8 @@ public:
 
   static bool readFile(const std::string& path, unsigned char** data, size_t& bytes);
 
+  static bool readFile(const std::string& path, std::stringstream& stream, size_t& bytes);
+
   static std::string getMimeType(const std::string& path);
 
 };

@@ -16,15 +16,21 @@ public:
 
   void process();
 
+  void buildHeader();
+
 private:
   void handleGetRequest();
-  void send(std::stringstream& stream);
-  void sendErrorResponse(Http::ErrorCode error, std::stringstream& response, bool closeConnection = false);
+  void post(std::stringstream& stream);
+  void buildErrorResponse(Http::ErrorCode error, std::stringstream& response, bool closeConnection = false);
+  void chunkResponse(std::stringstream& stream);
+  void encodeResponse(std::stringstream& stream);
 
 private:
   HttpRequestPtr m_request;
   HttpHeaders* m_replyHeaders;
-  std::string m_response;
+  Http::ErrorCode m_status;
+  bool m_close;
+  bool m_chunked;
 
 };
 

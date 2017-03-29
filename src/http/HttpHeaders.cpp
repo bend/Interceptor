@@ -61,3 +61,11 @@ void HttpHeaders::serialize(std::stringstream& response) const
   }
   response << "\r\n";
 }
+
+void HttpHeaders::fillFrom(const HttpHeaders* headers)
+{
+  if (headers->getHeader("X-Forwarded-For"))
+    addHeader("X-Forwarded-For", *headers->getHeader("X-Forwarded-For"));
+  if (headers->getHeader("Connection"))
+    addHeader("Connection", *headers->getHeader("Connection"));
+}

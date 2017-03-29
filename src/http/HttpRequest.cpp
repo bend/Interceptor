@@ -12,7 +12,7 @@ HttpRequest::HttpRequest(InterceptorSessionPtr session)
     m_headers(nullptr),
     m_completed(false),
     m_host(""),
-	m_status(Http::ErrorCode::Ok)
+    m_status(Http::ErrorCode::Ok)
 {
 }
 
@@ -81,7 +81,7 @@ void HttpRequest::parse()
   size_t pos = m_request.find_first_of("\r\n");
   if (pos == std::string::npos) {
     trace("error") << "HttpRequest missing separator.. aborting";
-	setStatus(Http::ErrorCode::BadRequest);
+    setStatus(Http::ErrorCode::BadRequest);
     return;
   }
   std::string get = m_request.substr(0, pos);
@@ -90,7 +90,7 @@ void HttpRequest::parse()
   boost::split(getParts, get , boost::is_any_of(" "));
   if (getParts.size() != 3) {
     trace("error") << "Missing Method part";
-	setStatus(Http::ErrorCode::BadRequest);
+    setStatus(Http::ErrorCode::BadRequest);
     return;
   }
   parseMethod(getParts[0]);

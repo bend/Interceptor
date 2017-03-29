@@ -23,9 +23,9 @@ void Config::parse()
   try {
     json j = json::parse(config);
 
-	auto global = j["global"];
+    auto global = j["global"];
 
-	parseErrorPages(global["error-pages"], m_errorPages, "");
+    parseErrorPages(global["error-pages"], m_errorPages, "");
 
     auto servers = j["servers"];
 
@@ -39,16 +39,15 @@ void Config::parse()
         s->m_host = site["host"];
         s->m_docroot = site["docroot"];
 
-		for(auto& tryf : site["try-files"] )
-		{
-		  s->m_tryFiles.push_back(tryf);
-		}
+        for (auto& tryf : site["try-files"] ) {
+          s->m_tryFiles.push_back(tryf);
+        }
 
-		// Copy global settings to local
-		s->m_errorPages.insert(m_errorPages.begin(), m_errorPages.end());
+        // Copy global settings to local
+        s->m_errorPages.insert(m_errorPages.begin(), m_errorPages.end());
 
-		// Overwrite by local setting
-		parseErrorPages(site["error-pages"], s->m_errorPages, s->m_docroot); 
+        // Overwrite by local setting
+        parseErrorPages(site["error-pages"], s->m_errorPages, s->m_docroot);
 
         sc->m_sites.push_back(s);
       }
@@ -61,14 +60,13 @@ void Config::parse()
   }
 
 }
-  
+
 void Config::parseErrorPages(json& j, ErrorPageMap& map, const std::string appendPath)
 {
-  for(auto& page : j)
-  {
-	for (json::iterator it = page.begin(); it != page.end(); ++it) {
-	    map[it.key()] = appendPath + it.value().get<std::string>();
-	}
+  for (auto& page : j) {
+    for (json::iterator it = page.begin(); it != page.end(); ++it) {
+      map[it.key()] = appendPath + it.value().get<std::string>();
+    }
   }
 }
 

@@ -1,10 +1,10 @@
 set(src
   Interceptor.cpp
   InterceptorSession.cpp
-  InboundConnection.cpp
-  HttpHeaders.cpp
-  HttpRequest.cpp
-  HttpReply.cpp
+  socket/InboundConnection.cpp
+  http/HttpHeaders.cpp
+  http/HttpRequest.cpp
+  http/HttpReply.cpp
   #  OutboundConnection.cpp
   Logger.cpp
   Server.cpp
@@ -13,7 +13,9 @@ set(src
   main.cpp
 )
 
-INCLUDE_DIRECTORIES(".")
+INCLUDE_DIRECTORIES(
+  "."
+  )
 
 add_executable(interceptor ${src})
 target_link_libraries(interceptor ${LIBS})

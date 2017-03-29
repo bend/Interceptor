@@ -33,21 +33,21 @@ public:
   class ServerConfig {
   public:
 
-	ServerConfig(const ErrorPageMap& map)
-	  : m_errorPages(map) {}
+    ServerConfig(const ErrorPageMap& map)
+      : m_errorPages(map) {}
 
     struct Site {
       std::string m_host;
       std::string m_docroot;
-	  std::vector<std::string> m_tryFiles;
-	  ErrorPageMap m_errorPages;
+      std::vector<std::string> m_tryFiles;
+      ErrorPageMap m_errorPages;
     };
 
     std::string m_listenHost;
     int m_listenPort;
 
     std::vector<Site*> m_sites;
-	const ErrorPageMap& m_errorPages;
+    const ErrorPageMap& m_errorPages;
 
   };
 

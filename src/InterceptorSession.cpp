@@ -1,10 +1,11 @@
 #include "InterceptorSession.h"
 
 #include "Defs.h"
-#include "InboundConnection.h"
-#include "HttpRequest.h"
-#include "HttpReply.h"
 #include "Logger.h"
+
+#include "socket/InboundConnection.h"
+#include "http/HttpRequest.h"
+#include "http/HttpReply.h"
 
 #include <boost/bind.hpp>
 #include <boost/regex.hpp>
@@ -43,41 +44,42 @@ const Config::ServerConfig* InterceptorSession::config() const
   return m_config;
 }
 
-void InterceptorSession::postResponse(Packet* packet)
+void InterceptorSession::postReply(HttpReplyPtr reply)
 {
   m_ioService.post(
     m_strand.wrap(
-      boost::bind(&InterceptorSession::sendResponse, shared_from_this(), packet)));
+      boost::bind(&InterceptorSession::sendReply, shared_from_this(), reply)));
 }
 
 
-void InterceptorSession::sendResponse(Packet* packet)
+void InterceptorSession::sendReply(HttpReplyPtr reply)
 {
+  /*
   m_connection->asyncWrite(packet->m_data, packet->m_size, m_strand.wrap
-	(boost::bind
-	  (&InterceptorSession::handleTransmissionCompleted, 
-	   shared_from_this(), 
-	   packet,
-	   boost::asio::placeholders::error, 
-	   boost::asio::placeholders::bytes_transferred)));
+  (boost::bind
+    (&InterceptorSession::handleTransmissionCompleted,
+     shared_from_this(),
+     packet,
+     boost::asio::placeholders::error,
+     boost::asio::placeholders::bytes_transferred)));
+     */
 }
 
-void InterceptorSession::handleTransmissionCompleted(Packet* packet, const boost::system::error_code& error, size_t bytesTransferred)
+void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply, const boost::system::error_code& error, size_t bytesTransferred)
 {
-    if (!error)  {
-	  trace("debug") << "Response sent " ;
-      delete packet;
-    } else {
-      trace("error") << "Could not send reponse " << error.message();
-      //TODO handle
-    }
+  if (!error)  {
+    trace("debug") << "Response sent " ;
+  } else {
+    trace("error") << "Could not send reponse " << error.message();
+    //TODO handle
+  }
 }
 
 void InterceptorSession::closeConnection()
 {
   m_ioService.post(
-	  m_strand.wrap(
-		boost::bind(&InboundConnection::disconnect, m_connection)));
+    m_strand.wrap(
+      boost::bind(&InboundConnection::disconnect, m_connection)));
 }
 
 void InterceptorSession::start()

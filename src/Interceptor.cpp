@@ -3,6 +3,7 @@
 #include "InterceptorSession.h"
 #include "Logger.h"
 #include "Server.h"
+#include "socket/InboundConnection.h"
 
 #include <boost/bind.hpp>
 

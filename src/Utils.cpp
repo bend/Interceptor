@@ -9,19 +9,46 @@ bool Utils::readFile(const std::string& filename, unsigned char** data, size_t& 
   namespace fs = boost::filesystem;
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
   fs::path dataDir(filename);
+
   if (!fs::exists(dataDir) || fs::is_directory(dataDir))
     return false;
+
   if ( !ifs.is_open() ) {
     trace("error") << "Could not open file";
     return false;
   }
+
   std::ifstream::pos_type pos = ifs.tellg();
   pageLength = pos;
   *data = new unsigned char[pageLength]();
   ifs.seekg(0, std::ios::beg);
   ifs.read(reinterpret_cast<char*>(*data), pageLength);
   ifs.close();
+
   return true;
+}
+
+bool Utils::readFile(const std::string& filename, std::stringstream& stream, size_t& pageLength)
+{
+  namespace fs = boost::filesystem;
+  std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
+  fs::path dataDir(filename);
+
+  if (!fs::exists(dataDir) || fs::is_directory(dataDir))
+    return false;
+
+  if ( !ifs.is_open() ) {
+    trace("error") << "Could not open file";
+    return false;
+  }
+
+  std::ifstream::pos_type pos = ifs.tellg();
+  pageLength = pos;
+  ifs.seekg(0, std::ios::beg);
+  stream << ifs.rdbuf();
+  ifs.close();
+  return true;
+
 }
 
 std::string Utils::getMimeType(const std::string& path)
