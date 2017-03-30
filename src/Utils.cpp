@@ -51,7 +51,7 @@ bool Utils::readFile(const std::string& filename, std::stringstream& stream, siz
 
 }
 
-std::string Utils::getMimeType(const std::string& path)
+std::string Utils::mimeType(const std::string& path)
 {
   if (path.find(".html") != std::string::npos)
     return "text/html";
@@ -68,5 +68,15 @@ std::string Utils::getMimeType(const std::string& path)
   if (path.find(".js") != std::string::npos)
     return "application/javascript";
   else return "other";
+}
+
+std::string Utils::extension(const std::string& filename)
+{
+  size_t pos = filename.rfind(".");
+
+  if (pos == std::string::npos)
+    return "";
+
+  return filename.substr(pos + 1);
 }
 

@@ -70,6 +70,17 @@ void HttpRequest::setCompleted(bool completed)
   m_completed = completed;
 }
 
+bool HttpRequest::supportsCompression() const
+{
+  const std::string* ae = m_headers->getHeader("Accept-Encoding");
+  return ae && ae->find("gzip") != std::string::npos;
+}
+
+bool HttpRequest::supportsChunking() const
+{
+  return m_httpVersion == "1.1" || supportsCompression();
+}
+
 Http::ErrorCode HttpRequest::parse()
 {
   size_t pos = m_request.find_first_of("\r\n");
@@ -112,7 +123,10 @@ Http::ErrorCode HttpRequest::parse()
   }
 
   m_index = getParts[1];
-  parseHttpVersion(getParts[2]);
+
+  if (!parseHttpVersion(getParts[2]))
+    return Http::ErrorCode::HttpVersionNotSupported;
+
 
   m_headers = new HttpHeaders(m_request);
   m_request = get;
@@ -132,8 +146,18 @@ Http::ErrorCode HttpRequest::parse()
 
 bool HttpRequest::parseHttpVersion(const std::string& version)
 {
-  m_httpVersion = version;
-  return true;
+  const std::string http = "HTTP/";
+  size_t idx = version.find(http);
+
+  if (idx != 0)
+    return false;
+
+  m_httpVersion = version.substr(idx + http.length());
+
+  if (m_httpVersion == "1.0" || m_httpVersion == "1.1")
+    return true;
+
+  return false;
 }
 
 bool HttpRequest::parseMethod(const std::string& method)

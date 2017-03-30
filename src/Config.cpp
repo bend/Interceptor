@@ -3,6 +3,8 @@
 #include "Logger.h"
 
 #include <fstream>
+#include <boost/algorithm/string.hpp>
+
 
 Config::Config(const std::string& path)
   : m_path(path)
@@ -41,6 +43,17 @@ void Config::parse()
 
         for (auto& tryf : site["try-files"] ) {
           s->m_tryFiles.push_back(tryf);
+        }
+
+        if (site.count("gzip") > 0) {
+          std::string line = site["gzip"];
+          std::vector<std::string> exts;
+          boost::split(exts, line , boost::is_any_of(","));
+
+          for (auto& e : exts) {
+            s->m_gzip.insert(boost::trim_copy(e));
+          }
+
         }
 
         // Copy global settings to local

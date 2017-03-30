@@ -11,7 +11,9 @@ public:
 
   static bool readFile(const std::string& path, std::stringstream& stream, size_t& bytes);
 
-  static std::string getMimeType(const std::string& path);
+  static std::string mimeType(const std::string& path);
+
+  static std::string extension(const std::string& filename);
 
 };
 

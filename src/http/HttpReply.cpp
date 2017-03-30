@@ -15,8 +15,6 @@ HttpReply::HttpReply(HttpRequestPtr request)
     m_replyHeaders(nullptr),
     m_status(Http::ErrorCode::Ok)
 {
-  setFlag(Flag::ChunkedEncoding, true);
-  setFlag(Flag::GzipEncoding, true);
 }
 
 HttpReply::~HttpReply()
@@ -53,6 +51,9 @@ void HttpReply::process()
     buildErrorResponse(status, stream, true);
     return;
   }
+
+  setFlag(Flag::ChunkedEncoding, m_request->supportsChunking());
+  setFlag(Flag::GzipEncoding, m_request->supportsCompression());
 
   switch (m_request->method()) {
     case HttpRequest::GET:
@@ -107,7 +108,7 @@ void HttpReply::handleGetRequest()
 
       if (Utils::readFile(page, stream, pageLength)) {
         found = true;
-        m_replyHeaders->addHeader("Content-Type", Utils::getMimeType(page));
+        setMimeType(page);
         break;
       }
     }
@@ -124,7 +125,7 @@ void HttpReply::handleGetRequest()
       buildErrorResponse(Http::ErrorCode::NotFound, stream);
       return;
     } else
-      m_replyHeaders->addHeader("Content-Type", Utils::getMimeType(page));
+      setMimeType(page);
 
   }
 
@@ -224,7 +225,7 @@ void HttpReply::buildHeaders()
 {
 
   std::stringstream stream;
-  stream << m_request->httpVersion() << " ";
+  stream << "HTTP/" << m_request->httpVersion() << " ";
   Http::stringValue(m_status, stream);
 
   if (getFlag(Flag::ChunkedEncoding))
@@ -253,7 +254,7 @@ void HttpReply::buildErrorResponse(Http::ErrorCode error, std::stringstream& str
 
     if (Utils::readFile(url, stream, pageLength)) {
       found = true;
-      m_replyHeaders->addHeader("Content-Type", Utils::getMimeType(url));
+      setMimeType(url);
     }
   }
 
@@ -302,3 +303,18 @@ boost::asio::const_buffer HttpReply::buf(char* buf, size_t s)
   return boost::asio::buffer(m_bufs2.back(), s);
 }
 
+void HttpReply::setMimeType(const std::string& filename)
+{
+  m_replyHeaders->addHeader("Content-Type", Utils::mimeType(filename));
+
+  if (!m_request->hasMatchingSite()) {
+    setFlag(Flag::GzipEncoding, false);
+    return;
+  }
+
+  auto site = m_request->matchingSite();
+
+  if (site->m_gzip.count("all") == 0 && site->m_gzip.count(Utils::extension(filename)) == 0)
+    setFlag(Flag::GzipEncoding, false);
+
+}

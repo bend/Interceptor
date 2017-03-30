@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include "json/json.hpp"
 
 using json = nlohmann::json;
@@ -40,6 +41,7 @@ public:
       std::string m_host;
       std::string m_docroot;
       std::vector<std::string> m_tryFiles;
+      std::set<std::string> m_gzip;
       ErrorPageMap m_errorPages;
     };
 

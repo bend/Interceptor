@@ -8,7 +8,8 @@ public:
   enum ErrorCode : short {
     Ok = 200,
     NotFound = 404,
-    BadRequest = 400
+    BadRequest = 400,
+    HttpVersionNotSupported = 505
   };
 
   static void stringValue(ErrorCode error, std::stringstream& stream)
@@ -24,6 +25,10 @@ public:
 
       case BadRequest:
         stream << "404 Bad Request" << "\r\n";
+        break;
+
+      case HttpVersionNotSupported:
+        stream << "505 HTTP Version Not Supported" << "\r\n";
         break;
 
       default:

@@ -18,6 +18,7 @@
 
 	  "sites": [
 		{
+		  "gzip": "css,html,js,png",
 		  "try-files" : [
 			"index.php",
 			"index.html"
@@ -39,6 +40,7 @@
 
 	  "sites": [
 		{
+		  "gzip": "all",
 		  "try-files" : [
 			"index.php",
 			"index.html"

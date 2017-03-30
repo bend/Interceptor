@@ -39,6 +39,7 @@ private:
   bool encodeResponse(std::vector<boost::asio::const_buffer>& buffers);
   void buildHeaders();
   void initGzip();
+  void setMimeType(const std::string& filename);
   boost::asio::const_buffer buf(const std::string& s);
   boost::asio::const_buffer buf(char* buf, size_t s);
 

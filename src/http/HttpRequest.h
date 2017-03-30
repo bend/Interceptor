@@ -32,6 +32,8 @@ public:
   std::string httpVersion() const;
   InterceptorSessionPtr session() const;
   std::string toString() const;
+  bool supportsCompression() const;
+  bool supportsChunking() const;
 
   void process();
   bool headersReceived() const;
