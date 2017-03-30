@@ -40,6 +40,7 @@ private:
   void buildHeaders();
   void initGzip();
   boost::asio::const_buffer buf(const std::string& s);
+  boost::asio::const_buffer buf(char* buf, size_t s);
 
 private:
   HttpRequestPtr m_request;
@@ -49,6 +50,7 @@ private:
   std::bitset<3> m_flags;
   std::vector<boost::asio::const_buffer> m_buffers;
   std::vector<std::string> m_bufs;
+  std::vector<char*> m_bufs2;
 
   z_stream m_gzip;
   bool m_gzipBusy;

@@ -22,6 +22,9 @@ HttpReply::HttpReply(HttpRequestPtr request)
 HttpReply::~HttpReply()
 {
   delete m_replyHeaders;
+
+  for (auto b : m_bufs2)
+    delete[] b;
 }
 
 void HttpReply::process()
@@ -132,10 +135,8 @@ void HttpReply::handleGetRequest()
 
 void HttpReply::post(std::stringstream& stream)
 {
-  char* bb = new char[stream.str().length()]();
-  memcpy(bb, stream.str().data(), stream.str().length());
   std::vector<boost::asio::const_buffer> buffers;
-  buffers.push_back(boost::asio::buffer(bb, stream.str().length()));
+  buffers.push_back(buf(std::string(stream.str())));
 
   if (getFlag(Flag::GzipEncoding)) {
     encodeResponse(buffers);
@@ -167,12 +168,12 @@ bool HttpReply::chunkResponse(std::vector<boost::asio::const_buffer>& buffers)
 
   char* header = new char[stream.str().length()]();
   memcpy(header, stream.str().data(), stream.str().length());
-  buffers.insert(buffers.begin(), boost::asio::buffer(header, stream.str().length()));
+  buffers.insert(buffers.begin(), buf(header, stream.str().length()));
 
   stream.str("\r\n0\r\n\r\n");
   char* footer = new char[stream.str().length()]();
   memcpy(footer, stream.str().data(), stream.str().length());
-  buffers.push_back(boost::asio::buffer(footer, stream.str().length()));
+  buffers.push_back(buf(footer, stream.str().length()));
 
   return true;
 }
@@ -236,9 +237,7 @@ void HttpReply::buildHeaders()
 
   m_replyHeaders->serialize(stream);
   const std::string& resp = stream.str();
-  char* buff = new char[resp.length()];
-  memcpy(buff, resp.data(), resp.length());
-  m_buffers[0] = boost::asio::buffer(buff, resp.length());
+  m_buffers[0] = buf(std::string(resp));
 }
 
 void HttpReply::buildErrorResponse(Http::ErrorCode error, std::stringstream& stream, bool closeConnection)
@@ -295,5 +294,11 @@ boost::asio::const_buffer HttpReply::buf(const std::string& s)
 {
   m_bufs.push_back(s);
   return boost::asio::buffer(m_bufs.back());
+}
+
+boost::asio::const_buffer HttpReply::buf(char* buf, size_t s)
+{
+  m_bufs2.push_back(buf);
+  return boost::asio::buffer(m_bufs2.back(), s);
 }
 
