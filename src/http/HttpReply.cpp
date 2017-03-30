@@ -15,7 +15,8 @@ HttpReply::HttpReply(HttpRequestPtr request)
     m_replyHeaders(nullptr),
     m_status(Http::ErrorCode::Ok)
 {
-  setFlag(Flag::Chunked, true);
+  setFlag(Flag::ChunkedEncoding, true);
+  setFlag(Flag::GzipEncoding, true);
 }
 
 HttpReply::~HttpReply()
@@ -131,46 +132,107 @@ void HttpReply::handleGetRequest()
 
 void HttpReply::post(std::stringstream& stream)
 {
-  if (getFlag(Flag::Chunked))
-    chunkResponse(stream);
+  char* bb = new char[stream.str().length()]();
+  memcpy(bb, stream.str().data(), stream.str().length());
+  std::vector<boost::asio::const_buffer> buffers;
+  buffers.push_back(boost::asio::buffer(bb, stream.str().length()));
+
+  if (getFlag(Flag::GzipEncoding)) {
+    encodeResponse(buffers);
+  }
+
+  if (getFlag(Flag::ChunkedEncoding)) {
+    chunkResponse(buffers);
+  }
 
   m_buffers.clear();
   m_buffers.push_back({});
 
-  const std::string& resp = stream.str();
-  char* buff = new char[resp.length()];
-
-  memcpy(buff, resp.data(), resp.length());
-  m_buffers.push_back(boost::asio::buffer(buff, resp.length()));
+  m_buffers.insert(m_buffers.end(), buffers.begin(), buffers.end());
   buildHeaders();
+  trace("info") << m_request->toString() << " " << m_status;
 
   m_request->session()->postReply(shared_from_this());
 }
 
-void HttpReply::chunkResponse(std::stringstream& stream)
+bool HttpReply::chunkResponse(std::vector<boost::asio::const_buffer>& buffers)
 {
-  std::string str = stream.str();
-  stream.str(std::string());
-  stream << std::hex << str.length() << "\r\n";
-  stream << str << "\r\n";
-  stream << 0 << "\r\n\r\n";
+  size_t size = 0;
+
+  for (auto& buffer : buffers)
+    size += boost::asio::buffer_size(buffer);
+
+  std::stringstream stream;
+  stream << std::hex << size << "\r\n";
+
+  char* header = new char[stream.str().length()]();
+  memcpy(header, stream.str().data(), stream.str().length());
+  buffers.insert(buffers.begin(), boost::asio::buffer(header, stream.str().length()));
+
+  stream.str("\r\n0\r\n\r\n");
+  char* footer = new char[stream.str().length()]();
+  memcpy(footer, stream.str().data(), stream.str().length());
+  buffers.push_back(boost::asio::buffer(footer, stream.str().length()));
+
+  return true;
 }
 
-void HttpReply::encodeResponse(std::stringstream& stream)
+bool HttpReply::encodeResponse(std::vector<boost::asio::const_buffer>& buffers)
 {
+  std::vector<boost::asio::const_buffer> result;
+  initGzip();
+  unsigned int i = 0;
 
+  for (auto& buffer : buffers) {
+    m_gzip.avail_in = boost::asio::buffer_size(buffer);
+    m_gzip.next_in = (unsigned char*) boost::asio::detail::buffer_cast_helper(buffer);
+
+    unsigned char out[16 * 1024];
+
+    do {
+      m_gzip.next_out = out;
+      m_gzip.avail_out = sizeof(out);
+
+      int res = 0;
+      res = deflate(&m_gzip,
+                    (i == buffers.size() - 1) ?
+                    Z_FINISH : Z_NO_FLUSH);
+      assert(res != Z_STREAM_ERROR);
+
+      unsigned have = sizeof(out) - m_gzip.avail_out;
+
+      if (have) {
+        result.push_back(buf(std::string((char*)out, have)));
+      }
+    } while (m_gzip.avail_out == 0);
+
+    ++i;
+
+  }
+
+  deflateEnd(&m_gzip);
+  m_gzipBusy = false;
+
+  buffers.clear();
+  buffers.insert(buffers.begin(), result.begin(), result.end());
+
+  return true;
 }
 
 void HttpReply::buildHeaders()
 {
+
   std::stringstream stream;
   stream << m_request->httpVersion() << " ";
-  Http::stringValue(Http::ErrorCode::Ok, stream);
+  Http::stringValue(m_status, stream);
 
-  if (getFlag(Flag::Chunked))
-    m_replyHeaders->addHeader("Transfer-Encoding", "Chunked");
+  if (getFlag(Flag::ChunkedEncoding))
+    m_replyHeaders->addHeader("Transfer-Encoding", "chunked");
   else
     m_replyHeaders->addHeader("Content-Length", boost::asio::buffer_size(m_buffers[1]));
+
+  if (getFlag(Flag::GzipEncoding))
+    m_replyHeaders->addHeader("Content-Encoding", "gzip");
 
   m_replyHeaders->serialize(stream);
   const std::string& resp = stream.str();
@@ -212,5 +274,26 @@ void HttpReply::buildErrorResponse(Http::ErrorCode error, std::stringstream& str
 
   post(stream);
 
+}
+
+void HttpReply::initGzip()
+{
+  m_gzip.zalloc = Z_NULL;
+  m_gzip.zfree = Z_NULL;
+  m_gzip.opaque = Z_NULL;
+  m_gzip.next_in = Z_NULL;
+  int r = 0;
+
+  r = deflateInit2(&m_gzip, Z_DEFAULT_COMPRESSION,
+                   Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY);
+
+  m_gzipBusy = true;
+  assert(r == Z_OK);
+}
+
+boost::asio::const_buffer HttpReply::buf(const std::string& s)
+{
+  m_bufs.push_back(s);
+  return boost::asio::buffer(m_bufs.back());
 }
 

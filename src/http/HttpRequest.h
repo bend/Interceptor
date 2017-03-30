@@ -31,6 +31,7 @@ public:
   std::string index() const;
   std::string httpVersion() const;
   InterceptorSessionPtr session() const;
+  std::string toString() const;
 
   void process();
   bool headersReceived() const;

@@ -60,6 +60,11 @@ bool HttpRequest::completed() const
   return m_completed;
 }
 
+std::string HttpRequest::toString() const
+{
+  return m_request;
+}
+
 void HttpRequest::setCompleted(bool completed)
 {
   m_completed = completed;
@@ -109,8 +114,8 @@ Http::ErrorCode HttpRequest::parse()
   m_index = getParts[1];
   parseHttpVersion(getParts[2]);
 
-  trace("debug") << get;
   m_headers = new HttpHeaders(m_request);
+  m_request = get;
 
   // parse host
   const std::string* host = m_headers->getHeader("Host");
