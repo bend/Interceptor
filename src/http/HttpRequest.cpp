@@ -5,6 +5,7 @@
 #include "Logger.h"
 
 #include <boost/algorithm/string.hpp>
+#include <boost/tokenizer.hpp>
 #include <regex>
 
 HttpRequest::HttpRequest(InterceptorSessionPtr session)
@@ -60,7 +61,7 @@ bool HttpRequest::completed() const
   return m_completed;
 }
 
-std::string HttpRequest::toString() const
+std::string HttpRequest::queryString() const
 {
   return m_request;
 }
@@ -79,6 +80,43 @@ bool HttpRequest::supportsCompression() const
 bool HttpRequest::supportsChunking() const
 {
   return m_httpVersion == "1.1" || supportsCompression();
+}
+
+bool HttpRequest::partialRequest() const
+{
+  const std::string* pr = m_headers->getHeader("Range");
+  return pr && pr->find("bytes=") != std::string::npos;
+}
+
+std::tuple<int, int> HttpRequest::getRangeRequest() const
+{
+  const std::string* pr = m_headers->getHeader("Range");
+
+  if (!pr)
+    return {};
+
+  size_t pos = pr->find("bytes=");
+
+  if (pos == std::string::npos)
+    return {};
+
+  std::string range = pr->substr(pos + 6);
+
+  typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
+
+  boost::char_separator<char> sep("-", "", boost::keep_empty_tokens);
+
+  std::vector<int> vals;
+
+  for (auto& token : tokenizer(range, sep)) {
+    if (token.length() > 0)
+      vals.push_back(std::stoi(boost::trim_copy(token)));
+    else
+      vals.push_back(-1);
+
+  }
+
+  return std::tuple<int, int>(vals[0], vals[1]);
 }
 
 Http::ErrorCode HttpRequest::parse()

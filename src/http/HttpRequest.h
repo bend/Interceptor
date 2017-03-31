@@ -19,9 +19,11 @@ public:
   std::string index() const;
   std::string httpVersion() const;
   InterceptorSessionPtr session() const;
-  std::string toString() const;
+  std::string queryString() const;
   bool supportsCompression() const;
   bool supportsChunking() const;
+  bool partialRequest() const;
+  std::tuple<int, int> getRangeRequest() const;
 
   void process();
   bool headersReceived() const;

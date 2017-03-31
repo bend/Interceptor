@@ -24,6 +24,7 @@ namespace Http {
 public:
   enum Flag {
     Closing,
+    Partial,
     GzipEncoding,
     ChunkedEncoding
   };
@@ -65,7 +66,7 @@ private:
   HttpHeaders* m_replyHeaders;
   Http::ErrorCode m_status;
 
-  std::bitset<3> m_flags;
+  std::bitset<4> m_flags;
   std::vector<boost::asio::const_buffer> m_buffers;
   std::vector<std::string> m_bufs;
   std::vector<char*> m_bufs2;

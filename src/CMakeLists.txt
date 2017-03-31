@@ -5,6 +5,7 @@ set(src
   http/HttpHeaders.cpp
   http/HttpRequest.cpp
   http/HttpReply.cpp
+  http/Http.cpp
   #  OutboundConnection.cpp
   Logger.cpp
   Server.cpp

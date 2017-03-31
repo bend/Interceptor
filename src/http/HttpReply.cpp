@@ -54,6 +54,7 @@ void HttpReply::process()
 
   setFlag(Flag::ChunkedEncoding, m_request->supportsChunking());
   setFlag(Flag::GzipEncoding, m_request->supportsCompression());
+  setFlag(Flag::Partial, m_request->partialRequest());
 
   switch (m_request->method()) {
     case Http::Method::GET:
@@ -212,7 +213,7 @@ void HttpReply::post(std::stringstream& stream)
 
   m_buffers.insert(m_buffers.end(), buffers.begin(), buffers.end());
   buildHeaders();
-  trace("info") << m_request->toString() << " " << (int) m_status;
+  trace("info") << m_request->queryString() << " " << (int) m_status;
 
   m_request->session()->postReply(shared_from_this());
 }
@@ -284,7 +285,6 @@ bool HttpReply::encodeResponse(std::vector<boost::asio::const_buffer>& buffers)
 
 void HttpReply::buildHeaders()
 {
-
   std::stringstream stream;
   stream << "HTTP/" << m_request->httpVersion() << " ";
   Http::stringValue(m_status, stream);
@@ -296,6 +296,11 @@ void HttpReply::buildHeaders()
 
   if (canEncodeResponse())
     m_replyHeaders->addHeader("Content-Encoding", "gzip");
+
+  if (getFlag(Flag::Closing))
+    m_replyHeaders->addHeader("Connection", "close");
+  else
+    m_replyHeaders->addHeader("Connection", "keep-alive");
 
   m_replyHeaders->serialize(stream);
   const std::string& resp = stream.str();
@@ -320,15 +325,12 @@ void HttpReply::buildErrorResponse(Http::ErrorCode error, std::stringstream& str
   }
 
   if (!found) {
-    stream << "<html> <body> ";
+    stream << "<html> <body><h1>";
     Http::stringValue(error, stream);
-    stream << " </body>  </html>";
+    stream << " </h1></body></html>";
   }
 
-  if ( closeConnection) {
-    m_replyHeaders->addHeader("Connection", "close");
-    setFlag(Flag::Closing, closeConnection);
-  }
+  setFlag(Flag::Closing, closeConnection);
 
   m_request->setCompleted(true);
   m_status = error;
