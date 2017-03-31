@@ -1,10 +1,10 @@
-#include "Utils.h"
+#include "FileUtils.h"
 #include "Logger.h"
 
 #include <fstream>
 #include <boost/filesystem.hpp>
 
-bool Utils::readFile(const std::string& filename, unsigned char** data, size_t& pageLength)
+bool FileUtils::readFile(const std::string& filename, unsigned char** data, size_t& pageLength)
 {
   namespace fs = boost::filesystem;
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
@@ -28,7 +28,7 @@ bool Utils::readFile(const std::string& filename, unsigned char** data, size_t& 
   return true;
 }
 
-bool Utils::readFile(const std::string& filename, std::stringstream& stream, size_t& pageLength)
+bool FileUtils::readFile(const std::string& filename, std::stringstream& stream, size_t& pageLength)
 {
   namespace fs = boost::filesystem;
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
@@ -51,7 +51,27 @@ bool Utils::readFile(const std::string& filename, std::stringstream& stream, siz
 
 }
 
-std::string Utils::mimeType(const std::string& path)
+bool FileUtils::fileSize(const std::string& filename, size_t& bytes)
+{
+  namespace fs = boost::filesystem;
+  std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
+  fs::path dataDir(filename);
+
+  if (!fs::exists(dataDir) || fs::is_directory(dataDir))
+    return false;
+
+  if ( !ifs.is_open() ) {
+    trace("error") << "Could not open file";
+    return false;
+  }
+
+  std::ifstream::pos_type pos = ifs.tellg();
+  bytes = pos;
+  ifs.close();
+  return true;
+}
+
+std::string FileUtils::mimeType(const std::string& path)
 {
   if (path.find(".html") != std::string::npos)
     return "text/html";
@@ -70,7 +90,7 @@ std::string Utils::mimeType(const std::string& path)
   else return "other";
 }
 
-std::string Utils::extension(const std::string& filename)
+std::string FileUtils::extension(const std::string& filename)
 {
   size_t pos = filename.rfind(".");
 

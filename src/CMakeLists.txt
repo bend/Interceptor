@@ -1,6 +1,6 @@
 set(src
-  Interceptor.cpp
-  InterceptorSession.cpp
+  core/Interceptor.cpp
+  core/InterceptorSession.cpp
   socket/InboundConnection.cpp
   http/HttpHeaders.cpp
   http/HttpRequest.cpp
@@ -8,7 +8,7 @@ set(src
   #  OutboundConnection.cpp
   Logger.cpp
   Server.cpp
-  Utils.cpp
+  FileUtils.cpp
   Config.cpp
   main.cpp
 )

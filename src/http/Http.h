@@ -3,36 +3,47 @@
 
 #include <sstream>
 
-class Http {
-public:
-  enum ErrorCode : short {
+namespace Http {
+  enum class ErrorCode : short {
     Ok = 200,
     NotFound = 404,
     BadRequest = 400,
     HttpVersionNotSupported = 505
   };
 
+  enum class Method : char {
+    GET,
+    HEAD,
+    POST,
+    PUT,
+    DELETE,
+    TRACE,
+    OPTIONS,
+    CONNECT,
+    PATCH
+  };
+
   static void stringValue(ErrorCode error, std::stringstream& stream)
   {
     switch (error) {
-      case Ok:
+      case ErrorCode::Ok:
         stream << "200 OK" << "\r\n";
         break;
 
-      case NotFound:
+      case ErrorCode::NotFound:
         stream  << "404 Not Found" << "\r\n";
         break;
 
-      case BadRequest:
+      case ErrorCode::BadRequest:
         stream << "404 Bad Request" << "\r\n";
         break;
 
-      case HttpVersionNotSupported:
+      case ErrorCode::HttpVersionNotSupported:
         stream << "505 HTTP Version Not Supported" << "\r\n";
         break;
 
       default:
-        stream << error << " Unknown" << "\r\n";
+        stream << (short)error << " Unknown" << "\r\n";
         break;
     }
   }

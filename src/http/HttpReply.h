@@ -3,6 +3,7 @@
 
 #include "Defs.h"
 #include "Http.h"
+#include "Config.h"
 
 #include <boost/asio.hpp>
 #include <bitset>
@@ -11,7 +12,14 @@
 
 class HttpHeaders;
 
-class HttpReply : public std::enable_shared_from_this<HttpReply> {
+class HttpRequest;
+
+namespace Http {
+  enum class ErrorCode : short;
+    enum class Method : char;
+  };
+
+  class HttpReply : public std::enable_shared_from_this<HttpReply> {
 
 public:
   enum Flag {
@@ -33,15 +41,24 @@ public:
 
 private:
   void handleGetRequest();
+  void handleHeadRequest();
+
   void post(std::stringstream& stream);
   void buildErrorResponse(Http::ErrorCode error, std::stringstream& response, bool closeConnection = false);
+
   bool chunkResponse(std::vector<boost::asio::const_buffer>& buffers);
   bool encodeResponse(std::vector<boost::asio::const_buffer>& buffers);
+
   void buildHeaders();
   void initGzip();
   void setMimeType(const std::string& filename);
+  bool requestFileContents(Http::Method method, const SiteConfig* site, std::stringstream& stream, size_t& filesize);
+
   boost::asio::const_buffer buf(const std::string& s);
   boost::asio::const_buffer buf(char* buf, size_t s);
+
+  bool canChunkResponse() const;
+  bool canEncodeResponse() const;
 
 private:
   HttpRequestPtr m_request;
@@ -52,6 +69,7 @@ private:
   std::vector<boost::asio::const_buffer> m_buffers;
   std::vector<std::string> m_bufs;
   std::vector<char*> m_bufs2;
+  size_t m_contentLength;
 
   z_stream m_gzip;
   bool m_gzipBusy;

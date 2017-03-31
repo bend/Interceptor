@@ -1,10 +1,9 @@
 #include "HttpReply.h"
 
+#include "core/InterceptorSession.h"
 #include "HttpRequest.h"
 #include "HttpHeaders.h"
-#include "InterceptorSession.h"
-#include "Utils.h"
-#include "Config.h"
+#include "FileUtils.h"
 #include "Logger.h"
 
 #include <boost/bind.hpp>
@@ -13,7 +12,8 @@
 HttpReply::HttpReply(HttpRequestPtr request)
   : m_request(request),
     m_replyHeaders(nullptr),
-    m_status(Http::ErrorCode::Ok)
+    m_status(Http::ErrorCode::Ok),
+    m_contentLength(0)
 {
 }
 
@@ -56,11 +56,15 @@ void HttpReply::process()
   setFlag(Flag::GzipEncoding, m_request->supportsCompression());
 
   switch (m_request->method()) {
-    case HttpRequest::GET:
+    case Http::Method::GET:
       handleGetRequest();
       break;
 
-    case HttpRequest::POST:
+    case Http::Method::HEAD:
+      handleHeadRequest();
+      break;
+
+    case Http::Method::POST:
       break;
 
     default:
@@ -88,14 +92,50 @@ void HttpReply::handleGetRequest()
   std::stringstream stream;
 
   if (!m_request->hasMatchingSite()) {
-    buildErrorResponse(Http::NotFound, stream, true);
+    buildErrorResponse(Http::ErrorCode::NotFound, stream, true);
     return;
   }
 
-  const Config::ServerConfig::Site* site = m_request->matchingSite();
+  const SiteConfig* site = m_request->matchingSite();
 
+  size_t filesize = 0;
+
+  if ( !requestFileContents(Http::Method::GET, site, stream, filesize))
+    return;
+
+  m_contentLength = filesize;
+
+  m_request->setCompleted(true);
+
+  post(stream);
+}
+
+void HttpReply::handleHeadRequest()
+{
+  std::stringstream stream;
+
+  if (!m_request->hasMatchingSite()) {
+    buildErrorResponse(Http::ErrorCode::NotFound, stream, true);
+    return;
+  }
+
+  const SiteConfig* site = m_request->matchingSite();
+
+  size_t filesize = 0;
+
+  if ( !requestFileContents(Http::Method::GET, site, stream, filesize))
+    return;
+
+  m_contentLength = filesize;
+
+  m_request->setCompleted(true);
+
+  post(stream);
+}
+
+bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site, std::stringstream& stream, size_t& pageLength)
+{
   std::string page;
-  size_t pageLength = 0;
 
   if ( m_request->index() == ""
        || m_request->index() == "/") {
@@ -106,32 +146,52 @@ void HttpReply::handleGetRequest()
     for (const auto& index : tryFiles) {
       page = site->m_docroot + index;
 
-      if (Utils::readFile(page, stream, pageLength)) {
-        found = true;
-        setMimeType(page);
-        break;
+      if (method == Http::Method::GET) {
+        if (FileUtils::readFile(page, stream, pageLength)) {
+          found = true;
+          setMimeType(page);
+          break;
+        }
+      } else if (method == Http::Method::HEAD) {
+        if (FileUtils::fileSize(page, pageLength))  {
+          found = true;
+          setMimeType(page);
+          break;
+        }
+      } else {
+        return false;
       }
     }
 
     if (!found) {
       buildErrorResponse(Http::ErrorCode::NotFound, stream);
+      return false;
     }
 
   } else {
     // This request contains the filename, hence we should not try a filename from the list of try-files
     page = site->m_docroot + m_request->index();
 
-    if (!Utils::readFile(page, stream, pageLength)) {
-      buildErrorResponse(Http::ErrorCode::NotFound, stream);
-      return;
-    } else
-      setMimeType(page);
+    if ( method == Http::Method::GET) {
+      if (!FileUtils::readFile(page, stream, pageLength)) {
+        buildErrorResponse(Http::ErrorCode::NotFound, stream);
+        return false;
+      } else
+        setMimeType(page);
+    } else if (method == Http::Method::HEAD) {
+      if (!FileUtils::fileSize(page, pageLength)) {
+        buildErrorResponse(Http::ErrorCode::NotFound, stream);
+        return false;
+      } else
+        setMimeType(page);
+
+    } else {
+      return false;
+    }
 
   }
 
-  m_request->setCompleted(true);
-
-  post(stream);
+  return true;
 }
 
 void HttpReply::post(std::stringstream& stream)
@@ -139,11 +199,11 @@ void HttpReply::post(std::stringstream& stream)
   std::vector<boost::asio::const_buffer> buffers;
   buffers.push_back(buf(std::string(stream.str())));
 
-  if (getFlag(Flag::GzipEncoding)) {
+  if (canEncodeResponse()) {
     encodeResponse(buffers);
   }
 
-  if (getFlag(Flag::ChunkedEncoding)) {
+  if (canChunkResponse()) {
     chunkResponse(buffers);
   }
 
@@ -152,7 +212,7 @@ void HttpReply::post(std::stringstream& stream)
 
   m_buffers.insert(m_buffers.end(), buffers.begin(), buffers.end());
   buildHeaders();
-  trace("info") << m_request->toString() << " " << m_status;
+  trace("info") << m_request->toString() << " " << (int) m_status;
 
   m_request->session()->postReply(shared_from_this());
 }
@@ -202,6 +262,7 @@ bool HttpReply::encodeResponse(std::vector<boost::asio::const_buffer>& buffers)
       assert(res != Z_STREAM_ERROR);
 
       unsigned have = sizeof(out) - m_gzip.avail_out;
+      m_contentLength += have;
 
       if (have) {
         result.push_back(buf(std::string((char*)out, have)));
@@ -228,12 +289,12 @@ void HttpReply::buildHeaders()
   stream << "HTTP/" << m_request->httpVersion() << " ";
   Http::stringValue(m_status, stream);
 
-  if (getFlag(Flag::ChunkedEncoding))
+  if (canChunkResponse())
     m_replyHeaders->addHeader("Transfer-Encoding", "chunked");
   else
-    m_replyHeaders->addHeader("Content-Length", boost::asio::buffer_size(m_buffers[1]));
+    m_replyHeaders->addHeader("Content-Length", m_contentLength);
 
-  if (getFlag(Flag::GzipEncoding))
+  if (canEncodeResponse())
     m_replyHeaders->addHeader("Content-Encoding", "gzip");
 
   m_replyHeaders->serialize(stream);
@@ -249,10 +310,10 @@ void HttpReply::buildErrorResponse(Http::ErrorCode error, std::stringstream& str
   const ErrorPageMap& map = m_request->hasMatchingSite() ?
                             m_request->matchingSite()->m_errorPages : m_request->session()->config()->m_errorPages;
 
-  if (map.count(std::to_string(error)) > 0 ) {
-    std::string url = map.at(std::to_string(error));
+  if (map.count(std::to_string((int)error)) > 0 ) {
+    std::string url = map.at(std::to_string((int)error));
 
-    if (Utils::readFile(url, stream, pageLength)) {
+    if (FileUtils::readFile(url, stream, pageLength)) {
       found = true;
       setMimeType(url);
     }
@@ -305,7 +366,7 @@ boost::asio::const_buffer HttpReply::buf(char* buf, size_t s)
 
 void HttpReply::setMimeType(const std::string& filename)
 {
-  m_replyHeaders->addHeader("Content-Type", Utils::mimeType(filename));
+  m_replyHeaders->addHeader("Content-Type", FileUtils::mimeType(filename));
 
   if (!m_request->hasMatchingSite()) {
     setFlag(Flag::GzipEncoding, false);
@@ -314,7 +375,17 @@ void HttpReply::setMimeType(const std::string& filename)
 
   auto site = m_request->matchingSite();
 
-  if (site->m_gzip.count("all") == 0 && site->m_gzip.count(Utils::extension(filename)) == 0)
+  if (site->m_gzip.count("all") == 0 && site->m_gzip.count(FileUtils::extension(filename)) == 0)
     setFlag(Flag::GzipEncoding, false);
 
+}
+
+bool HttpReply::canChunkResponse() const
+{
+  return getFlag(Flag::ChunkedEncoding) && m_request->method() != Http::Method::HEAD;
+}
+
+bool HttpReply::canEncodeResponse() const
+{
+  return getFlag(Flag::GzipEncoding) && m_request->method() != Http::Method::HEAD;
 }

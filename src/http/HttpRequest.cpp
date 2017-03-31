@@ -1,8 +1,8 @@
 #include "HttpRequest.h"
 
+#include "core/InterceptorSession.h"
 #include "HttpHeaders.h"
 #include "Logger.h"
-#include "InterceptorSession.h"
 
 #include <boost/algorithm/string.hpp>
 #include <regex>
@@ -35,7 +35,7 @@ Host HttpRequest::host() const
   return m_host;
 }
 
-HttpRequest::Method HttpRequest::method() const
+Http::Method HttpRequest::method() const
 {
   return m_method;
 }
@@ -104,7 +104,7 @@ Http::ErrorCode HttpRequest::parse()
     return Http::ErrorCode::BadRequest;
 
   switch (m_method) {
-    case Method::GET: {
+    case Http::Method::GET: {
         size_t st = getParts[1].find("?");
 
         if (st != std::string::npos) {
@@ -114,7 +114,7 @@ Http::ErrorCode HttpRequest::parse()
       }
       break;
 
-    case Method::POST:
+    case Http::Method::POST:
       //pase from form
       break;
 
@@ -163,13 +163,13 @@ bool HttpRequest::parseHttpVersion(const std::string& version)
 bool HttpRequest::parseMethod(const std::string& method)
 {
   if (method == "GET") {
-    m_method = Method::GET;
+    m_method = Http::Method::GET;
     return true;
   } else if (method == "HEAD") {
-    m_method = HEAD;
+    m_method = Http::Method::HEAD;
     return true;
   } else if (method == "POST") {
-    m_method = POST;
+    m_method = Http::Method::POST;
     return true;
   }
 

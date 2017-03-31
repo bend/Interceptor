@@ -69,4 +69,6 @@ private:
 
 };
 
+typedef Config::ServerConfig::Site SiteConfig;
+
 #endif //CONFIG_H__
