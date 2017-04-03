@@ -23,7 +23,7 @@ public:
   bool supportsCompression() const;
   bool supportsChunking() const;
   bool partialRequest() const;
-  std::tuple<int, int> getRangeRequest() const;
+  std::tuple<int64_t, int64_t> getRangeRequest() const;
 
   void process();
   bool headersReceived() const;
@@ -33,7 +33,7 @@ public:
   const SiteConfig* matchingSite() const;
 
 private:
-  Http::ErrorCode parse();
+  Http::Code parse();
   bool parseMethod(const std::string& method);
   bool parseParameters(const std::string& parameters);
   bool parseHttpVersion(const std::string& version);

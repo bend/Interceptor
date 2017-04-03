@@ -4,10 +4,11 @@
 #include <sstream>
 
 namespace Http {
-  enum class ErrorCode : short {
+  enum class Code : short {
     Ok = 200,
-    NotFound = 404,
+    PartialContent = 206,
     BadRequest = 400,
+    NotFound = 404,
     HttpVersionNotSupported = 505
   };
 
@@ -23,7 +24,7 @@ namespace Http {
     PATCH
   };
 
-  void stringValue(ErrorCode error, std::stringstream& stream);
+  void stringValue(Code error, std::stringstream& stream);
 
 };
 

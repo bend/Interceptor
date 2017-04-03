@@ -12,7 +12,7 @@
 HttpReply::HttpReply(HttpRequestPtr request)
   : m_request(request),
     m_replyHeaders(nullptr),
-    m_status(Http::ErrorCode::Ok),
+    m_status(Http::Code::Ok),
     m_contentLength(0)
 {
 }
@@ -38,13 +38,13 @@ void HttpReply::process()
 
   if ( !m_request->headersReceived() ) {
     std::stringstream stream;
-    buildErrorResponse(Http::ErrorCode::BadRequest, stream, true);
+    buildErrorResponse(Http::Code::BadRequest, stream, true);
     return;
   }
 
-  Http::ErrorCode status =  m_request->parse();
+  Http::Code status =  m_request->parse();
 
-  if (status != Http::ErrorCode::Ok) {
+  if (status != Http::Code::Ok) {
     if (m_request->m_headers)
       m_replyHeaders->fillFrom(m_request->m_headers);
 
@@ -54,7 +54,6 @@ void HttpReply::process()
 
   setFlag(Flag::ChunkedEncoding, m_request->supportsChunking());
   setFlag(Flag::GzipEncoding, m_request->supportsCompression());
-  setFlag(Flag::Partial, m_request->partialRequest());
 
   switch (m_request->method()) {
     case Http::Method::GET:
@@ -93,7 +92,7 @@ void HttpReply::handleGetRequest()
   std::stringstream stream;
 
   if (!m_request->hasMatchingSite()) {
-    buildErrorResponse(Http::ErrorCode::NotFound, stream, true);
+    buildErrorResponse(Http::Code::NotFound, stream, true);
     return;
   }
 
@@ -116,7 +115,7 @@ void HttpReply::handleHeadRequest()
   std::stringstream stream;
 
   if (!m_request->hasMatchingSite()) {
-    buildErrorResponse(Http::ErrorCode::NotFound, stream, true);
+    buildErrorResponse(Http::Code::NotFound, stream, true);
     return;
   }
 
@@ -148,7 +147,14 @@ bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site,
       page = site->m_docroot + index;
 
       if (method == Http::Method::GET) {
-        if (FileUtils::readFile(page, stream, pageLength)) {
+        bool ret;
+
+        if (m_request->partialRequest()) {
+          ret = requestPartialFileContents(page, stream, pageLength);
+        } else
+          ret = FileUtils::readFile(page, stream, pageLength);
+
+        if (ret) {
           found = true;
           setMimeType(page);
           break;
@@ -165,7 +171,7 @@ bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site,
     }
 
     if (!found) {
-      buildErrorResponse(Http::ErrorCode::NotFound, stream);
+      buildErrorResponse(Http::Code::NotFound, stream);
       return false;
     }
 
@@ -174,14 +180,21 @@ bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site,
     page = site->m_docroot + m_request->index();
 
     if ( method == Http::Method::GET) {
-      if (!FileUtils::readFile(page, stream, pageLength)) {
-        buildErrorResponse(Http::ErrorCode::NotFound, stream);
+      bool ret;
+
+      if (m_request->partialRequest()) {
+        ret = requestPartialFileContents(page, stream, pageLength);
+      } else
+        ret = FileUtils::readFile(page, stream, pageLength);
+
+      if (!ret) {
+        buildErrorResponse(Http::Code::NotFound, stream);
         return false;
       } else
         setMimeType(page);
     } else if (method == Http::Method::HEAD) {
       if (!FileUtils::fileSize(page, pageLength)) {
-        buildErrorResponse(Http::ErrorCode::NotFound, stream);
+        buildErrorResponse(Http::Code::NotFound, stream);
         return false;
       } else
         setMimeType(page);
@@ -193,6 +206,23 @@ bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site,
   }
 
   return true;
+}
+
+bool HttpReply::requestPartialFileContents(const std::string& page, std::stringstream& stream, size_t& pageLength)
+{
+  std::vector<uint64_t> sizes;
+  std::tuple<int64_t, int64_t> bytes = m_request->getRangeRequest();
+  bool ret = FileUtils::readFile(page, bytes, stream, sizes);
+
+  if (!ret)
+    return ret;
+
+  m_replyHeaders->addHeader("Content-Range", "bytes " + std::to_string(sizes[0]) + "-"
+                            + std::to_string(sizes[1]) + "/" + std::to_string(sizes[2]));
+  pageLength = sizes[1] - sizes[0] + 1;
+  m_status = Http::Code::PartialContent;
+
+  return ret;
 }
 
 void HttpReply::post(std::stringstream& stream)
@@ -307,7 +337,7 @@ void HttpReply::buildHeaders()
   m_buffers[0] = buf(std::string(resp));
 }
 
-void HttpReply::buildErrorResponse(Http::ErrorCode error, std::stringstream& stream, bool closeConnection)
+void HttpReply::buildErrorResponse(Http::Code error, std::stringstream& stream, bool closeConnection)
 {
   bool found = false;
   size_t pageLength = 0;
@@ -328,12 +358,14 @@ void HttpReply::buildErrorResponse(Http::ErrorCode error, std::stringstream& str
     stream << "<html> <body><h1>";
     Http::stringValue(error, stream);
     stream << " </h1></body></html>";
+    pageLength = stream.str().length();
   }
 
   setFlag(Flag::Closing, closeConnection);
 
   m_request->setCompleted(true);
   m_status = error;
+  m_contentLength = pageLength;
 
   post(stream);
 
@@ -384,7 +416,8 @@ void HttpReply::setMimeType(const std::string& filename)
 
 bool HttpReply::canChunkResponse() const
 {
-  return getFlag(Flag::ChunkedEncoding) && m_request->method() != Http::Method::HEAD;
+  return getFlag(Flag::ChunkedEncoding) && m_request->method() != Http::Method::HEAD
+         && m_status != Http::Code::PartialContent;
 }
 
 bool HttpReply::canEncodeResponse() const

@@ -88,7 +88,7 @@ bool HttpRequest::partialRequest() const
   return pr && pr->find("bytes=") != std::string::npos;
 }
 
-std::tuple<int, int> HttpRequest::getRangeRequest() const
+std::tuple<int64_t, int64_t> HttpRequest::getRangeRequest() const
 {
   const std::string* pr = m_headers->getHeader("Range");
 
@@ -106,7 +106,7 @@ std::tuple<int, int> HttpRequest::getRangeRequest() const
 
   boost::char_separator<char> sep("-", "", boost::keep_empty_tokens);
 
-  std::vector<int> vals;
+  std::vector<int64_t> vals;
 
   for (auto& token : tokenizer(range, sep)) {
     if (token.length() > 0)
@@ -116,16 +116,16 @@ std::tuple<int, int> HttpRequest::getRangeRequest() const
 
   }
 
-  return std::tuple<int, int>(vals[0], vals[1]);
+  return std::tuple<int64_t, int64_t>(vals[0], vals[1]);
 }
 
-Http::ErrorCode HttpRequest::parse()
+Http::Code HttpRequest::parse()
 {
   size_t pos = m_request.find_first_of("\r\n");
 
   if (pos == std::string::npos) {
     trace("error") << "HttpRequest missing separator.. aborting";
-    return Http::ErrorCode::BadRequest;
+    return Http::Code::BadRequest;
   }
 
   std::string get = m_request.substr(0, pos);
@@ -135,11 +135,11 @@ Http::ErrorCode HttpRequest::parse()
 
   if (getParts.size() != 3) {
     trace("error") << "Missing Method part";
-    return Http::ErrorCode::BadRequest;
+    return Http::Code::BadRequest;
   }
 
   if (!parseMethod(getParts[0]))
-    return Http::ErrorCode::BadRequest;
+    return Http::Code::BadRequest;
 
   switch (m_method) {
     case Http::Method::GET: {
@@ -163,7 +163,7 @@ Http::ErrorCode HttpRequest::parse()
   m_index = getParts[1];
 
   if (!parseHttpVersion(getParts[2]))
-    return Http::ErrorCode::HttpVersionNotSupported;
+    return Http::Code::HttpVersionNotSupported;
 
 
   m_headers = new HttpHeaders(m_request);
@@ -174,12 +174,12 @@ Http::ErrorCode HttpRequest::parse()
 
   if (!host ) {
     trace("error") << "Missing Host" ;
-    return Http::ErrorCode::BadRequest;
+    return Http::Code::BadRequest;
   }
 
   size_t spos = host->find(":");
   m_host = host->substr(0, spos);
-  return Http::ErrorCode::Ok;
+  return Http::Code::Ok;
 }
 
 bool HttpRequest::parseHttpVersion(const std::string& version)
