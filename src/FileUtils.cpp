@@ -2,7 +2,10 @@
 #include "Logger.h"
 
 #include <fstream>
+#include <iomanip>
+
 #include <boost/filesystem.hpp>
+#include <sys/stat.h>
 
 bool FileUtils::readFile(const std::string& filename, unsigned char** data, size_t& pageLength)
 {
@@ -30,17 +33,7 @@ bool FileUtils::readFile(const std::string& filename, unsigned char** data, size
 
 bool FileUtils::readFile(const std::string& filename, std::stringstream& stream, size_t& pageLength)
 {
-  namespace fs = boost::filesystem;
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
-  fs::path dataDir(filename);
-
-  if (!fs::exists(dataDir) || fs::is_directory(dataDir))
-    return false;
-
-  if ( !ifs.is_open() ) {
-    trace("error") << "Could not open file";
-    return false;
-  }
 
   std::ifstream::pos_type pos = ifs.tellg();
   pageLength = pos;
@@ -52,12 +45,7 @@ bool FileUtils::readFile(const std::string& filename, std::stringstream& stream,
 
 bool FileUtils::readFile(const std::string& filename, const std::tuple<int64_t, int64_t>& bytes, std::stringstream& stream, std::vector<uint64_t>& sizes)
 {
-  namespace fs = boost::filesystem;
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
-  fs::path dataDir(filename);
-
-  if (!fs::exists(dataDir) || fs::is_directory(dataDir))
-    return false;
 
   if ( !ifs.is_open() ) {
     trace("error") << "Could not open file";
@@ -96,12 +84,7 @@ bool FileUtils::readFile(const std::string& filename, const std::tuple<int64_t, 
 
 bool FileUtils::fileSize(const std::string& filename, size_t& bytes)
 {
-  namespace fs = boost::filesystem;
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
-  fs::path dataDir(filename);
-
-  if (!fs::exists(dataDir) || fs::is_directory(dataDir))
-    return false;
 
   if ( !ifs.is_open() ) {
     trace("error") << "Could not open file";
@@ -128,6 +111,12 @@ std::string FileUtils::mimeType(const std::string& path)
   if (path.find(".jpg") != std::string::npos)
     return "image/jpeg";
 
+  if (path.find(".mp4") != std::string::npos)
+    return "video/mp4";
+
+  if (path.find(".ogg") != std::string::npos)
+    return "video/ogg";
+
   if (path.find(".js") != std::string::npos)
     return "application/javascript";
   else return "other";
@@ -141,5 +130,32 @@ std::string FileUtils::extension(const std::string& filename)
     return "";
 
   return filename.substr(pos + 1);
+}
+
+bool FileUtils::exists(const std::string& filename)
+{
+  namespace fs = boost::filesystem;
+  fs::path dataDir(filename);
+
+  if (!fs::exists(dataDir) || fs::is_directory(dataDir))
+    return false;
+
+  return true;
+}
+
+std::tuple<std::string, std::string> FileUtils::generateCacheData(const std::string& path)
+{
+  char eTag[20];
+  struct stat st;
+
+  if (stat(path.c_str(), &st) == 0) {
+    sprintf(eTag, "%d%d-%d", (int)st.st_ino, (int)st.st_mtime, (int)st.st_size);
+    time_t lastMT = st.st_mtime;
+    std::stringstream sstr;
+    sstr << std::put_time(std::gmtime(&lastMT), "%a, %d %b %Y %T %Z");
+    return std::make_tuple(eTag, sstr.str());
+  }
+
+  return {};
 }
 

@@ -57,11 +57,8 @@ void HttpReply::process()
 
   switch (m_request->method()) {
     case Http::Method::GET:
-      handleGetRequest();
-      break;
-
     case Http::Method::HEAD:
-      handleHeadRequest();
+      handleRetrievalRequest(m_request->method());
       break;
 
     case Http::Method::POST:
@@ -87,7 +84,7 @@ bool HttpReply::getFlag(Flag flag) const
   return m_flags.test(flag);
 }
 
-void HttpReply::handleGetRequest()
+void HttpReply::handleRetrievalRequest(Http::Method method)
 {
   std::stringstream stream;
 
@@ -98,135 +95,115 @@ void HttpReply::handleGetRequest()
 
   const SiteConfig* site = m_request->matchingSite();
 
-  size_t filesize = 0;
-
-  if ( !requestFileContents(Http::Method::GET, site, stream, filesize))
-    return;
-
-  m_contentLength = filesize;
-
-  m_request->setCompleted(true);
-
-  post(stream);
+  requestFileContents(method, site, stream);
 }
 
-void HttpReply::handleHeadRequest()
-{
-  std::stringstream stream;
-
-  if (!m_request->hasMatchingSite()) {
-    buildErrorResponse(Http::Code::NotFound, stream, true);
-    return;
-  }
-
-  const SiteConfig* site = m_request->matchingSite();
-
-  size_t filesize = 0;
-
-  if ( !requestFileContents(Http::Method::GET, site, stream, filesize))
-    return;
-
-  m_contentLength = filesize;
-
-  m_request->setCompleted(true);
-
-  post(stream);
-}
-
-bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site, std::stringstream& stream, size_t& pageLength)
+bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site, std::stringstream& stream)
 {
   std::string page;
+  bool found = false;
+  size_t bytes = 0;
 
   if ( m_request->index() == ""
        || m_request->index() == "/") {
     // This request does not contain a filename, we will use a page from try-file
     std::vector<std::string> tryFiles = site->m_tryFiles;
-    bool found = false;
 
     for (const auto& index : tryFiles) {
       page = site->m_docroot + index;
 
-      if (method == Http::Method::GET) {
-        bool ret;
-
-        if (m_request->partialRequest()) {
-          ret = requestPartialFileContents(page, stream, pageLength);
-        } else
-          ret = FileUtils::readFile(page, stream, pageLength);
-
-        if (ret) {
-          found = true;
-          setMimeType(page);
-          break;
-        }
-      } else if (method == Http::Method::HEAD) {
-        if (FileUtils::fileSize(page, pageLength))  {
-          found = true;
-          setMimeType(page);
-          break;
-        }
-      } else {
-        return false;
+      if (FileUtils::exists(page)) {
+        found = true;
+        break;
       }
     }
-
-    if (!found) {
-      buildErrorResponse(Http::Code::NotFound, stream);
-      return false;
-    }
-
   } else {
     // This request contains the filename, hence we should not try a filename from the list of try-files
     page = site->m_docroot + m_request->index();
 
-    if ( method == Http::Method::GET) {
-      bool ret;
+    if (FileUtils::exists(page))
+      found = true;
+  }
 
-      if (m_request->partialRequest()) {
-        ret = requestPartialFileContents(page, stream, pageLength);
-      } else
-        ret = FileUtils::readFile(page, stream, pageLength);
+  if (!found) {
+    buildErrorResponse(Http::Code::NotFound, stream);
+    return false;
+  }
 
-      if (!ret) {
-        buildErrorResponse(Http::Code::NotFound, stream);
-        return false;
-      } else
-        setMimeType(page);
-    } else if (method == Http::Method::HEAD) {
-      if (!FileUtils::fileSize(page, pageLength)) {
-        buildErrorResponse(Http::Code::NotFound, stream);
-        return false;
-      } else
-        setMimeType(page);
+  // page found
+  if ( method == Http::Method::GET) {
+    bool ret;
 
+    if (m_request->partialRequest()) {
+      ret = requestPartialFileContents(page, stream, bytes);
     } else {
-      return false;
+      FileUtils::fileSize(page, bytes);
+      // if(bytes > MAX_CHUNK_SIZE) {
+      // File is too big to be sent at once, we will send it in multiple times to
+      // avoid consuming to much memory
+      //	return requestLargeFileContents(page, stream);
+      //} else
+      ret = FileUtils::readFile(page, stream, bytes);
     }
 
+    if (!ret) {
+      buildErrorResponse(Http::Code::NotFound, stream);
+      return false;
+    } else
+      setMimeType(page);
+  } else if (method == Http::Method::HEAD) {
+    if (!FileUtils::fileSize(page, bytes)) {
+      buildErrorResponse(Http::Code::NotFound, stream);
+      return false;
+    } else
+      setMimeType(page);
+
+  } else {
+    return false;
   }
+
+  m_contentLength = bytes;
+
+  m_request->setCompleted(true);
+
+  post(stream);
 
   return true;
 }
 
-bool HttpReply::requestPartialFileContents(const std::string& page, std::stringstream& stream, size_t& pageLength)
+bool HttpReply::requestPartialFileContents(const std::string& page, std::stringstream& stream, size_t& bytes)
 {
   std::vector<uint64_t> sizes;
-  std::tuple<int64_t, int64_t> bytes = m_request->getRangeRequest();
-  bool ret = FileUtils::readFile(page, bytes, stream, sizes);
+  std::tuple<int64_t, int64_t> range = m_request->getRangeRequest();
+  bool ret = FileUtils::readFile(page, range, stream, sizes);
 
   if (!ret)
     return ret;
 
   m_replyHeaders->addHeader("Content-Range", "bytes " + std::to_string(sizes[0]) + "-"
                             + std::to_string(sizes[1]) + "/" + std::to_string(sizes[2]));
-  pageLength = sizes[1] - sizes[0] + 1;
+  bytes = sizes[1] - sizes[0] + 1;
   m_status = Http::Code::PartialContent;
 
   return ret;
 }
 
+
+bool HttpReply::requestLargeFileContents(const std::string& page, std::stringstream& stream)
+{
+  return true;
+}
+
 void HttpReply::post(std::stringstream& stream)
 {
+
+  for (auto b : m_bufs2)
+    delete[] b;
+
+  m_bufs2.clear();
+  m_bufs.clear();
+  m_buffers.clear();
+
   std::vector<boost::asio::const_buffer> buffers;
   buffers.push_back(buf(std::string(stream.str())));
 
@@ -239,11 +216,16 @@ void HttpReply::post(std::stringstream& stream)
   }
 
   m_buffers.clear();
-  m_buffers.push_back({});
+
+  if (!getFlag(HeadersSent))
+    m_buffers.push_back({}); // emtpy place for headers
 
   m_buffers.insert(m_buffers.end(), buffers.begin(), buffers.end());
-  buildHeaders();
-  trace("info") << m_request->queryString() << " " << (int) m_status;
+
+  if (!getFlag(HeadersSent)) {
+    buildHeaders();
+    trace("info") << m_request->queryString() << " " << (int) m_status;
+  }
 
   m_request->session()->postReply(shared_from_this());
 }
@@ -340,7 +322,7 @@ void HttpReply::buildHeaders()
 void HttpReply::buildErrorResponse(Http::Code error, std::stringstream& stream, bool closeConnection)
 {
   bool found = false;
-  size_t pageLength = 0;
+  size_t bytes = 0;
 
   const ErrorPageMap& map = m_request->hasMatchingSite() ?
                             m_request->matchingSite()->m_errorPages : m_request->session()->config()->m_errorPages;
@@ -348,7 +330,7 @@ void HttpReply::buildErrorResponse(Http::Code error, std::stringstream& stream, 
   if (map.count(std::to_string((int)error)) > 0 ) {
     std::string url = map.at(std::to_string((int)error));
 
-    if (FileUtils::readFile(url, stream, pageLength)) {
+    if (FileUtils::readFile(url, stream, bytes)) {
       found = true;
       setMimeType(url);
     }
@@ -358,14 +340,14 @@ void HttpReply::buildErrorResponse(Http::Code error, std::stringstream& stream, 
     stream << "<html> <body><h1>";
     Http::stringValue(error, stream);
     stream << " </h1></body></html>";
-    pageLength = stream.str().length();
+    bytes = stream.str().length();
   }
 
   setFlag(Flag::Closing, closeConnection);
 
   m_request->setCompleted(true);
   m_status = error;
-  m_contentLength = pageLength;
+  m_contentLength = bytes;
 
   post(stream);
 
@@ -401,6 +383,13 @@ boost::asio::const_buffer HttpReply::buf(char* buf, size_t s)
 void HttpReply::setMimeType(const std::string& filename)
 {
   m_replyHeaders->addHeader("Content-Type", FileUtils::mimeType(filename));
+  auto tuple = FileUtils::generateCacheData(filename);
+
+  if (std::get<0>(tuple).length() > 0)
+    m_replyHeaders->addHeader("ETag", std::get<0>(tuple));
+
+  if (std::get<1>(tuple).length() > 0)
+    m_replyHeaders->addHeader("Last-Modified", std::get<1>(tuple));
 
   if (!m_request->hasMatchingSite()) {
     setFlag(Flag::GzipEncoding, false);

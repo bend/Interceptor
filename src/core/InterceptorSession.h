@@ -38,6 +38,11 @@ private:
   // internal logic
   void sendReply(HttpReplyPtr reply);
 
+  void startReadTimer();
+  void startWriteTimer();
+  void stopReadTimer();
+  void stopWriteTimer();
+  void handleTimeout(const boost::system::error_code& error);
 
 private:
   const Config::ServerConfig* m_config;
@@ -47,6 +52,10 @@ private:
   unsigned char m_requestBuffer[4096];
   HttpRequestPtr m_request;
   HttpReplyPtr m_reply;
+
+  // Timers
+  boost::asio::deadline_timer m_readTimer;
+  boost::asio::deadline_timer m_writeTimer;
 };
 
 #endif //INTERCEPTOR_SESSION_H__

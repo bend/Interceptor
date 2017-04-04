@@ -7,7 +7,9 @@
 
 
 Config::Config(const std::string& path)
-  : m_path(path)
+  : m_path(path),
+    m_clientTimeout(0),
+    m_serverTimeout(0)
 {
   parse();
 }
@@ -29,12 +31,29 @@ void Config::parse()
 
     parseErrorPages(global["error-pages"], m_errorPages, "");
 
+    if (global.count("client-timeout"))
+      m_clientTimeout = global["client-timeout"];
+
+    if (global.count("server-timeout"))
+      m_serverTimeout = global["server-timeout"];
+
+
     auto servers = j["servers"];
 
     for (auto& server : servers) {
       ServerConfig* sc = new ServerConfig(m_errorPages);
       sc->m_listenPort = server["listen-port"];
       sc->m_listenHost = server["listen-host"];
+
+      if (server.count("client-timeout"))
+        sc->m_clientTimeout = server["client-timeout"];
+      else
+        sc->m_clientTimeout = m_clientTimeout;
+
+      if (server.count("server-timeout"))
+        sc->m_serverTimeout = server["server-timeout"];
+      else
+        sc->m_serverTimeout = m_serverTimeout;
 
       for (auto& site : server["sites"]) {
         ServerConfig::Site* s = new ServerConfig::Site();

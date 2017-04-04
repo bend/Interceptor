@@ -13,7 +13,9 @@
 InterceptorSession::InterceptorSession(const Config::ServerConfig* config, boost::asio::io_service& ioService)
   : m_config(config),
     m_ioService(ioService),
-    m_strand(ioService)
+    m_strand(ioService),
+    m_readTimer(ioService),
+    m_writeTimer(ioService)
 {
   m_connection = std::make_shared<TcpInboundConnection>(m_ioService);
 }
@@ -43,6 +45,7 @@ void InterceptorSession::postReply(HttpReplyPtr reply)
 
 void InterceptorSession::sendReply(HttpReplyPtr reply)
 {
+  startWriteTimer();
   m_connection->asyncWrite(reply->buffers(), m_strand.wrap
                            (boost::bind
                             (&InterceptorSession::handleTransmissionCompleted,
@@ -56,11 +59,13 @@ void InterceptorSession::sendReply(HttpReplyPtr reply)
 
 void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply, const boost::system::error_code& error, size_t bytesTransferred)
 {
+  stopWriteTimer();
+
   if (!error)  {
     trace("debug") << "Response sent " ;
   } else {
     trace("error") << "Could not send reponse " << error.message();
-    //TODO handle
+    closeConnection();
   }
 
   if (reply->getFlag(HttpReply::Closing))
@@ -76,12 +81,11 @@ void InterceptorSession::closeConnection()
 
 void InterceptorSession::start()
 {
-  // Avoid Slow Loris attacks, close connection after 2min if
-  // no preamble received
-  // Read preamble Size from mobile
+  // Avoid Slow Loris attacks, close connection if nothing read
   InterceptorSessionPtr isp = shared_from_this();
 
   if (m_connection) {
+    startReadTimer();
     m_connection->asyncReadSome(m_requestBuffer, sizeof(m_requestBuffer),
                                 boost::bind(&InterceptorSession::handleHttpRequestRead, isp,
                                             boost::asio::placeholders::error,
@@ -92,6 +96,8 @@ void InterceptorSession::start()
 
 void InterceptorSession::handleHttpRequestRead(const boost::system::error_code& error, size_t bytesTransferred)
 {
+  stopReadTimer();
+
   if (!error) {
     trace("info") << "Request read from " << m_connection->ip();
 
@@ -115,3 +121,41 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code& 
   }
 }
 
+void InterceptorSession::startReadTimer()
+{
+  trace("debug") << "Setting timeout to " << m_config->m_clientTimeout;
+  m_readTimer.expires_from_now(boost::posix_time::seconds(m_config->m_clientTimeout));
+  m_readTimer.async_wait
+  (m_strand.wrap
+   (boost::bind(&InterceptorSession::handleTimeout,
+                shared_from_this(),
+                boost::asio::placeholders::error)));
+
+}
+
+void InterceptorSession::startWriteTimer()
+{
+  m_writeTimer.expires_from_now(boost::posix_time::seconds(m_config->m_serverTimeout));
+  m_writeTimer.async_wait
+  (m_strand.wrap
+   (boost::bind(&InterceptorSession::handleTimeout,
+                shared_from_this(),
+                boost::asio::placeholders::error)));
+}
+
+void InterceptorSession::stopReadTimer()
+{
+  trace("debug") << "cancel read timer";
+  m_readTimer.cancel();
+}
+
+void InterceptorSession::stopWriteTimer()
+{
+  m_writeTimer.cancel();
+}
+
+void InterceptorSession::handleTimeout(const boost::system::error_code& error)
+{
+  if (error != boost::asio::error::operation_aborted)
+    closeConnection();
+}

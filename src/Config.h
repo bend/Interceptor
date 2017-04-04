@@ -50,22 +50,27 @@ public:
 
     std::vector<Site*> m_sites;
     const ErrorPageMap& m_errorPages;
+    int m_clientTimeout;
+    int m_serverTimeout;
 
   };
 
 public:
   Config(const std::string& path);
-
   const std::vector<ServerConfig*> serversConfig() const;
 
 private:
   void parse();
   void parseErrorPages(json& j, ErrorPageMap& map, const std::string appendPath);
+
 private:
   const std::string m_path;
   std::vector<ServerConfig*> m_serversConfig;
-  ErrorPageMap m_errorPages;
 
+  /* Global section */
+  ErrorPageMap m_errorPages;
+  int m_clientTimeout;
+  int m_serverTimeout;
 
 };
 

@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#define MAX_CHUNK_SIZE 200*1024
+
 class InterceptorSession;
 class InboundConnection;
 class HttpRequest;

@@ -27,9 +27,18 @@ public:
 
   static bool fileSize(const std::string& path, size_t& bytes);
 
+  static bool exists(const std::string& path);
+
   static std::string mimeType(const std::string& path);
 
   static std::string extension(const std::string& filename);
+
+  /**
+   * Returns a tuple containing:
+   * [0] - Etag
+   * [1] - Last modified in GMT format
+   */
+  static std::tuple<std::string, std::string> generateCacheData(const std::string& path);
 
 };
 
