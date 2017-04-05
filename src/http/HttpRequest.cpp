@@ -109,10 +109,11 @@ std::tuple<int64_t, int64_t> HttpRequest::getRangeRequest() const
   std::vector<int64_t> vals;
 
   for (auto& token : tokenizer(range, sep)) {
-    if (token.length() > 0)
+    if (token.length() > 0) {
       vals.push_back(std::stoi(boost::trim_copy(token)));
-    else
+    } else {
       vals.push_back(-1);
+    }
 
   }
 
@@ -138,8 +139,9 @@ Http::Code HttpRequest::parse()
     return Http::Code::BadRequest;
   }
 
-  if (!parseMethod(getParts[0]))
+  if (!parseMethod(getParts[0])) {
     return Http::Code::BadRequest;
+  }
 
   switch (m_method) {
     case Http::Method::GET: {
@@ -162,8 +164,9 @@ Http::Code HttpRequest::parse()
 
   m_index = getParts[1];
 
-  if (!parseHttpVersion(getParts[2]))
+  if (!parseHttpVersion(getParts[2])) {
     return Http::Code::HttpVersionNotSupported;
+  }
 
 
   m_headers = new HttpHeaders(m_request);
@@ -187,13 +190,15 @@ bool HttpRequest::parseHttpVersion(const std::string& version)
   const std::string http = "HTTP/";
   size_t idx = version.find(http);
 
-  if (idx != 0)
+  if (idx != 0) {
     return false;
+  }
 
   m_httpVersion = version.substr(idx + http.length());
 
-  if (m_httpVersion == "1.0" || m_httpVersion == "1.1")
+  if (m_httpVersion == "1.0" || m_httpVersion == "1.1") {
     return true;
+  }
 
   return false;
 }
@@ -230,8 +235,9 @@ const Config::ServerConfig::Site* HttpRequest::matchingSite() const
   const std::string host = m_host;
 
   for (const auto& site : session()->config()->m_sites) {
-    if (site->m_host == host)
+    if (site->m_host == host) {
       return site;
+    }
   }
 
   return nullptr;

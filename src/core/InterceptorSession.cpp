@@ -68,8 +68,9 @@ void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply, const b
     closeConnection();
   }
 
-  if (reply->getFlag(HttpReply::Closing))
+  if (reply->getFlag(HttpReply::Closing)) {
     closeConnection();
+  }
 }
 
 void InterceptorSession::closeConnection()
@@ -156,6 +157,7 @@ void InterceptorSession::stopWriteTimer()
 
 void InterceptorSession::handleTimeout(const boost::system::error_code& error)
 {
-  if (error != boost::asio::error::operation_aborted)
+  if (error != boost::asio::error::operation_aborted) {
     closeConnection();
+  }
 }

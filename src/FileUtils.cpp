@@ -13,8 +13,9 @@ bool FileUtils::readFile(const std::string& filename, unsigned char** data, size
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
   fs::path dataDir(filename);
 
-  if (!fs::exists(dataDir) || fs::is_directory(dataDir))
+  if (!fs::exists(dataDir) || fs::is_directory(dataDir)) {
     return false;
+  }
 
   if ( !ifs.is_open() ) {
     trace("error") << "Could not open file";
@@ -58,13 +59,15 @@ bool FileUtils::readFile(const std::string& filename, const std::tuple<int64_t, 
   std::ifstream::pos_type pos = ifs.tellg();
 
   if (from  == -1) {
-    if (to == -1)
-      return false; //Invalid request //TODO throw BAD request
+    if (to == -1) {
+      return false;  //Invalid request //TODO throw BAD request
+    }
 
     from = pos - to;
     to = pos;
-  } else if (to == -1)
+  } else if (to == -1) {
     to = (int)pos - 1;
+  }
 
   ifs.seekg(from, std::ios::beg);
   char* buffer = new char[to - from + 1];
@@ -99,35 +102,44 @@ bool FileUtils::fileSize(const std::string& filename, size_t& bytes)
 
 std::string FileUtils::mimeType(const std::string& path)
 {
-  if (path.find(".html") != std::string::npos)
+  if (path.find(".html") != std::string::npos) {
     return "text/html";
+  }
 
-  if (path.find(".css") != std::string::npos)
+  if (path.find(".css") != std::string::npos) {
     return "text/css";
+  }
 
-  if (path.find(".png") != std::string::npos)
+  if (path.find(".png") != std::string::npos) {
     return "image/png";
+  }
 
-  if (path.find(".jpg") != std::string::npos)
+  if (path.find(".jpg") != std::string::npos) {
     return "image/jpeg";
+  }
 
-  if (path.find(".mp4") != std::string::npos)
+  if (path.find(".mp4") != std::string::npos) {
     return "video/mp4";
+  }
 
-  if (path.find(".ogg") != std::string::npos)
+  if (path.find(".ogg") != std::string::npos) {
     return "video/ogg";
+  }
 
-  if (path.find(".js") != std::string::npos)
+  if (path.find(".js") != std::string::npos) {
     return "application/javascript";
-  else return "other";
+  } else {
+    return "other";
+  }
 }
 
 std::string FileUtils::extension(const std::string& filename)
 {
   size_t pos = filename.rfind(".");
 
-  if (pos == std::string::npos)
+  if (pos == std::string::npos) {
     return "";
+  }
 
   return filename.substr(pos + 1);
 }
@@ -137,8 +149,9 @@ bool FileUtils::exists(const std::string& filename)
   namespace fs = boost::filesystem;
   fs::path dataDir(filename);
 
-  if (!fs::exists(dataDir) || fs::is_directory(dataDir))
+  if (!fs::exists(dataDir) || fs::is_directory(dataDir)) {
     return false;
+  }
 
   return true;
 }

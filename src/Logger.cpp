@@ -17,7 +17,9 @@ LogEntry::LogEntry(const std::string& type)
 LogEntry::LogEntry(const LogEntry& o)
   : preamble_(o.preamble_)
 {
-  if (preamble_.empty()) return;
+  if (preamble_.empty()) {
+    return;
+  }
 
   ss_ << o.ss_.str();
   o.preamble_ = "";
@@ -26,7 +28,9 @@ LogEntry::LogEntry(const LogEntry& o)
 
 LogEntry::~LogEntry()
 {
-  if (preamble_.empty()) return;
+  if (preamble_.empty()) {
+    return;
+  }
 
   std::string s = ss_.str();
 
@@ -39,7 +43,9 @@ LogEntry::~LogEntry()
 
 LogEntry& LogEntry::operator <<(const char* s)
 {
-  if (preamble_.empty()) return *this;
+  if (preamble_.empty()) {
+    return *this;
+  }
 
   ss_ << s;
   return *this;
@@ -47,7 +53,9 @@ LogEntry& LogEntry::operator <<(const char* s)
 
 LogEntry& LogEntry::operator <<(const std::string& s)
 {
-  if (preamble_.empty()) return *this;
+  if (preamble_.empty()) {
+    return *this;
+  }
 
   ss_ << s;
   return *this;
@@ -55,7 +63,9 @@ LogEntry& LogEntry::operator <<(const std::string& s)
 
 LogEntry& LogEntry::operator <<(int i)
 {
-  if (preamble_.empty()) return *this;
+  if (preamble_.empty()) {
+    return *this;
+  }
 
   ss_ << i;
   return *this;
@@ -63,7 +73,9 @@ LogEntry& LogEntry::operator <<(int i)
 
 LogEntry& LogEntry::operator <<(double d)
 {
-  if (preamble_.empty()) return *this;
+  if (preamble_.empty()) {
+    return *this;
+  }
 
   ss_ << d;
   return *this;

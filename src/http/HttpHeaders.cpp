@@ -37,8 +37,9 @@ void HttpHeaders::parse(const std::string& headers)
 
 const std::string* HttpHeaders::getHeader(const std::string& key) const
 {
-  if (m_headers.count(key) > 0)
+  if (m_headers.count(key) > 0) {
     return &m_headers.at(key);
+  }
 
   return nullptr;
 }
@@ -70,9 +71,11 @@ void HttpHeaders::serialize(std::stringstream& response) const
 
 void HttpHeaders::fillFrom(const HttpHeaders* headers)
 {
-  if (headers->getHeader("X-Forwarded-For"))
+  if (headers->getHeader("X-Forwarded-For")) {
     addHeader("X-Forwarded-For", *headers->getHeader("X-Forwarded-For"));
+  }
 
-  if (headers->getHeader("Connection"))
+  if (headers->getHeader("Connection")) {
     addHeader("Connection", *headers->getHeader("Connection"));
+  }
 }

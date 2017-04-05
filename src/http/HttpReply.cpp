@@ -21,8 +21,9 @@ HttpReply::~HttpReply()
 {
   delete m_replyHeaders;
 
-  for (auto b : m_bufs2)
+  for (auto b : m_bufs2) {
     delete[] b;
+  }
 }
 
 void HttpReply::process()
@@ -45,8 +46,9 @@ void HttpReply::process()
   Http::Code status =  m_request->parse();
 
   if (status != Http::Code::Ok) {
-    if (m_request->m_headers)
+    if (m_request->m_headers) {
       m_replyHeaders->fillFrom(m_request->m_headers);
+    }
 
     buildErrorResponse(status, stream, true);
     return;
@@ -121,8 +123,9 @@ bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site,
     // This request contains the filename, hence we should not try a filename from the list of try-files
     page = site->m_docroot + m_request->index();
 
-    if (FileUtils::exists(page))
+    if (FileUtils::exists(page)) {
       found = true;
+    }
   }
 
   if (!found) {
@@ -149,14 +152,16 @@ bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site,
     if (!ret) {
       buildErrorResponse(Http::Code::NotFound, stream);
       return false;
-    } else
+    } else {
       setMimeType(page);
+    }
   } else if (method == Http::Method::HEAD) {
     if (!FileUtils::fileSize(page, bytes)) {
       buildErrorResponse(Http::Code::NotFound, stream);
       return false;
-    } else
+    } else {
       setMimeType(page);
+    }
 
   } else {
     return false;
@@ -177,8 +182,9 @@ bool HttpReply::requestPartialFileContents(const std::string& page, std::strings
   std::tuple<int64_t, int64_t> range = m_request->getRangeRequest();
   bool ret = FileUtils::readFile(page, range, stream, sizes);
 
-  if (!ret)
+  if (!ret) {
     return ret;
+  }
 
   m_replyHeaders->addHeader("Content-Range", "bytes " + std::to_string(sizes[0]) + "-"
                             + std::to_string(sizes[1]) + "/" + std::to_string(sizes[2]));
@@ -197,8 +203,9 @@ bool HttpReply::requestLargeFileContents(const std::string& page, std::stringstr
 void HttpReply::post(std::stringstream& stream)
 {
 
-  for (auto b : m_bufs2)
+  for (auto b : m_bufs2) {
     delete[] b;
+  }
 
   m_bufs2.clear();
   m_bufs.clear();
@@ -234,8 +241,9 @@ bool HttpReply::chunkResponse(std::vector<boost::asio::const_buffer>& buffers)
 {
   size_t size = 0;
 
-  for (auto& buffer : buffers)
+  for (auto& buffer : buffers) {
     size += boost::asio::buffer_size(buffer);
+  }
 
   std::stringstream stream;
   stream << std::hex << size << "\r\n";
@@ -301,18 +309,21 @@ void HttpReply::buildHeaders()
   stream << "HTTP/" << m_request->httpVersion() << " ";
   Http::stringValue(m_status, stream);
 
-  if (canChunkResponse())
+  if (canChunkResponse()) {
     m_replyHeaders->addHeader("Transfer-Encoding", "chunked");
-  else
+  } else {
     m_replyHeaders->addHeader("Content-Length", m_contentLength);
+  }
 
-  if (canEncodeResponse())
+  if (canEncodeResponse()) {
     m_replyHeaders->addHeader("Content-Encoding", "gzip");
+  }
 
-  if (getFlag(Flag::Closing))
+  if (getFlag(Flag::Closing)) {
     m_replyHeaders->addHeader("Connection", "close");
-  else
+  } else {
     m_replyHeaders->addHeader("Connection", "keep-alive");
+  }
 
   m_replyHeaders->serialize(stream);
   const std::string& resp = stream.str();
@@ -385,11 +396,13 @@ void HttpReply::setMimeType(const std::string& filename)
   m_replyHeaders->addHeader("Content-Type", FileUtils::mimeType(filename));
   auto tuple = FileUtils::generateCacheData(filename);
 
-  if (std::get<0>(tuple).length() > 0)
+  if (std::get<0>(tuple).length() > 0) {
     m_replyHeaders->addHeader("ETag", std::get<0>(tuple));
+  }
 
-  if (std::get<1>(tuple).length() > 0)
+  if (std::get<1>(tuple).length() > 0) {
     m_replyHeaders->addHeader("Last-Modified", std::get<1>(tuple));
+  }
 
   if (!m_request->hasMatchingSite()) {
     setFlag(Flag::GzipEncoding, false);
@@ -398,8 +411,9 @@ void HttpReply::setMimeType(const std::string& filename)
 
   auto site = m_request->matchingSite();
 
-  if (site->m_gzip.count("all") == 0 && site->m_gzip.count(FileUtils::extension(filename)) == 0)
+  if (site->m_gzip.count("all") == 0 && site->m_gzip.count(FileUtils::extension(filename)) == 0) {
     setFlag(Flag::GzipEncoding, false);
+  }
 
 }
 
