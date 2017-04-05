@@ -2,9 +2,10 @@
   "global" :  {
 	"server-timeout" : 200, 
 	"client-timeout" : 200,
+	"nb-threads": 5,
 	
 	"error-pages" : [
-	  { "404" : "/home/ben/projects/interceptor/config/404.html" }, 
+		{ "404" : "/home/ben/projects/interceptor/config/404.html" }, 
 		{ "400" : "/home/ben/projects/interceptor/config/400.html" }
 	]
 
