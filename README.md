@@ -1,5 +1,5 @@
 # Interceptor
-
+[![Build Status](https://travis-ci.org/bend/Interceptor.svg?branch=master)](https://travis-ci.org/bend/Interceptor)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3dec0d2ff6345fa8b11b1d44d3170c9)](https://www.codacy.com/app/bend/Interceptor?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bend/Interceptor&amp;utm_campaign=Badge_Grade)
 
 A fast Web server written in C++ 
@@ -35,6 +35,7 @@ You can find a configuration example in the config/ directory. Be carefull that 
   "global" :  {
 	"server-timeout" : 200, //timeout in seconds
 	"client-timeout" : 200, //timeout in seconds
+	"nb-threads" : 10, // number of threads to use by default it will use the number of cores
 	"error-pages" : [
 	  { "404" : "/home/ben/projects/interceptor/config/404.html" }, // displayed on error 404
 	  { "400" : "/home/ben/projects/interceptor/config/400.html" }  // displayed on error 400, if no page is specified or page is
