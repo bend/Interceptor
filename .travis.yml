@@ -8,5 +8,4 @@ before_install:
 - sudo apt -qq update
 - sudo apt install -y libboost-all-dev zlib1g-dev
 
-
 install: cmake . && make
