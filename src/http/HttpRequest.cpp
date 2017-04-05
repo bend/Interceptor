@@ -9,7 +9,8 @@
 #include <regex>
 
 HttpRequest::HttpRequest(InterceptorSessionPtr session)
-  : m_session(session),
+  : m_method(Http::Method::ERR),
+	m_session(session),
     m_headers(nullptr),
     m_completed(false),
     m_host("")

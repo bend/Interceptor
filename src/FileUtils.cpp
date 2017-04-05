@@ -158,10 +158,10 @@ bool FileUtils::exists(const std::string& filename)
 
 std::tuple<std::string, std::string> FileUtils::generateCacheData(const std::string& path)
 {
-  char eTag[20];
   struct stat st;
 
   if (stat(path.c_str(), &st) == 0) {
+	char eTag[20];
     sprintf(eTag, "%d%d-%d", (int)st.st_ino, (int)st.st_mtime, (int)st.st_size);
     time_t lastMT = st.st_mtime;
     std::stringstream sstr;
