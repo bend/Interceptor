@@ -3,6 +3,7 @@
 #include "Config.h"
 
 #include <memory>
+#include <boost/thread.hpp>
 
 
 int main(int argc, char** argv)
@@ -21,8 +22,13 @@ int main(int argc, char** argv)
       interceptor->init();
     }
 
-    boost::asio::io_service::work work(ioService);
-    ioService.run();
+    boost::thread_group tg;
+
+    for (unsigned i = 0; i < config->threads(); ++i) {
+      tg.create_thread(boost::bind(&boost::asio::io_service::run, &ioService));
+    }
+
+    tg.join_all();
 
   } catch (ConfigException& e) {
     trace("error") << "Exception raised " << e.what();

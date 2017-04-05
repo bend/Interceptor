@@ -13,7 +13,7 @@ namespace Http {
   };
 
   enum class Method : char {
-	ERR,
+    ERR,
     GET,
     HEAD,
     POST,

@@ -21,7 +21,7 @@ option(Boost_USE_MULTITHREADED ON "Use multithreaded boost")
 option(Boost_USE_STATIC_RUNTIME ON "Use static runtime for boost")
 
   
-find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options system regex)
+find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options system regex thread)
 
 execute_process(
   COMMAND git log -1 --format=%h

@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <boost/algorithm/string.hpp>
+#include <thread>
 
 
 Config::Config(const std::string& path)
@@ -38,6 +39,12 @@ void Config::parse()
 
     if (global.count("server-timeout")) {
       m_serverTimeout = global["server-timeout"];
+    }
+
+    if (global.count("nb-threads")) {
+      m_threadNr = global["nb-threads"];
+    } else {
+      m_threadNr = std::thread::hardware_concurrency();
     }
 
 
@@ -112,3 +119,9 @@ const std::vector<Config::ServerConfig*> Config::serversConfig() const
 {
   return m_serversConfig;
 }
+
+uint16_t Config::threads() const
+{
+  return m_threadNr;
+}
+

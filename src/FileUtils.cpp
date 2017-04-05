@@ -161,7 +161,7 @@ std::tuple<std::string, std::string> FileUtils::generateCacheData(const std::str
   struct stat st;
 
   if (stat(path.c_str(), &st) == 0) {
-	char eTag[20];
+    char eTag[20];
     sprintf(eTag, "%d%d-%d", (int)st.st_ino, (int)st.st_mtime, (int)st.st_size);
     time_t lastMT = st.st_mtime;
     std::stringstream sstr;

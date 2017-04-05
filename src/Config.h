@@ -50,14 +50,15 @@ public:
 
     std::vector<Site*> m_sites;
     const ErrorPageMap& m_errorPages;
-    int m_clientTimeout;
-    int m_serverTimeout;
+    uint32_t m_clientTimeout;
+    uint32_t m_serverTimeout;
 
   };
 
 public:
   Config(const std::string& path);
   const std::vector<ServerConfig*> serversConfig() const;
+  uint16_t threads() const;
 
 private:
   void parse();
@@ -69,8 +70,9 @@ private:
 
   /* Global section */
   ErrorPageMap m_errorPages;
-  int m_clientTimeout;
-  int m_serverTimeout;
+  uint32_t m_clientTimeout;
+  uint32_t m_serverTimeout;
+  uint16_t m_threadNr;
 
 };
 

@@ -14,7 +14,7 @@ HttpReply::HttpReply(HttpRequestPtr request)
     m_replyHeaders(nullptr),
     m_status(Http::Code::Ok),
     m_contentLength(0),
-	m_gzipBusy(false)
+    m_gzipBusy(false)
 {
 }
 
