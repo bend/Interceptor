@@ -10,5 +10,6 @@ compiler:
 before_install:
 - sudo apt-get -qq update
 - sudo apt-get install -y libboost-all-dev zlib1g-dev
+- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++4.8 90
 
 install: cmake . && make
