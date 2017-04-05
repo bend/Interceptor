@@ -2,4 +2,4 @@ language: cpp
 compiler: 
 - gcc 
 - clang 
-install: cmake && make
+install: cmake . && make
