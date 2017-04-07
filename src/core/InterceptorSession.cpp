@@ -1,7 +1,7 @@
 #include "InterceptorSession.h"
 
 #include "Defs.h"
-#include "Logger.h"
+#include "utils/Logger.h"
 
 #include "socket/InboundConnection.h"
 #include "http/HttpRequest.h"

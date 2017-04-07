@@ -1,16 +1,21 @@
 set(src
   core/Interceptor.cpp
   core/InterceptorSession.cpp
+  core/Config.cpp
+
   socket/InboundConnection.cpp
+
   http/HttpHeaders.cpp
   http/HttpRequest.cpp
   http/HttpReply.cpp
   http/Http.cpp
+
   #  OutboundConnection.cpp
-  Logger.cpp
-  Server.cpp
-  FileUtils.cpp
-  Config.cpp
+
+  utils/Logger.cpp
+  utils/Server.cpp
+  utils/FileUtils.cpp
+
   main.cpp
 )
 

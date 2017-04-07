@@ -2,7 +2,7 @@
 
 #include "core/InterceptorSession.h"
 #include "HttpHeaders.h"
-#include "Logger.h"
+#include "utils/Logger.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>

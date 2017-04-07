@@ -1,7 +1,7 @@
 #include "InboundConnection.h"
 
 #include <boost/lexical_cast.hpp>
-#include "Logger.h"
+#include "utils/Logger.h"
 
 std::string InboundConnection::ip()
 {

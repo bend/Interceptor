@@ -3,8 +3,8 @@
 #include "core/InterceptorSession.h"
 #include "HttpRequest.h"
 #include "HttpHeaders.h"
-#include "FileUtils.h"
-#include "Logger.h"
+#include "utils/FileUtils.h"
+#include "utils/Logger.h"
 
 #include <boost/bind.hpp>
 

@@ -4,7 +4,7 @@
 #include "Defs.h"
 #include "vars.h"
 #include "Http.h"
-#include "Config.h"
+#include "core/Config.h"
 
 #include <boost/asio.hpp>
 #include <bitset>

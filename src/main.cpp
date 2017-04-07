@@ -1,6 +1,7 @@
 #include "core/Interceptor.h"
-#include "Logger.h"
-#include "Config.h"
+#include "core/Config.h"
+
+#include "utils/Logger.h"
 
 #include <memory>
 #include <boost/thread.hpp>

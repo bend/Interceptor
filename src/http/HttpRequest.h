@@ -2,8 +2,8 @@
 #define HTTP_REQUEST_H__
 
 #include "Defs.h"
-#include "Config.h"
 #include "Http.h"
+#include "core/Config.h"
 
 class HttpHeaders;
 

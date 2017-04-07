@@ -1,9 +1,9 @@
 #include "Interceptor.h"
 
 #include "InterceptorSession.h"
-#include "Logger.h"
-#include "Server.h"
 #include "socket/InboundConnection.h"
+#include "utils/Logger.h"
+#include "utils/Server.h"
 
 #include <boost/bind.hpp>
 

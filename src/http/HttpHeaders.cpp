@@ -1,7 +1,7 @@
 #include "HttpHeaders.h"
 
-#include "Logger.h"
-#include "Server.h"
+#include "utils/Logger.h"
+#include "utils/Server.h"
 
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>

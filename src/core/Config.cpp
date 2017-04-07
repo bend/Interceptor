@@ -1,6 +1,6 @@
 #include "Config.h"
 
-#include "Logger.h"
+#include "utils/Logger.h"
 
 #include <fstream>
 #include <boost/algorithm/string.hpp>
