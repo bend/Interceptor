@@ -22,5 +22,6 @@ env:
     - ENABLE_GZIP=off
     - DEBUG_LOGGING=on
     - DEBUG_LOGGING=off
+    - ENABLE_GZIP=on DEBUG_LOGGING=off
 
 script: cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DEBUG_LOGGING . && make
