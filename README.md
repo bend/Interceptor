@@ -4,7 +4,7 @@
 
 A fast Web server written in C++ 
 
-## Actual Support (will be updated while the project evolve)
+## Actual Support (will be updated while the project evolves)
 
 - GET request
 - HEAD request
