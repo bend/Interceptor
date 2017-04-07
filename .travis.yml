@@ -21,4 +21,4 @@ env:
     - ENABLE_GZIP=on
     - ENABLE_GZIP=off
 
-script: cmake -D$ENABLE_GZIP . && make
+script: cmake -DENABLE_GZIP=$ENABLE_GZIP . && make
