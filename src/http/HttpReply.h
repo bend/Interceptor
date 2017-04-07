@@ -2,6 +2,7 @@
 #define HTTP_REPLY_H__
 
 #include "Defs.h"
+#include "vars.h"
 #include "Http.h"
 #include "Config.h"
 
@@ -47,10 +48,15 @@ private:
   void buildErrorResponse(Http::Code error, std::stringstream& response, bool closeConnection = false);
 
   bool chunkResponse(std::vector<boost::asio::const_buffer>& buffers);
+#ifdef ENABLE_GZIP
   bool encodeResponse(std::vector<boost::asio::const_buffer>& buffers);
+#endif // ifdef ENABLE_GZIP
 
   void buildHeaders();
+
+#ifdef ENABLE_GZIP
   void initGzip();
+#endif // ifdef ENABLE_GZIP
   void setMimeType(const std::string& filename);
   bool requestFileContents(Http::Method method, const SiteConfig* site, std::stringstream& stream);
   bool requestPartialFileContents(const std::string& page, std::stringstream& stream, size_t& bytes);

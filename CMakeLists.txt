@@ -6,6 +6,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 option(CPACK_ENABLED OFF "Whether packaging with CPack is enabled (and the git version is retrieved")
 
+set(ENABLE_GZIP ON CACHE BOOL "ENABLE GZIP") # Configurable by user
+configure_file(vars.h.in vars.h)
+
 if(CPACK_ENABLED)
   include(GetGitRevisionDescription)
   get_git_head_revision(GIT_REFSPEC GIT_REVISION)
@@ -15,11 +18,7 @@ if(CPACK_ENABLED)
   endif()
 endif(CPACK_ENABLED)
 
-option(USE_STATIC_LIBS OFF "Use static libs")
-set(Boost_USE_STATIC_LIBS ${USE_STATIC_LIBS})
 option(Boost_USE_MULTITHREADED ON "Use multithreaded boost")
-option(Boost_USE_STATIC_RUNTIME ON "Use static runtime for boost")
-
   
 find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options system regex thread)
 
@@ -38,6 +37,7 @@ link_directories(
 include_directories(
 	${Boost_INCLUDE_DIRS}
 	/opt/local/include
+	${CMAKE_CURRENT_BINARY_DIR}
 )
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
@@ -45,8 +45,11 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
 set(LIBS
     ${Boost_LIBRARIES}
     pthread
-	z
   )
+
+if(ENABLE_GZIP)
+  set(LIBS ${LIBS} z)
+endif(ENABLE_GZIP)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror=return-type")
 
@@ -58,7 +61,7 @@ if(CPACK_ENABLED)
   set(CPACK_PACKAGE_NAME "Interceptor")
 	set(CPACK_PACKAGE_VENDOR "Ben")
 	set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Interceptor")
-	set(CPACK_PACKAGE_FILE_NAME BlooLoc-software-${GIT_REVISION})
+	set(CPACK_PACKAGE_FILE_NAME Interceptor-${GIT_REVISION})
 	set(CPACK_GENERATOR "TGZ")
 	set(CPACK_STRIP_FILES "1")
 

@@ -56,7 +56,10 @@ void HttpReply::process()
   }
 
   setFlag(Flag::ChunkedEncoding, m_request->supportsChunking());
+
+#ifdef ENABLE_GZIP
   setFlag(Flag::GzipEncoding, m_request->supportsCompression());
+#endif // ifdef ENABLE_GZIP
 
   switch (m_request->method()) {
     case Http::Method::GET:
@@ -215,9 +218,13 @@ void HttpReply::post(std::stringstream& stream)
   std::vector<boost::asio::const_buffer> buffers;
   buffers.push_back(buf(std::string(stream.str())));
 
+#ifdef ENABLE_GZIP
+
   if (canEncodeResponse()) {
     encodeResponse(buffers);
   }
+
+#endif // ifdef ENABLE_GZIP
 
   if (canChunkResponse()) {
     chunkResponse(buffers);
@@ -261,6 +268,7 @@ bool HttpReply::chunkResponse(std::vector<boost::asio::const_buffer>& buffers)
   return true;
 }
 
+#ifdef ENABLE_GZIP
 bool HttpReply::encodeResponse(std::vector<boost::asio::const_buffer>& buffers)
 {
   std::vector<boost::asio::const_buffer> result;
@@ -303,6 +311,7 @@ bool HttpReply::encodeResponse(std::vector<boost::asio::const_buffer>& buffers)
 
   return true;
 }
+#endif // ifdef ENABLE_GZIP
 
 void HttpReply::buildHeaders()
 {
@@ -364,7 +373,7 @@ void HttpReply::buildErrorResponse(Http::Code error, std::stringstream& stream, 
   post(stream);
 
 }
-
+#ifdef ENABLE_GZIP
 void HttpReply::initGzip()
 {
   m_gzip.zalloc = Z_NULL;
@@ -379,6 +388,7 @@ void HttpReply::initGzip()
   m_gzipBusy = true;
   assert(r == Z_OK);
 }
+#endif // ifdef ENABLE_GZIP
 
 boost::asio::const_buffer HttpReply::buf(const std::string& s)
 {
@@ -426,5 +436,9 @@ bool HttpReply::canChunkResponse() const
 
 bool HttpReply::canEncodeResponse() const
 {
+#ifdef ENABLE_GZIP
   return getFlag(Flag::GzipEncoding) && m_request->method() != Http::Method::HEAD;
+#else
+  return false;
+#endif // ifdef ENABLE_GZIP
 }
