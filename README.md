@@ -18,12 +18,18 @@ A fast Web server written in C++
 
 ## Build & Install
 
-This program need libz, libboost, c++14 compliant compilator
+This program need libz, libboost, c++11 compliant compilator
 
+###Compilation Flags 
+  
+  ```
+  ENABLE_GZIP=[on|off] // whether you want to enable gzip support for compression, required libz
+  DEBUG_LOGGING=[on|off] // whether you want verbose logging or not
+```
 To compile it just run 
 
 ```
-cmake && make
+cmake . && make
 ```
 
 ## Configuration 
