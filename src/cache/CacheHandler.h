@@ -3,23 +3,23 @@
 
 class AbstractCacheHandler : public std::shared_from_this<AbstractCacheHandler> {
 
-  public:
+public:
   AbstractCacheHandler(size_t maxCacheSize)
-	: m_maxCacheSize(maxCacheSize) {};
+    : m_maxCacheSize(maxCacheSize) {};
 
   ~AbstractCacheHandler() = default;
 
   virtual const std::string& eTag(const std::string& file) = 0;
 
   virtual const std::string& lastModified(const std::string& file) = 0;
-  
+
   virtual const size_t size(const std::string& file) = 0;
 
-  protected:
+protected:
   virtual bool cacheSize() const = 0;
 
-  protected:
-	size_t m_maxCacheSize;
+protected:
+  size_t m_maxCacheSize;
 
 };
 

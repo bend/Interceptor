@@ -171,6 +171,13 @@ Http::Code HttpRequest::parse()
 
 
   m_headers = new HttpHeaders(m_request);
+
+  Http::Code code = m_headers->parse();
+
+  if (code != Http::Code::Ok) {
+    return code;
+  }
+
   m_request = get;
 
   // parse host

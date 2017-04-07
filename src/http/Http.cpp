@@ -21,6 +21,10 @@ namespace Http {
         stream  << "404 Not Found" << "\r\n";
         break;
 
+      case Code::UnprocessableEntity:
+        stream << "422 Unprocessable Entity" << "\r\n";
+        break;
+
       case Code::HttpVersionNotSupported:
         stream << "505 HTTP Version Not Supported" << "\r\n";
         break;

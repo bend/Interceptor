@@ -9,12 +9,13 @@
 
 HttpHeaders::HttpHeaders(const std::string& headers)
 {
-  parse(headers);
+  m_request = headers;
 }
 
 
-void HttpHeaders::parse(const std::string& headers)
+Http::Code HttpHeaders::parse()
 {
+  const std::string headers = m_request;
   typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
   boost::char_separator<char> sep1("\r\n");
   tokenizer tokens(headers, sep1);
@@ -24,8 +25,7 @@ void HttpHeaders::parse(const std::string& headers)
 
     if (pos == std::string::npos) {
       trace("error") << "HttpHeaders missing separator.. aborting for " << header;
-      //TODO handle error 422
-      return;
+      return Http::Code::UnprocessableEntity;
     }
 
     std::string part1 = header.substr(0, pos);
@@ -33,6 +33,8 @@ void HttpHeaders::parse(const std::string& headers)
     m_headers[boost::trim_copy(part1)] = boost::trim_copy(part2);
     trace("debug") << "Parsing header " << part1 << ":" << part2;
   }
+
+  return Http::Code::Ok;
 }
 
 const std::string* HttpHeaders::getHeader(const std::string& key) const

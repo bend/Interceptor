@@ -9,6 +9,7 @@ namespace Http {
     PartialContent = 206,
     BadRequest = 400,
     NotFound = 404,
+    UnprocessableEntity = 422,
     HttpVersionNotSupported = 505
   };
 

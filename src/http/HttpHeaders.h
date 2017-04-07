@@ -1,6 +1,8 @@
 #ifndef HTTP_HEADERS_H__
 #define HTTP_HEADERS_H__
 
+#include "Http.h"
+
 #include <string>
 #include <unordered_map>
 
@@ -17,12 +19,11 @@ public:
   void addGeneralHeaders();
   void serialize(std::stringstream& response) const;
   void fillFrom(const HttpHeaders* headers);
-
-private:
-  void parse(const std::string& headers);
+  Http::Code parse();
 
 private:
   std::unordered_map<std::string, std::string> m_headers;
+  std::string m_request;
 
 
 };
