@@ -16,4 +16,9 @@ before_install:
 - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 1
 
-script: cmake . && make
+env: 
+  matrix:
+    - ENABLE_GZIP=on
+    - ENABLE_GZIP=off
+
+script: cmake -D$ENABLE_GZIP . && make
