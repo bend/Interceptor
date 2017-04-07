@@ -21,7 +21,8 @@ TcpInboundConnection::TcpInboundConnection(boost::asio::io_service& io_service)
 }
 
 void TcpInboundConnection::asyncRead( void* b, size_t size,
-                                      boost::function2<void, boost::system::error_code, size_t> callback)
+                                      boost::function2<void, boost::system::error_code,
+                                      size_t> callback)
 {
   async_read(m_spSocket, boost::asio::buffer(b, size),
              boost::asio::transfer_at_least(size),

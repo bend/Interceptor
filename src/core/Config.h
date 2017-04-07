@@ -62,7 +62,7 @@ public:
 
 private:
   void parse();
-  void parseErrorPages(json& j, ErrorPageMap& map, const std::string appendPath);
+  void parseErrorPages(json& j, ErrorPageMap& map, const std::string& appendPath);
 
 private:
   const std::string m_path;

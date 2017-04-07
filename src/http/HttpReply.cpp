@@ -125,7 +125,8 @@ bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site,
       }
     }
   } else {
-    // This request contains the filename, hence we should not try a filename from the list of try-files
+    // This request contains the filename, hence we should
+    // not try a filename from the list of try-files
     page = site->m_docroot + m_request->index();
 
     if (FileUtils::exists(page)) {

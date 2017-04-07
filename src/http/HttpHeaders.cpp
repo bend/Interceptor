@@ -8,8 +8,8 @@
 
 
 HttpHeaders::HttpHeaders(const std::string& headers)
+  : m_request(headers)
 {
-  m_request = headers;
 }
 
 
