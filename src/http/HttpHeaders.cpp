@@ -24,14 +24,14 @@ Http::Code HttpHeaders::parse()
     size_t pos = header.find_first_of(":");
 
     if (pos == std::string::npos) {
-      trace("error") << "HttpHeaders missing separator.. aborting for " << header;
+      LOG_ERROR("HttpHeaders missing separator.. aborting for " << header);
       return Http::Code::UnprocessableEntity;
     }
 
     std::string part1 = header.substr(0, pos);
     std::string part2 = header.substr(pos + 1);
     m_headers[boost::trim_copy(part1)] = boost::trim_copy(part2);
-    trace("debug") << "Parsing header " << part1 << ":" << part2;
+    LOG_DEBUG("Parsing header " << part1 << ":" << part2);
   }
 
   return Http::Code::Ok;

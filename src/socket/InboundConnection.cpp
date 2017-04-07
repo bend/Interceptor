@@ -57,7 +57,7 @@ void TcpInboundConnection::asyncWrite(const std::vector<boost::asio::const_buffe
 void TcpInboundConnection::disconnect()
 {
   try {
-    trace("debug") << "closing connection with " << ip();
+    LOG_DEBUG( "closing connection with " << ip());
     boost::system::error_code ec;
     m_spSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
     m_spSocket.cancel();

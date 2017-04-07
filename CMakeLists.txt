@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 option(CPACK_ENABLED OFF "Whether packaging with CPack is enabled (and the git version is retrieved")
 
 set(ENABLE_GZIP ON CACHE BOOL "ENABLE GZIP") # Configurable by user
+set(DEBUG_LOGGING ON CACHE BOOL "DEBUG_LOGGING") # Configurable by user
 configure_file(vars.h.in vars.h)
 
 if(CPACK_ENABLED)

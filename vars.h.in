@@ -1,1 +1,2 @@
 #cmakedefine ENABLE_GZIP
+#cmakedefine DEBUG_LOGGING

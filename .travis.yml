@@ -20,5 +20,7 @@ env:
   matrix:
     - ENABLE_GZIP=on
     - ENABLE_GZIP=off
+    - DEBUG_LOGGING=on
+    - DEBUG_LOGGING=off
 
-script: cmake -DENABLE_GZIP=$ENABLE_GZIP . && make
+script: cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DEBUG_LOGGING . && make

@@ -8,7 +8,6 @@
 
 int main(int argc, char** argv)
 {
-
   if (argc != 2) {
     return -1;
   }
@@ -31,7 +30,7 @@ int main(int argc, char** argv)
     tg.join_all();
 
   } catch (ConfigException& e) {
-    trace("error") << "Exception raised " << e.what();
+    LOG_ERROR("Exception raised " << e.what());
   }
 
 }

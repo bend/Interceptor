@@ -62,9 +62,9 @@ void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply, const b
   stopWriteTimer();
 
   if (!error)  {
-    trace("debug") << "Response sent " ;
+    LOG_DEBUG("Response sent ");
   } else {
-    trace("error") << "Could not send reponse " << error.message();
+    LOG_ERROR("Could not send reponse " << error.message());
     closeConnection();
   }
 
@@ -100,7 +100,7 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code& 
   stopReadTimer();
 
   if (!error) {
-    trace("info") << "Request read from " << m_connection->ip();
+    LOG_INFO("Request read from " << m_connection->ip());
 
     if (!m_request || m_request->completed() ) {
       // Create Request
@@ -118,13 +118,13 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code& 
       start();
     }
   } else {
-    trace("error") << "Error reading request from " << m_connection->ip();
+    LOG_ERROR("Error reading request from " << m_connection->ip());
   }
 }
 
 void InterceptorSession::startReadTimer()
 {
-  trace("debug") << "Setting timeout to " << m_config->m_clientTimeout;
+  LOG_DEBUG("Setting timeout to " << m_config->m_clientTimeout);
   m_readTimer.expires_from_now(boost::posix_time::seconds(m_config->m_clientTimeout));
   m_readTimer.async_wait
   (m_strand.wrap
@@ -146,7 +146,7 @@ void InterceptorSession::startWriteTimer()
 
 void InterceptorSession::stopReadTimer()
 {
-  trace("debug") << "cancel read timer";
+  LOG_DEBUG("cancel read timer");
   m_readTimer.cancel();
 }
 

@@ -18,7 +18,7 @@ Config::Config(const std::string& path)
 void Config::parse()
 {
 
-  trace("info") << "Reading configuration file " << m_path;
+  LOG_INFO("Reading configuration file " << m_path);
 
   std::ifstream config(m_path);
 

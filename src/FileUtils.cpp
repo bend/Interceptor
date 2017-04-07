@@ -18,7 +18,7 @@ bool FileUtils::readFile(const std::string& filename, unsigned char** data, size
   }
 
   if ( !ifs.is_open() ) {
-    trace("error") << "Could not open file";
+    LOG_ERROR("Could not open file");
     return false;
   }
 
@@ -49,7 +49,7 @@ bool FileUtils::readFile(const std::string& filename, const std::tuple<int64_t, 
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
 
   if ( !ifs.is_open() ) {
-    trace("error") << "Could not open file";
+    LOG_ERROR("Could not open file");
     return false;
   }
 
@@ -90,7 +90,7 @@ bool FileUtils::fileSize(const std::string& filename, size_t& bytes)
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
 
   if ( !ifs.is_open() ) {
-    trace("error") << "Could not open file";
+    LOG_ERROR("Could not open file");
     return false;
   }
 

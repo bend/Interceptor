@@ -126,7 +126,7 @@ Http::Code HttpRequest::parse()
   size_t pos = m_request.find_first_of("\r\n");
 
   if (pos == std::string::npos) {
-    trace("error") << "HttpRequest missing separator.. aborting";
+    LOG_ERROR("HttpRequest missing separator.. aborting");
     return Http::Code::BadRequest;
   }
 
@@ -136,7 +136,7 @@ Http::Code HttpRequest::parse()
   boost::split(getParts, get , boost::is_any_of(" "));
 
   if (getParts.size() != 3) {
-    trace("error") << "Missing Method part";
+    LOG_ERROR("Missing Method part");
     return Http::Code::BadRequest;
   }
 
@@ -184,7 +184,7 @@ Http::Code HttpRequest::parse()
   const std::string* host = m_headers->getHeader("Host");
 
   if (!host ) {
-    trace("error") << "Missing Host" ;
+    LOG_ERROR("Missing Host" );
     return Http::Code::BadRequest;
   }
 
@@ -229,7 +229,7 @@ bool HttpRequest::parseMethod(const std::string& method)
 
 bool HttpRequest::parseParameters(const std::string& params)
 {
-  trace("debug") << "Parsing parameters " << params;
+  LOG_DEBUG("Parsing parameters " << params);
   return true;
 }
 

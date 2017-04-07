@@ -14,7 +14,7 @@ Interceptor::Interceptor(const Config::ServerConfig* config, boost::asio::io_ser
     m_ioService(ioService),
     m_acceptor(m_ioService, tcp::endpoint(boost::asio::ip::address::from_string(m_config->m_listenHost), m_config->m_listenPort))
 {
-  trace("info") << "Launching " << Server::getName() << "/" << Server::getVersion() << " on " << m_config->m_listenHost << ":" << m_config->m_listenPort;
+  LOG_INFO("Launching " << Server::getName() << "/" << Server::getVersion() << " on " << m_config->m_listenHost << ":" << m_config->m_listenPort);
 }
 
 Interceptor::~Interceptor()
@@ -38,9 +38,9 @@ void Interceptor::handleAccept(InterceptorSessionPtr session, const boost::syste
 {
   if ( !error ) {
     session->start();
-    trace("info") << "Incomming connection from " << session->connection()->ip();
+    LOG_INFO("Incomming connection from " << session->connection()->ip());
   } else {
-    trace("error") << "Could not accept connection " << error.message();
+    LOG_INFO("Could not accept connection " << error.message());
   }
 
   listen();

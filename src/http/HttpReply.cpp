@@ -239,7 +239,7 @@ void HttpReply::post(std::stringstream& stream)
 
   if (!getFlag(HeadersSent)) {
     buildHeaders();
-    trace("info") << m_request->queryString() << " " << (int) m_status;
+    LOG_INFO(m_request->queryString() << " " << (int) m_status);
   }
 
   m_request->session()->postReply(shared_from_this());
