@@ -58,7 +58,7 @@ void HttpHeaders::addHeader(const std::string& key, int i)
 
 void HttpHeaders::addGeneralHeaders()
 {
-  addHeader("Server", Server::getCommonName());
+  addHeader("Server", Http::Server::getCommonName());
   addHeader("Accept-Ranges", "bytes");
 }
 

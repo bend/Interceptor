@@ -1,22 +1,20 @@
-#ifndef UTILS_H__
-#define UTILS_H__
+#ifndef FILE_UTILS_H__
+#define FILE_UTILS_H__
 
 #include <string>
 #include <vector>
 
-class FileUtils {
-
-public:
+namespace FileUtils {
 
   /**
    * Read the file content into a buffer
    * @return the initialized buffer and the size
    */
-  static bool readFile(const std::string& path, unsigned char** data,
-                       size_t& bytes);
+  bool readFile(const std::string& path, unsigned char** data,
+                size_t& bytes);
 
-  static bool readFile(const std::string& path, std::stringstream& stream,
-                       size_t& bytes);
+  bool readFile(const std::string& path, std::stringstream& stream,
+                size_t& bytes);
 
   /**
    * Read a part of a file into a stringstream
@@ -25,26 +23,26 @@ public:
    * [1] last byte index
    * [2] total file size on disk
    */
-  static bool readFile(const std::string& filename,
-                       const std::tuple<int64_t, int64_t>& bytes, std::stringstream& stream,
-                       std::vector<uint64_t>& sizes);
+  bool readFile(const std::string& filename,
+                const std::tuple<int64_t, int64_t>& bytes, std::stringstream& stream,
+                std::vector<uint64_t>& sizes);
 
-  static bool fileSize(const std::string& path, size_t& bytes);
+  bool fileSize(const std::string& path, size_t& bytes);
 
-  static bool exists(const std::string& path);
+  bool exists(const std::string& path);
 
-  static std::string mimeType(const std::string& path);
+  std::string mimeType(const std::string& path);
 
-  static std::string extension(const std::string& filename);
+  std::string extension(const std::string& filename);
 
   /**
    * Returns a tuple containing:
    * [0] - Etag
    * [1] - Last modified in GMT format
    */
-  static std::tuple<std::string, std::string> generateCacheData(
+  std::tuple<std::string, std::string> generateCacheData(
     const std::string& path);
 
-};
+}
 
-#endif // UTILS_H__
+#endif // FILE_UTILS_H__

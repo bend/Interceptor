@@ -16,7 +16,8 @@ Interceptor::Interceptor(const Config::ServerConfig* config,
     m_acceptor(m_ioService, tcp::endpoint(boost::asio::ip::address::from_string(
         m_config->m_listenHost), m_config->m_listenPort))
 {
-  LOG_INFO("Launching " << Server::getName() << "/" << Server::getVersion() <<
+  LOG_INFO("Launching " << Http::Server::getName() << "/" <<
+           Http::Server::getVersion() <<
            " on " << m_config->m_listenHost << ":" << m_config->m_listenPort);
 }
 

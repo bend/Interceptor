@@ -51,13 +51,14 @@ private:
   bool chunkResponse(std::vector<boost::asio::const_buffer>& buffers);
 #ifdef ENABLE_GZIP
   bool encodeResponse(std::vector<boost::asio::const_buffer>& buffers);
-#endif // ifdef ENABLE_GZIP
+#endif // ENABLE_GZIP
 
   void buildHeaders();
 
 #ifdef ENABLE_GZIP
   void initGzip();
-#endif // ifdef ENABLE_GZIP
+#endif // ENABLE_GZIP
+
   void setMimeType(const std::string& filename);
   bool requestFileContents(Http::Method method, const SiteConfig* site,
                            std::stringstream& stream);

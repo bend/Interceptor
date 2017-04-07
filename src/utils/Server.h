@@ -6,12 +6,17 @@
 #define SERVER_NAME		"Interceptor"
 #define SERVER_VERSION	"0.1"
 
-class Server {
-public:
-  static std::string getCommonName();
-  static std::string getVersion();
-  static std::string getName();
-  static std::string getOsName();
-};
+namespace Http {
+
+  namespace Server {
+
+    std::string getCommonName();
+    std::string getVersion();
+    std::string getName();
+    std::string getOsName();
+
+  }
+
+}
 
 #endif //SERVER_H__

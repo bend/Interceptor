@@ -37,10 +37,11 @@ static inline LogEntry trace(const std::string& type)
 #define LOG_INFO(A) trace("info") << A
 #define LOG_WARN(A) trace("warn") << A
 #define LOG_ERROR(A)  trace("err ") << A
+
 #ifdef DEBUG_LOGGING
 #define LOG_DEBUG(A) trace("dbg ") << A
 #else
 #define LOG_DEBUG(A)
-#endif // ifdef LOG_DEBUG(A)
+#endif // DEBUG_LOGGING
 
 #endif //LOGGER_H__

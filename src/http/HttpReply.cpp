@@ -59,7 +59,7 @@ void HttpReply::process()
 
 #ifdef ENABLE_GZIP
   setFlag(Flag::GzipEncoding, m_request->supportsCompression());
-#endif // ifdef ENABLE_GZIP
+#endif // ENABLE_GZIP
 
   switch (m_request->method()) {
     case Http::Method::GET:
@@ -229,7 +229,7 @@ void HttpReply::post(std::stringstream& stream)
     encodeResponse(buffers);
   }
 
-#endif // ifdef ENABLE_GZIP
+#endif // ENABLE_GZIP
 
   if (canChunkResponse()) {
     chunkResponse(buffers);
@@ -317,7 +317,7 @@ bool HttpReply::encodeResponse(std::vector<boost::asio::const_buffer>& buffers)
 
   return true;
 }
-#endif // ifdef ENABLE_GZIP
+#endif // ENABLE_GZIP
 
 void HttpReply::buildHeaders()
 {
@@ -396,7 +396,7 @@ void HttpReply::initGzip()
   m_gzipBusy = true;
   assert(r == Z_OK);
 }
-#endif // ifdef ENABLE_GZIP
+#endif // ENABLE_GZIP
 
 boost::asio::const_buffer HttpReply::buf(const std::string& s)
 {
@@ -450,5 +450,5 @@ bool HttpReply::canEncodeResponse() const
   return getFlag(Flag::GzipEncoding) && m_request->method() != Http::Method::HEAD;
 #else
   return false;
-#endif // ifdef ENABLE_GZIP
+#endif // ENABLE_GZIP
 }

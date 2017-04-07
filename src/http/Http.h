@@ -28,6 +28,6 @@ namespace Http {
 
   void stringValue(Code error, std::stringstream& stream);
 
-};
+}
 
 #endif // HTTP_H_
