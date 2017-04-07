@@ -4,44 +4,43 @@
 #include <string>
 #include <vector>
 
-namespace FileUtils {
+#include "http/Http.h"
 
-  /**
-   * Read the file content into a buffer
-   * @return the initialized buffer and the size
-   */
-  bool readFile(const std::string& path, unsigned char** data,
-                size_t& bytes);
+namespace Http {
+  namespace FileUtils {
 
-  bool readFile(const std::string& path, std::stringstream& stream,
-                size_t& bytes);
+    /**
+     * Read the file content into a buffer
+     * @return the initialized buffer and the size
+     */
+    Code readFile(const std::string& path, unsigned char** data,
+                  size_t& bytes);
 
-  /**
-   * Read a part of a file into a stringstream
-   * Return a vector containing
-   * [0] first byte index
-   * [1] last byte index
-   * [2] total file size on disk
-   */
-  bool readFile(const std::string& filename,
-                const std::tuple<int64_t, int64_t>& bytes, std::stringstream& stream,
-                std::vector<uint64_t>& sizes);
+    Code readFile(const std::string& path, std::stringstream& stream,
+                  size_t& bytes);
 
-  bool fileSize(const std::string& path, size_t& bytes);
+    Code readFile(const std::string& filename, size_t from, size_t to,
+                  std::stringstream& stream, size_t& bytesRead);
 
-  bool exists(const std::string& path);
+    Code calculateBounds(const std::string& filename, int64_t& from, int64_t& to);
 
-  std::string mimeType(const std::string& path);
+    bool fileSize(const std::string& path, size_t& bytes);
 
-  std::string extension(const std::string& filename);
+    bool exists(const std::string& path);
 
-  /**
-   * Returns a tuple containing:
-   * [0] - Etag
-   * [1] - Last modified in GMT format
-   */
-  std::tuple<std::string, std::string> generateCacheData(
-    const std::string& path);
+    std::string mimeType(const std::string& path);
+
+    std::string extension(const std::string& filename);
+
+    /**
+     * Returns a tuple containing:
+     * [0] - Etag
+     * [1] - Last modified in GMT format
+     */
+    std::tuple<std::string, std::string> generateCacheData(
+      const std::string& path);
+
+  }
 
 }
 

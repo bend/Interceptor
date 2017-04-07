@@ -11,81 +11,83 @@
 
 #include <zlib.h>
 
-class HttpHeaders;
-
-class HttpRequest;
-
 namespace Http {
-  enum class Code : short;
-    enum class Method : char;
-  };
+  class HttpHeaders;
 
-  class HttpReply : public std::enable_shared_from_this<HttpReply> {
+  class HttpRequest;
 
-public:
-  enum Flag {
-    Closing,
-    GzipEncoding,
-    ChunkedEncoding,
-    HeadersSent
-  };
+  namespace Http {
+    enum class Code : short;
+      enum class Method : char;
+    };
 
-  HttpReply(HttpRequestPtr request);
-  ~HttpReply();
+    class HttpReply : public std::enable_shared_from_this<HttpReply> {
 
-  void process();
+  public:
+    enum Flag {
+      Closing,
+      GzipEncoding,
+      ChunkedEncoding,
+      HeadersSent
+    };
 
-  const std::vector<boost::asio::const_buffer>& buffers() const;
+    HttpReply(HttpRequestPtr request);
+    ~HttpReply();
 
-  void setFlag(Flag flag, bool value);
+    void process();
 
-  bool getFlag(Flag flag) const;
+    const std::vector<boost::asio::const_buffer>& buffers() const;
 
-private:
-  void handleRetrievalRequest(Http::Method method);
+    void setFlag(Flag flag, bool value);
 
-  void post(std::stringstream& stream);
-  void buildErrorResponse(Http::Code error, std::stringstream& response,
-                          bool closeConnection = false);
+    bool getFlag(Flag flag) const;
 
-  bool chunkResponse(std::vector<boost::asio::const_buffer>& buffers);
+  private:
+    void handleRetrievalRequest(Method method);
+
+    void post(std::stringstream& stream);
+    void buildErrorResponse(Code error, std::stringstream& response,
+                            bool closeConnection = false);
+
+    bool chunkResponse(std::vector<boost::asio::const_buffer>& buffers);
 #ifdef ENABLE_GZIP
-  bool encodeResponse(std::vector<boost::asio::const_buffer>& buffers);
+    bool encodeResponse(std::vector<boost::asio::const_buffer>& buffers);
 #endif // ENABLE_GZIP
 
-  void buildHeaders();
+    void buildHeaders();
 
 #ifdef ENABLE_GZIP
-  void initGzip();
+    void initGzip();
 #endif // ENABLE_GZIP
 
-  void setMimeType(const std::string& filename);
-  bool requestFileContents(Http::Method method, const SiteConfig* site,
-                           std::stringstream& stream);
-  bool requestPartialFileContents(const std::string& page,
-                                  std::stringstream& stream, size_t& bytes);
-  bool requestLargeFileContents(const std::string& page,
-                                std::stringstream& stream);
+    void setMimeType(const std::string& filename);
+    bool requestFileContents(Method method, const SiteConfig* site,
+                             std::stringstream& stream);
+    Code requestPartialFileContents(const std::string& page,
+                                    std::stringstream& stream, size_t& bytes);
+    bool requestLargeFileContents(const std::string& page,
+                                  std::stringstream& stream);
 
-  boost::asio::const_buffer buf(const std::string& s);
-  boost::asio::const_buffer buf(char* buf, size_t s);
+    boost::asio::const_buffer buf(const std::string& s);
+    boost::asio::const_buffer buf(char* buf, size_t s);
 
-  bool canChunkResponse() const;
-  bool canEncodeResponse() const;
+    bool canChunkResponse() const;
+    bool canEncodeResponse() const;
 
-private:
-  HttpRequestPtr m_request;
-  HttpHeaders* m_replyHeaders;
-  Http::Code m_status;
+  private:
+    HttpRequestPtr m_request;
+    HttpHeaders* m_replyHeaders;
+    Code m_status;
 
-  std::bitset<4> m_flags;
-  std::vector<boost::asio::const_buffer> m_buffers;
-  std::vector<std::string> m_bufs;
-  std::vector<char*> m_bufs2;
-  size_t m_contentLength;
+    std::bitset<4> m_flags;
+    std::vector<boost::asio::const_buffer> m_buffers;
+    std::vector<std::string> m_bufs;
+    std::vector<char*> m_bufs2;
+    size_t m_contentLength;
 
-  z_stream m_gzip;
-  bool m_gzipBusy;
-};
+    z_stream m_gzip;
+    bool m_gzipBusy;
+  };
 
+}
 #endif // HTTP_REPLY_H__

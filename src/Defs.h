@@ -6,13 +6,17 @@
 
 class InterceptorSession;
 class InboundConnection;
-class HttpRequest;
-class HttpReply;
+
+namespace Http {
+  class HttpRequest;
+  class HttpReply;
+
+};
 
 typedef std::shared_ptr<InterceptorSession> InterceptorSessionPtr;
 typedef std::shared_ptr<InboundConnection> InboundConnectionPtr;
-typedef std::shared_ptr<HttpRequest> HttpRequestPtr;
-typedef std::shared_ptr<HttpReply> HttpReplyPtr;
+typedef std::shared_ptr<Http::HttpRequest> HttpRequestPtr;
+typedef std::shared_ptr<Http::HttpReply> HttpReplyPtr;
 
 typedef std::string Host;
 

@@ -70,7 +70,7 @@ void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply,
     closeConnection();
   }
 
-  if (reply->getFlag(HttpReply::Closing)) {
+  if (reply->getFlag(Http::HttpReply::Closing)) {
     closeConnection();
   }
 }
@@ -107,7 +107,7 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
 
     if (!m_request || m_request->completed() ) {
       // Create Request
-      m_request = std::make_shared<HttpRequest>(shared_from_this());
+      m_request = std::make_shared<Http::HttpRequest>(shared_from_this());
     }
 
     m_request->appendData(m_requestBuffer, bytesTransferred);
@@ -116,7 +116,7 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
       start();
     } else  {
       // complete headers received
-      m_reply = std::make_shared<HttpReply>(m_request);
+      m_reply = std::make_shared<Http::HttpReply>(m_request);
       m_reply->process();
       start();
     }
