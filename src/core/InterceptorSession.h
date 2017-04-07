@@ -10,11 +10,13 @@
 
 class InboundConnection;
 
-class InterceptorSession : public std::enable_shared_from_this<InterceptorSession>  {
+class InterceptorSession : public
+  std::enable_shared_from_this<InterceptorSession>  {
 
 public:
 
-  InterceptorSession(const Config::ServerConfig* config, boost::asio::io_service& ioService);
+  InterceptorSession(const Config::ServerConfig* config,
+                     boost::asio::io_service& ioService);
   ~InterceptorSession() = default;
 
   boost::asio::ip::tcp::socket& socket() const;
@@ -32,8 +34,10 @@ public:
 
 private:
   // handlers
-  void handleHttpRequestRead(const boost::system::error_code& error, size_t bytesTransferred);
-  void handleTransmissionCompleted(HttpReplyPtr reply, const boost::system::error_code& error, size_t bytesTransferred);
+  void handleHttpRequestRead(const boost::system::error_code& error,
+                             size_t bytesTransferred);
+  void handleTransmissionCompleted(HttpReplyPtr reply,
+                                   const boost::system::error_code& error, size_t bytesTransferred);
 
   // internal logic
   void sendReply(HttpReplyPtr reply);

@@ -47,7 +47,8 @@ void ClientTcpConnection::asyncWrite( const void* data, size_t size,
   async_write(*m_spSocket, boost::asio::buffer(data, size), callback);
 }
 
-boost::system::error_code ClientTcpConnection::write(const void* data, size_t size)
+boost::system::error_code ClientTcpConnection::write(const void* data,
+    size_t size)
 {
   boost::system::error_code ec;
   boost::asio::write(*m_spSocket, boost::asio::buffer(data, size), ec);
@@ -69,6 +70,7 @@ void ClientTcpConnection::asyncConnect(
   boost::function1<void, boost::system::error_code> callback)
 {
   m_spSocket.reset(new tcp::socket(io_service_));
-  boost::asio::async_connect(*m_spSocket , endpointIterator_, boost::bind(callback,
-                             boost::asio::placeholders::error));
+  boost::asio::async_connect(*m_spSocket , endpointIterator_,
+                             boost::bind(callback,
+                                         boost::asio::placeholders::error));
 }

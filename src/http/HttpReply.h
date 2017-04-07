@@ -45,7 +45,8 @@ private:
   void handleRetrievalRequest(Http::Method method);
 
   void post(std::stringstream& stream);
-  void buildErrorResponse(Http::Code error, std::stringstream& response, bool closeConnection = false);
+  void buildErrorResponse(Http::Code error, std::stringstream& response,
+                          bool closeConnection = false);
 
   bool chunkResponse(std::vector<boost::asio::const_buffer>& buffers);
 #ifdef ENABLE_GZIP
@@ -58,9 +59,12 @@ private:
   void initGzip();
 #endif // ifdef ENABLE_GZIP
   void setMimeType(const std::string& filename);
-  bool requestFileContents(Http::Method method, const SiteConfig* site, std::stringstream& stream);
-  bool requestPartialFileContents(const std::string& page, std::stringstream& stream, size_t& bytes);
-  bool requestLargeFileContents(const std::string& page, std::stringstream& stream);
+  bool requestFileContents(Http::Method method, const SiteConfig* site,
+                           std::stringstream& stream);
+  bool requestPartialFileContents(const std::string& page,
+                                  std::stringstream& stream, size_t& bytes);
+  bool requestLargeFileContents(const std::string& page,
+                                std::stringstream& stream);
 
   boost::asio::const_buffer buf(const std::string& s);
   boost::asio::const_buffer buf(char* buf, size_t s);

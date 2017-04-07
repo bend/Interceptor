@@ -7,7 +7,8 @@
 #include <boost/filesystem.hpp>
 #include <sys/stat.h>
 
-bool FileUtils::readFile(const std::string& filename, unsigned char** data, size_t& pageLength)
+bool FileUtils::readFile(const std::string& filename, unsigned char** data,
+                         size_t& pageLength)
 {
   namespace fs = boost::filesystem;
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
@@ -32,7 +33,8 @@ bool FileUtils::readFile(const std::string& filename, unsigned char** data, size
   return true;
 }
 
-bool FileUtils::readFile(const std::string& filename, std::stringstream& stream, size_t& pageLength)
+bool FileUtils::readFile(const std::string& filename, std::stringstream& stream,
+                         size_t& pageLength)
 {
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
 
@@ -44,7 +46,9 @@ bool FileUtils::readFile(const std::string& filename, std::stringstream& stream,
   return true;
 }
 
-bool FileUtils::readFile(const std::string& filename, const std::tuple<int64_t, int64_t>& bytes, std::stringstream& stream, std::vector<uint64_t>& sizes)
+bool FileUtils::readFile(const std::string& filename,
+                         const std::tuple<int64_t, int64_t>& bytes, std::stringstream& stream,
+                         std::vector<uint64_t>& sizes)
 {
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
 
@@ -156,7 +160,8 @@ bool FileUtils::exists(const std::string& filename)
   return true;
 }
 
-std::tuple<std::string, std::string> FileUtils::generateCacheData(const std::string& path)
+std::tuple<std::string, std::string> FileUtils::generateCacheData(
+  const std::string& path)
 {
   struct stat st;
 

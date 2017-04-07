@@ -18,7 +18,8 @@ int main(int argc, char** argv)
     boost::asio::io_service ioService;
 
     for (const auto& serverConfig : config->serversConfig()) {
-      std::shared_ptr<Interceptor> interceptor = std::make_shared<Interceptor>(serverConfig, ioService);
+      std::shared_ptr<Interceptor> interceptor = std::make_shared<Interceptor>
+          (serverConfig, ioService);
       interceptor->init();
     }
 

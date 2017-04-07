@@ -14,7 +14,8 @@ std::string InboundConnection::ip()
   }
 }
 
-TcpInboundConnection::TcpInboundConnection(boost::asio::io_service& io_service) :
+TcpInboundConnection::TcpInboundConnection(boost::asio::io_service& io_service)
+  :
   m_spSocket(io_service)
 {
 }
@@ -27,7 +28,8 @@ void TcpInboundConnection::asyncRead( void* b, size_t size,
              callback);
 }
 
-void TcpInboundConnection::asyncReadUntil(boost::asio::streambuf& buf, const boost::regex& delim,
+void TcpInboundConnection::asyncReadUntil(boost::asio::streambuf& buf,
+    const boost::regex& delim,
     boost::function2<void, boost::system::error_code, size_t> callback)
 {
   async_read_until(m_spSocket, buf, delim, callback);
@@ -47,7 +49,8 @@ void TcpInboundConnection::asyncWrite( const void* data, size_t size,
   async_write(m_spSocket, boost::asio::buffer(data, size), callback);
 }
 
-void TcpInboundConnection::asyncWrite(const std::vector<boost::asio::const_buffer>& buffers,
+void TcpInboundConnection::asyncWrite(const
+                                      std::vector<boost::asio::const_buffer>& buffers,
                                       boost::function2<void, boost::system::error_code,
                                       size_t> callback)
 {

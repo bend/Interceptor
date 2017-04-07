@@ -1,7 +1,8 @@
 #ifndef ABSTRACT_CACHE_HANDLER_H__
 #define ABSTRACT_CACHE_HANDLER_H__
 
-class AbstractCacheHandler : public std::shared_from_this<AbstractCacheHandler> {
+class AbstractCacheHandler : public
+  std::shared_from_this<AbstractCacheHandler> {
 
 public:
   AbstractCacheHandler(size_t maxCacheSize)

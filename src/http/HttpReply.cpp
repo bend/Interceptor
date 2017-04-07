@@ -104,7 +104,8 @@ void HttpReply::handleRetrievalRequest(Http::Method method)
   requestFileContents(method, site, stream);
 }
 
-bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site, std::stringstream& stream)
+bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site,
+                                    std::stringstream& stream)
 {
   std::string page;
   bool found = false;
@@ -180,7 +181,8 @@ bool HttpReply::requestFileContents(Http::Method method, const SiteConfig* site,
   return true;
 }
 
-bool HttpReply::requestPartialFileContents(const std::string& page, std::stringstream& stream, size_t& bytes)
+bool HttpReply::requestPartialFileContents(const std::string& page,
+    std::stringstream& stream, size_t& bytes)
 {
   std::vector<uint64_t> sizes;
   std::tuple<int64_t, int64_t> range = m_request->getRangeRequest();
@@ -190,7 +192,8 @@ bool HttpReply::requestPartialFileContents(const std::string& page, std::strings
     return ret;
   }
 
-  m_replyHeaders->addHeader("Content-Range", "bytes " + std::to_string(sizes[0]) + "-"
+  m_replyHeaders->addHeader("Content-Range",
+                            "bytes " + std::to_string(sizes[0]) + "-"
                             + std::to_string(sizes[1]) + "/" + std::to_string(sizes[2]));
   bytes = sizes[1] - sizes[0] + 1;
   m_status = Http::Code::PartialContent;
@@ -199,7 +202,8 @@ bool HttpReply::requestPartialFileContents(const std::string& page, std::strings
 }
 
 
-bool HttpReply::requestLargeFileContents(const std::string& page, std::stringstream& stream)
+bool HttpReply::requestLargeFileContents(const std::string& page,
+    std::stringstream& stream)
 {
   return true;
 }
@@ -277,7 +281,8 @@ bool HttpReply::encodeResponse(std::vector<boost::asio::const_buffer>& buffers)
 
   for (auto& buffer : buffers) {
     m_gzip.avail_in = boost::asio::buffer_size(buffer);
-    m_gzip.next_in = (unsigned char*) boost::asio::detail::buffer_cast_helper(buffer);
+    m_gzip.next_in = (unsigned char*) boost::asio::detail::buffer_cast_helper(
+                       buffer);
 
     unsigned char out[16 * 1024];
 
@@ -340,13 +345,15 @@ void HttpReply::buildHeaders()
   m_buffers[0] = buf(std::string(resp));
 }
 
-void HttpReply::buildErrorResponse(Http::Code error, std::stringstream& stream, bool closeConnection)
+void HttpReply::buildErrorResponse(Http::Code error, std::stringstream& stream,
+                                   bool closeConnection)
 {
   bool found = false;
   size_t bytes = 0;
 
   const ErrorPageMap& map = m_request->hasMatchingSite() ?
-                            m_request->matchingSite()->m_errorPages : m_request->session()->config()->m_errorPages;
+                            m_request->matchingSite()->m_errorPages :
+                            m_request->session()->config()->m_errorPages;
 
   if (map.count(std::to_string((int)error)) > 0 ) {
     std::string url = map.at(std::to_string((int)error));
@@ -422,7 +429,8 @@ void HttpReply::setMimeType(const std::string& filename)
 
   auto site = m_request->matchingSite();
 
-  if (site->m_gzip.count("all") == 0 && site->m_gzip.count(FileUtils::extension(filename)) == 0) {
+  if (site->m_gzip.count("all") == 0
+      && site->m_gzip.count(FileUtils::extension(filename)) == 0) {
     setFlag(Flag::GzipEncoding, false);
   }
 
@@ -430,7 +438,8 @@ void HttpReply::setMimeType(const std::string& filename)
 
 bool HttpReply::canChunkResponse() const
 {
-  return getFlag(Flag::ChunkedEncoding) && m_request->method() != Http::Method::HEAD
+  return getFlag(Flag::ChunkedEncoding)
+         && m_request->method() != Http::Method::HEAD
          && m_status != Http::Code::PartialContent;
 }
 

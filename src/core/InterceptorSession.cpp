@@ -10,7 +10,8 @@
 #include <boost/bind.hpp>
 #include <boost/regex.hpp>
 
-InterceptorSession::InterceptorSession(const Config::ServerConfig* config, boost::asio::io_service& ioService)
+InterceptorSession::InterceptorSession(const Config::ServerConfig* config,
+                                       boost::asio::io_service& ioService)
   : m_config(config),
     m_ioService(ioService),
     m_strand(ioService),
@@ -57,7 +58,8 @@ void InterceptorSession::sendReply(HttpReplyPtr reply)
                           );
 }
 
-void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply, const boost::system::error_code& error, size_t bytesTransferred)
+void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply,
+    const boost::system::error_code& error, size_t bytesTransferred)
 {
   stopWriteTimer();
 
@@ -95,7 +97,8 @@ void InterceptorSession::start()
   }
 }
 
-void InterceptorSession::handleHttpRequestRead(const boost::system::error_code& error, size_t bytesTransferred)
+void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
+    error, size_t bytesTransferred)
 {
   stopReadTimer();
 
@@ -125,7 +128,8 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code& 
 void InterceptorSession::startReadTimer()
 {
   LOG_DEBUG("Setting timeout to " << m_config->m_clientTimeout);
-  m_readTimer.expires_from_now(boost::posix_time::seconds(m_config->m_clientTimeout));
+  m_readTimer.expires_from_now(boost::posix_time::seconds(
+                                 m_config->m_clientTimeout));
   m_readTimer.async_wait
   (m_strand.wrap
    (boost::bind(&InterceptorSession::handleTimeout,
@@ -136,7 +140,8 @@ void InterceptorSession::startReadTimer()
 
 void InterceptorSession::startWriteTimer()
 {
-  m_writeTimer.expires_from_now(boost::posix_time::seconds(m_config->m_serverTimeout));
+  m_writeTimer.expires_from_now(boost::posix_time::seconds(
+                                  m_config->m_serverTimeout));
   m_writeTimer.async_wait
   (m_strand.wrap
    (boost::bind(&InterceptorSession::handleTimeout,

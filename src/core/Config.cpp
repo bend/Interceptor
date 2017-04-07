@@ -105,7 +105,8 @@ void Config::parse()
 
 }
 
-void Config::parseErrorPages(json& j, ErrorPageMap& map, const std::string appendPath)
+void Config::parseErrorPages(json& j, ErrorPageMap& map,
+                             const std::string appendPath)
 {
   for (auto& page : j) {
     for (json::iterator it = page.begin(); it != page.end(); ++it) {

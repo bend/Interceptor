@@ -23,7 +23,8 @@ public:
                            boost::function2<void, boost::system::error_code,
                            size_t> callback) = 0;
 
-  virtual void asyncReadUntil(boost::asio::streambuf& buf, const boost::regex& delim,
+  virtual void asyncReadUntil(boost::asio::streambuf& buf,
+                              const boost::regex& delim,
                               boost::function2<void, boost::system::error_code, size_t> callback) = 0;
 
   virtual void asyncReadSome(void* data, size_t size,
@@ -45,7 +46,8 @@ public:
   virtual void asyncRead( void* data, size_t size,
                           boost::function2<void, boost::system::error_code, size_t> callback) override;
 
-  virtual void asyncReadUntil(boost::asio::streambuf& buf, const boost::regex& delim,
+  virtual void asyncReadUntil(boost::asio::streambuf& buf,
+                              const boost::regex& delim,
                               boost::function2<void, boost::system::error_code, size_t> callback) override;
 
   virtual void asyncReadSome(void* data, size_t size,

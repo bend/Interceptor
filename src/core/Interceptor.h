@@ -10,13 +10,15 @@
 class Interceptor : public std::enable_shared_from_this<Interceptor> {
 
 public:
-  Interceptor(const Config::ServerConfig* config, boost::asio::io_service& ioService);
+  Interceptor(const Config::ServerConfig* config,
+              boost::asio::io_service& ioService);
   ~Interceptor();
   void init();
 
 private:
   void listen();
-  void handleAccept(InterceptorSessionPtr session, const boost::system::error_code& error);
+  void handleAccept(InterceptorSessionPtr session,
+                    const boost::system::error_code& error);
 
 private:
   const Config::ServerConfig* m_config;
