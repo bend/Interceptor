@@ -218,6 +218,7 @@ namespace Http {
   bool HttpReply::requestLargeFileContents(const std::string& page,
       size_t totalBytes)
   {
+    LOG_DEBUG("HttpReply::requestLargeFileContents()");
     size_t bytes;
     size_t from = 0;
     size_t to = std::min((size_t)MAX_CHUNK_SIZE, totalBytes);
@@ -322,7 +323,11 @@ namespace Http {
   bool HttpReply::encodeResponse(std::vector<boost::asio::const_buffer>& buffers)
   {
     std::vector<boost::asio::const_buffer> result;
-    initGzip();
+
+    if (!m_gzipBusy) {
+      initGzip();
+    }
+
     unsigned int i = 0;
 
     for (auto& buffer : buffers) {
@@ -339,7 +344,7 @@ namespace Http {
 
         int res = 0;
         res = deflate(&m_gzip,
-                      (i == buffers.size() - 1) ?
+                      (i == buffers.size() - 1 && m_request->completed()) ?
                       Z_FINISH : Z_NO_FLUSH);
         assert(res != Z_STREAM_ERROR);
 
@@ -355,8 +360,10 @@ namespace Http {
 
     }
 
-    deflateEnd(&m_gzip);
-    m_gzipBusy = false;
+    if (m_request->completed()) {
+      deflateEnd(&m_gzip);
+      m_gzipBusy = false;
+    }
 
     buffers.clear();
     buffers.insert(buffers.begin(), result.begin(), result.end());
@@ -378,6 +385,7 @@ namespace Http {
     }
 
     if (canEncodeResponse()) {
+      LOG_DEBUG("Content-Encoding: gzip");
       m_replyHeaders->addHeader("Content-Encoding", "gzip");
     }
 

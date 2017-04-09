@@ -21,7 +21,7 @@
 
 	  "sites": [
 		{
-		  "gzip": "css,html,js,png",
+		  "gzip": "css,html,js,png,mp4",
 		  "try-files" : [
 			"index.php",
 			"index.html"
