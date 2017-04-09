@@ -28,15 +28,14 @@ namespace Http {
       Closing,
       GzipEncoding,
       ChunkedEncoding,
-      HeadersSent
+      HeadersSent,
+      LargeFileRequest
     };
 
     HttpReply(HttpRequestPtr request);
     ~HttpReply();
 
     void process();
-
-    const std::vector<boost::asio::const_buffer>& buffers() const;
 
     void setFlag(Flag flag, bool value);
 
@@ -54,7 +53,7 @@ namespace Http {
     bool encodeResponse(std::vector<boost::asio::const_buffer>& buffers);
 #endif // ENABLE_GZIP
 
-    void buildHeaders();
+    void buildHeaders(std::vector<boost::asio::const_buffer>& buffers);
 
 #ifdef ENABLE_GZIP
     void initGzip();
@@ -65,8 +64,7 @@ namespace Http {
                              std::stringstream& stream);
     Code requestPartialFileContents(const std::string& page,
                                     std::stringstream& stream, size_t& bytes);
-    bool requestLargeFileContents(const std::string& page,
-                                  std::stringstream& stream);
+    bool requestLargeFileContents(const std::string& page, size_t totalBytes);
 
     boost::asio::const_buffer buf(const std::string& s);
     boost::asio::const_buffer buf(char* buf, size_t s);
@@ -79,8 +77,7 @@ namespace Http {
     HttpHeaders* m_replyHeaders;
     Code m_status;
 
-    std::bitset<4> m_flags;
-    std::vector<boost::asio::const_buffer> m_buffers;
+    std::bitset<5> m_flags;
     std::vector<std::string> m_bufs;
     std::vector<char*> m_bufs2;
     size_t m_contentLength;

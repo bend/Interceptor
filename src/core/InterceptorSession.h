@@ -27,7 +27,7 @@ public:
 
   void start();
 
-  void postReply(HttpReplyPtr reply);
+  void postReply(std::vector<boost::asio::const_buffer>& buffers);
 
   void closeConnection();
 
@@ -36,11 +36,12 @@ private:
   // handlers
   void handleHttpRequestRead(const boost::system::error_code& error,
                              size_t bytesTransferred);
-  void handleTransmissionCompleted(HttpReplyPtr reply,
+  void handleTransmissionCompleted(std::vector<boost::asio::const_buffer>& buffer,
                                    const boost::system::error_code& error, size_t bytesTransferred);
 
   // internal logic
-  void sendReply(HttpReplyPtr reply);
+  void sendReply(std::vector<boost::asio::const_buffer>& buffer);
+  void sendNext(std::vector<boost::asio::const_buffer>& buffer);
 
   void startReadTimer();
   void startWriteTimer();
@@ -57,9 +58,13 @@ private:
   HttpRequestPtr m_request;
   HttpReplyPtr m_reply;
 
+  std::deque<std::vector<boost::asio::const_buffer>> m_buffers;
+
   // Timers
   boost::asio::deadline_timer m_readTimer;
   boost::asio::deadline_timer m_writeTimer;
+
+  bool m_canSend;
 };
 
 #endif //INTERCEPTOR_SESSION_H__

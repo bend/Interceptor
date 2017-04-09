@@ -7,6 +7,7 @@
 #include "utils/Logger.h"
 
 #include <boost/bind.hpp>
+#include <algorithm>
 
 namespace Http {
 
@@ -24,7 +25,7 @@ namespace Http {
     delete m_replyHeaders;
 
     for (auto b : m_bufs2) {
-      delete[] b;
+      delete [] b;
     }
   }
 
@@ -74,11 +75,6 @@ namespace Http {
       default:
         break;
     }
-  }
-
-  const std::vector<boost::asio::const_buffer>& HttpReply::buffers() const
-  {
-    return m_buffers;
   }
 
   void HttpReply::setFlag(Flag flag, bool value)
@@ -147,13 +143,19 @@ namespace Http {
       if (m_request->partialRequest()) {
         ret = requestPartialFileContents(page, stream, bytes);
       } else {
-        FileUtils::fileSize(page, bytes);
-        // if(bytes > MAX_CHUNK_SIZE) {
-        // File is too big to be sent at once, we will send it in multiple times to
-        // avoid consuming to much memory
-        //	return requestLargeFileContents(page, stream);
-        //} else
-        ret = FileUtils::readFile(page, stream, bytes);
+        if (!FileUtils::fileSize(page, bytes)) {
+          buildErrorResponse(Code::InternalServerError, stream);
+          return false;
+        }
+
+        if (bytes > MAX_CHUNK_SIZE) {
+          // File is too big to be sent at once, we will send it in multiple times to
+          // avoid consuming to much memory
+          setMimeType(page);
+          return requestLargeFileContents(page, bytes);
+        } else {
+          ret = FileUtils::readFile(page, stream, bytes);
+        }
       }
 
       if (ret != Code::Ok) {
@@ -214,23 +216,46 @@ namespace Http {
 
 
   bool HttpReply::requestLargeFileContents(const std::string& page,
-      std::stringstream& stream)
+      size_t totalBytes)
   {
+    size_t bytes;
+    size_t from = 0;
+    size_t to = std::min((size_t)MAX_CHUNK_SIZE, totalBytes);
+    m_contentLength = totalBytes;
+    setFlag(LargeFileRequest, true);
+
+    for (;;) {
+      std::stringstream stream;
+
+      if (FileUtils::readFile(page, from, to, stream, bytes) == Code::Ok) {
+        if (to == totalBytes - 1) {
+          m_request->setCompleted(true);
+          post(stream);
+          break;
+        } else {
+          post(stream);
+        }
+
+      } else {
+        return false;
+      }
+
+      from = to + 1;
+      to = std::min((size_t)(to + MAX_CHUNK_SIZE), totalBytes - 1);
+    }
+
+
     return true;
   }
 
   void HttpReply::post(std::stringstream& stream)
   {
-
-    for (auto b : m_bufs2) {
-      delete[] b;
-    }
-
-    m_bufs2.clear();
-    m_bufs.clear();
-    m_buffers.clear();
-
+    std::vector<boost::asio::const_buffer> main;
     std::vector<boost::asio::const_buffer> buffers;
+
+    if (!getFlag(HeadersSent))
+      main.push_back({}); // emtpy place for headers
+
     buffers.push_back(buf(std::string(stream.str())));
 
 #ifdef ENABLE_GZIP
@@ -241,29 +266,31 @@ namespace Http {
 
 #endif // ENABLE_GZIP
 
+    // We chunk only in the case that no header has been sent or if it's the last frame
     if (canChunkResponse()) {
       chunkResponse(buffers);
     }
 
-    m_buffers.clear();
-
-    if (!getFlag(HeadersSent))
-      m_buffers.push_back({}); // emtpy place for headers
-
-    m_buffers.insert(m_buffers.end(), buffers.begin(), buffers.end());
-
     if (!getFlag(HeadersSent)) {
-      buildHeaders();
+      buildHeaders(main);
       LOG_INFO(m_request->queryString() << " " << (int) m_status);
     }
 
-    m_request->session()->postReply(shared_from_this());
+    if (getFlag(HeadersSent)) {
+      m_request->session()->postReply(buffers);
+    } else {
+      setFlag(HeadersSent, true);
+      main.insert(main.end(), buffers.begin(), buffers.end());
+      m_request->session()->postReply(main);
+    }
   }
 
   bool HttpReply::chunkResponse(std::vector<boost::asio::const_buffer>& buffers)
   {
     size_t size = 0;
 
+    // We cannot take the total Content Length here because the gzip compression changed that
+    // Length, so we need to recalculate it
     for (auto& buffer : buffers) {
       size += boost::asio::buffer_size(buffer);
     }
@@ -273,12 +300,20 @@ namespace Http {
 
     char* header = new char[stream.str().length()]();
     memcpy(header, stream.str().data(), stream.str().length());
+
     buffers.insert(buffers.begin(), buf(header, stream.str().length()));
 
-    stream.str("\r\n0\r\n\r\n");
-    char* footer = new char[stream.str().length()]();
-    memcpy(footer, stream.str().data(), stream.str().length());
-    buffers.push_back(buf(footer, stream.str().length()));
+    stream.str("\r\n");
+    char* crlf = new char[stream.str().length()]();
+    memcpy(crlf, stream.str().data(), stream.str().length());
+    buffers.push_back(buf(crlf, stream.str().length()));
+
+    if (!getFlag(LargeFileRequest) || m_request->completed()) {
+      stream.str("0\r\n\r\n");
+      char* footer = new char[stream.str().length()]();
+      memcpy(footer, stream.str().data(), stream.str().length());
+      buffers.push_back(buf(footer, stream.str().length()));
+    }
 
     return true;
   }
@@ -291,6 +326,7 @@ namespace Http {
     unsigned int i = 0;
 
     for (auto& buffer : buffers) {
+
       m_gzip.avail_in = boost::asio::buffer_size(buffer);
       m_gzip.next_in = (unsigned char*) boost::asio::detail::buffer_cast_helper(
                          buffer);
@@ -329,7 +365,7 @@ namespace Http {
   }
 #endif // ENABLE_GZIP
 
-  void HttpReply::buildHeaders()
+  void HttpReply::buildHeaders(std::vector<boost::asio::const_buffer>& buffers)
   {
     std::stringstream stream;
     stream << "HTTP/" << m_request->httpVersion() << " ";
@@ -353,7 +389,7 @@ namespace Http {
 
     m_replyHeaders->serialize(stream);
     const std::string& resp = stream.str();
-    m_buffers[0] = buf(std::string(resp));
+    buffers[0] = buf(std::string(resp));
   }
 
   void HttpReply::buildErrorResponse(Code error, std::stringstream& stream,

@@ -25,6 +25,10 @@ namespace Http {
         stream << "422 Unprocessable Entity" << "\r\n";
         break;
 
+      case Code::InternalServerError:
+        stream << "500 Internal Server Error" << "\r\n";
+        break;
+
       case Code::HttpVersionNotSupported:
         stream << "505 HTTP Version Not Supported" << "\r\n";
         break;

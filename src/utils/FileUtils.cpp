@@ -56,7 +56,7 @@ namespace Http {
     }
 
     Code readFile(const std::string& filename, size_t from, size_t to,
-                  std::stringstream& stream, size_t& bytesRead)
+                  std::stringstream& stream, size_t& fileSize)
     {
       std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
       std::ifstream::pos_type pos = ifs.tellg();
@@ -66,7 +66,7 @@ namespace Http {
         return Code::NotFound;
       }
 
-      if (to > (size_t)pos) {
+      if (to > (size_t)pos - 1) {
         return Code::BadRequest;
       }
 
@@ -75,7 +75,7 @@ namespace Http {
       ifs.read(buffer, to - from + 1);
       ifs.close();
 
-      bytesRead = pos;
+      fileSize = pos;
 
       stream.write(buffer, to - from + 1);
 

@@ -10,6 +10,7 @@ namespace Http {
     BadRequest = 400,
     NotFound = 404,
     UnprocessableEntity = 422,
+    InternalServerError = 500,
     HttpVersionNotSupported = 505
   };
 

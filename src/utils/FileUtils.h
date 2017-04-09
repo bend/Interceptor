@@ -20,7 +20,7 @@ namespace Http {
                   size_t& bytes);
 
     Code readFile(const std::string& filename, size_t from, size_t to,
-                  std::stringstream& stream, size_t& bytesRead);
+                  std::stringstream& stream, size_t& fileSize);
 
     Code calculateBounds(const std::string& filename, int64_t& from, int64_t& to);
 

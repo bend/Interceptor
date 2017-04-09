@@ -16,7 +16,8 @@ InterceptorSession::InterceptorSession(const Config::ServerConfig* config,
     m_ioService(ioService),
     m_strand(ioService),
     m_readTimer(ioService),
-    m_writeTimer(ioService)
+    m_writeTimer(ioService),
+    m_canSend(true)
 {
   m_connection = std::make_shared<TcpInboundConnection>(m_ioService);
 }
@@ -36,43 +37,69 @@ const Config::ServerConfig* InterceptorSession::config() const
   return m_config;
 }
 
-void InterceptorSession::postReply(HttpReplyPtr reply)
+void InterceptorSession::postReply(std::vector<boost::asio::const_buffer>&
+                                   buffers)
 {
   m_ioService.post(
     m_strand.wrap(
-      boost::bind(&InterceptorSession::sendReply, shared_from_this(), reply)));
+      boost::bind(&InterceptorSession::sendNext, shared_from_this(), buffers)));
 }
 
+void InterceptorSession::sendNext(std::vector<boost::asio::const_buffer>&
+                                  buffer)
+{
+  m_buffers.push_back(buffer);
 
-void InterceptorSession::sendReply(HttpReplyPtr reply)
+  if (m_canSend) {
+    auto v = m_buffers.front();
+    m_buffers.pop_front();
+    sendReply(v);
+  }
+}
+
+void InterceptorSession::sendReply(std::vector<boost::asio::const_buffer>&
+                                   buffers)
 {
   startWriteTimer();
-  m_connection->asyncWrite(reply->buffers(), m_strand.wrap
+  m_canSend = false;
+  m_connection->asyncWrite(buffers, m_strand.wrap
                            (boost::bind
                             (&InterceptorSession::handleTransmissionCompleted,
                              shared_from_this(),
-                             reply,
+                             buffers,
                              boost::asio::placeholders::error,
                              boost::asio::placeholders::bytes_transferred)
                            )
                           );
 }
 
-void InterceptorSession::handleTransmissionCompleted(HttpReplyPtr reply,
-    const boost::system::error_code& error, size_t bytesTransferred)
+void InterceptorSession::handleTransmissionCompleted(
+  std::vector<boost::asio::const_buffer>& buffers,
+  const boost::system::error_code& error, size_t bytesTransferred)
 {
   stopWriteTimer();
 
   if (!error)  {
     LOG_DEBUG("Response sent ");
+    m_canSend = true;
+
+
+    if (!m_buffers.empty()) {
+      auto v = m_buffers.front();
+      m_buffers.pop_front();
+      sendReply(v);
+    }
+
   } else {
     LOG_ERROR("Could not send reponse " << error.message());
     closeConnection();
   }
 
+  /* XXX
   if (reply->getFlag(Http::HttpReply::Closing)) {
     closeConnection();
   }
+  */
 }
 
 void InterceptorSession::closeConnection()
