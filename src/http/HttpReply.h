@@ -15,11 +15,10 @@ namespace Http {
   class HttpHeaders;
 
   class HttpRequest;
+  class HttpBuffer;
 
-  namespace Http {
-    enum class Code : short;
-      enum class Method : char;
-    };
+  enum class Code : short;
+    enum class Method : char;
 
     class HttpReply : public std::enable_shared_from_this<HttpReply> {
 
@@ -48,12 +47,14 @@ namespace Http {
     void buildErrorResponse(Code error, std::stringstream& response,
                             bool closeConnection = false);
 
-    bool chunkResponse(std::vector<boost::asio::const_buffer>& buffers);
+    bool chunkResponse(HttpBuffer* httpBuffer,
+                       std::vector<boost::asio::const_buffer>& buffers);
 #ifdef ENABLE_GZIP
-    bool encodeResponse(std::vector<boost::asio::const_buffer>& buffers);
+    bool encodeResponse(HttpBuffer* httpBuffer,
+                        std::vector<boost::asio::const_buffer>& buffers);
 #endif // ENABLE_GZIP
 
-    void buildHeaders(std::vector<boost::asio::const_buffer>& buffers);
+    void buildHeaders(HttpBuffer* httpBuffer);
 
 #ifdef ENABLE_GZIP
     void initGzip();
@@ -66,8 +67,8 @@ namespace Http {
                                     std::stringstream& stream, size_t& bytes);
     bool requestLargeFileContents(const std::string& page, size_t totalBytes);
 
-    boost::asio::const_buffer buf(const std::string& s);
-    boost::asio::const_buffer buf(char* buf, size_t s);
+    boost::asio::const_buffer buf(HttpBuffer* buffer, const std::string& s);
+    boost::asio::const_buffer buf(HttpBuffer* buffer, char* buf, size_t s);
 
     bool canChunkResponse() const;
     bool canEncodeResponse() const;
@@ -78,8 +79,6 @@ namespace Http {
     Code m_status;
 
     std::bitset<5> m_flags;
-    std::vector<std::string> m_bufs;
-    std::vector<char*> m_bufs2;
     size_t m_contentLength;
 
     z_stream m_gzip;

@@ -5,6 +5,7 @@
 
 #include "socket/InboundConnection.h"
 #include "http/HttpRequest.h"
+#include "http/HttpBuffer.h"
 #include "http/HttpReply.h"
 
 #include <boost/bind.hpp>
@@ -37,16 +38,14 @@ const Config::ServerConfig* InterceptorSession::config() const
   return m_config;
 }
 
-void InterceptorSession::postReply(std::vector<boost::asio::const_buffer>&
-                                   buffers)
+void InterceptorSession::postReply(Http::HttpBuffer* buffer)
 {
   m_ioService.post(
     m_strand.wrap(
-      boost::bind(&InterceptorSession::sendNext, shared_from_this(), buffers)));
+      boost::bind(&InterceptorSession::sendNext, shared_from_this(), buffer)));
 }
 
-void InterceptorSession::sendNext(std::vector<boost::asio::const_buffer>&
-                                  buffer)
+void InterceptorSession::sendNext(Http::HttpBuffer* buffer)
 {
   m_buffers.push_back(buffer);
 
@@ -57,16 +56,15 @@ void InterceptorSession::sendNext(std::vector<boost::asio::const_buffer>&
   }
 }
 
-void InterceptorSession::sendReply(std::vector<boost::asio::const_buffer>&
-                                   buffers)
+void InterceptorSession::sendReply(Http::HttpBuffer* buffer)
 {
   startWriteTimer();
   m_canSend = false;
-  m_connection->asyncWrite(buffers, m_strand.wrap
+  m_connection->asyncWrite(buffer->m_buffers, m_strand.wrap
                            (boost::bind
                             (&InterceptorSession::handleTransmissionCompleted,
                              shared_from_this(),
-                             buffers,
+                             buffer,
                              boost::asio::placeholders::error,
                              boost::asio::placeholders::bytes_transferred)
                            )
@@ -74,7 +72,7 @@ void InterceptorSession::sendReply(std::vector<boost::asio::const_buffer>&
 }
 
 void InterceptorSession::handleTransmissionCompleted(
-  std::vector<boost::asio::const_buffer>& buffers,
+  Http::HttpBuffer* buffer,
   const boost::system::error_code& error, size_t bytesTransferred)
 {
   stopWriteTimer();
@@ -94,6 +92,8 @@ void InterceptorSession::handleTransmissionCompleted(
     LOG_ERROR("Could not send reponse " << error.message());
     closeConnection();
   }
+
+  //TODO free memory
 
   /* XXX
   if (reply->getFlag(Http::HttpReply::Closing)) {

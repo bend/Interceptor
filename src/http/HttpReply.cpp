@@ -3,6 +3,7 @@
 #include "core/InterceptorSession.h"
 #include "HttpRequest.h"
 #include "HttpHeaders.h"
+#include "HttpBuffer.h"
 #include "utils/FileUtils.h"
 #include "utils/Logger.h"
 
@@ -23,10 +24,6 @@ namespace Http {
   HttpReply::~HttpReply()
   {
     delete m_replyHeaders;
-
-    for (auto b : m_bufs2) {
-      delete [] b;
-    }
   }
 
   void HttpReply::process()
@@ -251,42 +248,40 @@ namespace Http {
 
   void HttpReply::post(std::stringstream& stream)
   {
-    std::vector<boost::asio::const_buffer> main;
+    HttpBuffer* httpBuffer = new HttpBuffer();
     std::vector<boost::asio::const_buffer> buffers;
 
     if (!getFlag(HeadersSent))
-      main.push_back({}); // emtpy place for headers
+      httpBuffer->m_buffers.push_back({}); // emtpy place for headers
 
-    buffers.push_back(buf(std::string(stream.str())));
+    buffers.push_back(buf(httpBuffer, std::string(stream.str())));
 
 #ifdef ENABLE_GZIP
 
     if (canEncodeResponse()) {
-      encodeResponse(buffers);
+      encodeResponse(httpBuffer, buffers);
     }
 
 #endif // ENABLE_GZIP
 
     // We chunk only in the case that no header has been sent or if it's the last frame
     if (canChunkResponse()) {
-      chunkResponse(buffers);
+      chunkResponse(httpBuffer, buffers);
     }
 
     if (!getFlag(HeadersSent)) {
-      buildHeaders(main);
+      buildHeaders(httpBuffer);
       LOG_INFO(m_request->queryString() << " " << (int) m_status);
+      setFlag(HeadersSent, true);
     }
 
-    if (getFlag(HeadersSent)) {
-      m_request->session()->postReply(buffers);
-    } else {
-      setFlag(HeadersSent, true);
-      main.insert(main.end(), buffers.begin(), buffers.end());
-      m_request->session()->postReply(main);
-    }
+    httpBuffer->m_buffers.insert(httpBuffer->m_buffers.end(), buffers.begin(),
+                                 buffers.end());
+    m_request->session()->postReply(httpBuffer);
   }
 
-  bool HttpReply::chunkResponse(std::vector<boost::asio::const_buffer>& buffers)
+  bool HttpReply::chunkResponse(HttpBuffer* httpBuffer,
+                                std::vector<boost::asio::const_buffer>& buffers)
   {
     size_t size = 0;
 
@@ -302,25 +297,26 @@ namespace Http {
     char* header = new char[stream.str().length()]();
     memcpy(header, stream.str().data(), stream.str().length());
 
-    buffers.insert(buffers.begin(), buf(header, stream.str().length()));
+    buffers.insert(buffers.begin(), buf(httpBuffer, header, stream.str().length()));
 
     stream.str("\r\n");
     char* crlf = new char[stream.str().length()]();
     memcpy(crlf, stream.str().data(), stream.str().length());
-    buffers.push_back(buf(crlf, stream.str().length()));
+    buffers.push_back(buf(httpBuffer, crlf, stream.str().length()));
 
     if (!getFlag(LargeFileRequest) || m_request->completed()) {
       stream.str("0\r\n\r\n");
       char* footer = new char[stream.str().length()]();
       memcpy(footer, stream.str().data(), stream.str().length());
-      buffers.push_back(buf(footer, stream.str().length()));
+      buffers.push_back(buf(httpBuffer, footer, stream.str().length()));
     }
 
     return true;
   }
 
 #ifdef ENABLE_GZIP
-  bool HttpReply::encodeResponse(std::vector<boost::asio::const_buffer>& buffers)
+  bool HttpReply::encodeResponse(HttpBuffer* httpBuffer,
+                                 std::vector<boost::asio::const_buffer>& buffers)
   {
     std::vector<boost::asio::const_buffer> result;
 
@@ -352,7 +348,7 @@ namespace Http {
         m_contentLength += have;
 
         if (have) {
-          result.push_back(buf(std::string((char*)out, have)));
+          result.push_back(buf(httpBuffer, std::string((char*)out, have)));
         }
       } while (m_gzip.avail_out == 0);
 
@@ -372,7 +368,7 @@ namespace Http {
   }
 #endif // ENABLE_GZIP
 
-  void HttpReply::buildHeaders(std::vector<boost::asio::const_buffer>& buffers)
+  void HttpReply::buildHeaders(HttpBuffer* httpBuffer)
   {
     std::stringstream stream;
     stream << "HTTP/" << m_request->httpVersion() << " ";
@@ -397,7 +393,7 @@ namespace Http {
 
     m_replyHeaders->serialize(stream);
     const std::string& resp = stream.str();
-    buffers[0] = buf(std::string(resp));
+    httpBuffer->m_buffers[0] = buf(httpBuffer, std::string(resp));
   }
 
   void HttpReply::buildErrorResponse(Code error, std::stringstream& stream,
@@ -452,16 +448,18 @@ namespace Http {
   }
 #endif // ENABLE_GZIP
 
-  boost::asio::const_buffer HttpReply::buf(const std::string& s)
+  boost::asio::const_buffer HttpReply::buf(HttpBuffer* buffer,
+      const std::string& s)
   {
-    m_bufs.push_back(s);
-    return boost::asio::buffer(m_bufs.back());
+    buffer->m_bufs.push_back(s);
+    return boost::asio::buffer(buffer->m_bufs.back());
   }
 
-  boost::asio::const_buffer HttpReply::buf(char* buf, size_t s)
+  boost::asio::const_buffer HttpReply::buf(HttpBuffer* buffer, char* buf,
+      size_t s)
   {
-    m_bufs2.push_back(buf);
-    return boost::asio::buffer(m_bufs2.back(), s);
+    buffer->m_bufs2.push_back(buf);
+    return boost::asio::buffer(buffer->m_bufs2.back(), s);
   }
 
   void HttpReply::setMimeType(const std::string& filename)

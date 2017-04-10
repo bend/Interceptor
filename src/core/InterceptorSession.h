@@ -10,6 +10,10 @@
 
 class InboundConnection;
 
+namespace Http {
+  class HttpBuffer;
+}
+
 class InterceptorSession : public
   std::enable_shared_from_this<InterceptorSession>  {
 
@@ -27,7 +31,7 @@ public:
 
   void start();
 
-  void postReply(std::vector<boost::asio::const_buffer>& buffers);
+  void postReply(Http::HttpBuffer* httpBuffer);
 
   void closeConnection();
 
@@ -36,12 +40,12 @@ private:
   // handlers
   void handleHttpRequestRead(const boost::system::error_code& error,
                              size_t bytesTransferred);
-  void handleTransmissionCompleted(std::vector<boost::asio::const_buffer>& buffer,
+  void handleTransmissionCompleted(Http::HttpBuffer* httpBuffer,
                                    const boost::system::error_code& error, size_t bytesTransferred);
 
   // internal logic
-  void sendReply(std::vector<boost::asio::const_buffer>& buffer);
-  void sendNext(std::vector<boost::asio::const_buffer>& buffer);
+  void sendReply(Http::HttpBuffer* buffer);
+  void sendNext(Http::HttpBuffer* buffer);
 
   void startReadTimer();
   void startWriteTimer();
@@ -58,7 +62,7 @@ private:
   HttpRequestPtr m_request;
   HttpReplyPtr m_reply;
 
-  std::deque<std::vector<boost::asio::const_buffer>> m_buffers;
+  std::deque<Http::HttpBuffer*> m_buffers;
 
   // Timers
   boost::asio::deadline_timer m_readTimer;
