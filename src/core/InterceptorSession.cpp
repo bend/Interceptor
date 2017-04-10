@@ -76,6 +76,7 @@ void InterceptorSession::handleTransmissionCompleted(
   const boost::system::error_code& error, size_t bytesTransferred)
 {
   stopWriteTimer();
+  delete buffer;
 
   if (!error)  {
     LOG_DEBUG("Response sent ");
@@ -92,8 +93,6 @@ void InterceptorSession::handleTransmissionCompleted(
     LOG_ERROR("Could not send reponse " << error.message());
     closeConnection();
   }
-
-  //TODO free memory
 
   /* XXX
   if (reply->getFlag(Http::HttpReply::Closing)) {

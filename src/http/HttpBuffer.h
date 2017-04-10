@@ -7,7 +7,8 @@ namespace Http {
   public:
     ~HttpBuffer()
     {
-      //TODO
+	  for(auto& b : m_bufs2)
+		delete [] b;
     }
   public:
     std::vector<boost::asio::const_buffer> m_buffers;
