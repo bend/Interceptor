@@ -279,7 +279,16 @@ namespace Http {
 
     httpBuffer->m_buffers.insert(httpBuffer->m_buffers.end(), buffers.begin(),
                                  buffers.end());
-    m_request->session()->postReply(httpBuffer);
+
+    if (getFlag(Closing)) {
+      httpBuffer->m_flags |= HttpBuffer::Closing;
+    }
+
+    auto session = m_request->session();
+
+    if (session) {
+      session->postReply(httpBuffer);
+    }
   }
 
   bool HttpReply::chunkResponse(HttpBufferPtr httpBuffer,

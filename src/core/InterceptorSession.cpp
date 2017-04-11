@@ -104,11 +104,9 @@ void InterceptorSession::handleTransmissionCompleted(
     closeConnection();
   }
 
-  /* XXX
-  if (reply->getFlag(Http::HttpReply::Closing)) {
+  if (buffer->flags() & Http::HttpBuffer::Closing) {
     closeConnection();
   }
-  */
 }
 
 void InterceptorSession::closeConnection()
@@ -123,6 +121,7 @@ void InterceptorSession::closeConnection()
       boost::bind(&InboundConnection::disconnect, m_connection)));
   m_connection.reset();
   m_request.reset();
+  m_reply.reset();
 }
 
 void InterceptorSession::start()
@@ -151,7 +150,6 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
     LOG_INFO("Request read from " << m_connection->ip());
 
     if (!m_request || m_request->completed() ) {
-      // Create Request
       m_request = std::make_shared<Http::HttpRequest>(shared_from_this());
     }
 
