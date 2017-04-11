@@ -64,7 +64,7 @@ namespace Http {
                              std::stringstream& stream);
     Code requestPartialFileContents(const std::string& page,
                                     std::stringstream& stream, size_t& bytes);
-    bool requestLargeFileContents(const std::string& page, size_t totalBytes);
+    bool requestLargeFileContents(const std::string& page, size_t from, size_t totalBytes);
 
     boost::asio::const_buffer buf(HttpBufferPtr buffer, const std::string& s);
     boost::asio::const_buffer buf(HttpBufferPtr buffer, char* buf, size_t s);

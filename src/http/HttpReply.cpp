@@ -150,7 +150,7 @@ namespace Http {
           // File is too big to be sent at once, we will send it in multiple times to
           // avoid consuming to much memory
           setMimeType(page);
-          return requestLargeFileContents(page, bytes);
+          return requestLargeFileContents(page, 0, bytes);
         } else {
           ret = FileUtils::readFile(page, stream, bytes);
         }
@@ -213,38 +213,32 @@ namespace Http {
   }
 
 
-  bool HttpReply::requestLargeFileContents(const std::string& page,
+  bool HttpReply::requestLargeFileContents(const std::string& page, size_t from,
       size_t totalBytes)
   {
     LOG_DEBUG("HttpReply::requestLargeFileContents()");
     size_t bytes;
-    size_t from = 0;
-    size_t to = std::min((size_t)MAX_CHUNK_SIZE, totalBytes);
+    size_t to = std::min((size_t) from + MAX_CHUNK_SIZE, totalBytes - 1);
     m_contentLength = totalBytes;
     setFlag(LargeFileRequest, true);
 
-    for (;;) {
-      std::stringstream stream;
+	std::stringstream stream;
 
-      if (FileUtils::readFile(page, from, to, stream, bytes) == Code::Ok) {
-        if (to == totalBytes - 1) {
-          m_request->setCompleted(true);
-          post(stream);
-          break;
-        } else {
-          post(stream);
-        }
+	if (FileUtils::readFile(page, from, to, stream, bytes) == Code::Ok) {
+	  if (to == totalBytes - 1) {
+		m_request->setCompleted(true);
+		post(stream);
+		return true;
+	  } else {
+		post(stream);
+	  }
 
-      } else {
-        return false;
-      }
+	} else {
+	  return false;
+	}
 
-      from = to + 1;
-      to = std::min((size_t)(to + MAX_CHUNK_SIZE), totalBytes - 1);
-    }
-
-
-    return true;
+	from = to + 1;
+	return requestLargeFileContents(page, from, totalBytes);
   }
 
   void HttpReply::post(std::stringstream& stream)
