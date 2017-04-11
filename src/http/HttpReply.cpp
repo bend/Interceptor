@@ -23,6 +23,7 @@ namespace Http {
 
   HttpReply::~HttpReply()
   {
+    LOG_DEBUG("HttpReply::~HttpReply()");
     delete m_replyHeaders;
   }
 
@@ -248,7 +249,8 @@ namespace Http {
 
   void HttpReply::post(std::stringstream& stream)
   {
-    HttpBuffer* httpBuffer = new HttpBuffer();
+    LOG_DEBUG("HttpReply::post()");
+    HttpBufferPtr httpBuffer = std::make_shared<HttpBuffer>();
     std::vector<boost::asio::const_buffer> buffers;
 
     if (!getFlag(HeadersSent))
@@ -280,7 +282,7 @@ namespace Http {
     m_request->session()->postReply(httpBuffer);
   }
 
-  bool HttpReply::chunkResponse(HttpBuffer* httpBuffer,
+  bool HttpReply::chunkResponse(HttpBufferPtr httpBuffer,
                                 std::vector<boost::asio::const_buffer>& buffers)
   {
     size_t size = 0;
@@ -315,7 +317,7 @@ namespace Http {
   }
 
 #ifdef ENABLE_GZIP
-  bool HttpReply::encodeResponse(HttpBuffer* httpBuffer,
+  bool HttpReply::encodeResponse(HttpBufferPtr httpBuffer,
                                  std::vector<boost::asio::const_buffer>& buffers)
   {
     std::vector<boost::asio::const_buffer> result;
@@ -368,7 +370,7 @@ namespace Http {
   }
 #endif // ENABLE_GZIP
 
-  void HttpReply::buildHeaders(HttpBuffer* httpBuffer)
+  void HttpReply::buildHeaders(HttpBufferPtr httpBuffer)
   {
     std::stringstream stream;
     stream << "HTTP/" << m_request->httpVersion() << " ";
@@ -448,14 +450,14 @@ namespace Http {
   }
 #endif // ENABLE_GZIP
 
-  boost::asio::const_buffer HttpReply::buf(HttpBuffer* buffer,
+  boost::asio::const_buffer HttpReply::buf(HttpBufferPtr buffer,
       const std::string& s)
   {
     buffer->m_bufs.push_back(s);
     return boost::asio::buffer(buffer->m_bufs.back());
   }
 
-  boost::asio::const_buffer HttpReply::buf(HttpBuffer* buffer, char* buf,
+  boost::asio::const_buffer HttpReply::buf(HttpBufferPtr buffer, char* buf,
       size_t s)
   {
     buffer->m_bufs2.push_back(buf);

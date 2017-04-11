@@ -25,3 +25,4 @@ INCLUDE_DIRECTORIES(
 
 add_executable(interceptor ${src})
 target_link_libraries(interceptor ${LIBS})
+install(TARGETS interceptor DESTINATION bin)

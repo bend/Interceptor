@@ -11,7 +11,7 @@ namespace Http {
   public:
     HttpHeaders() = default;
     HttpHeaders(const std::string& headers);
-    ~HttpHeaders() = default;
+    ~HttpHeaders();
 
     void addHeader(const std::string& key, const std::string& value);
     void addHeader(const std::string& key, int i);

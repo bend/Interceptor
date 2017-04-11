@@ -10,10 +10,6 @@
 
 class InboundConnection;
 
-namespace Http {
-  class HttpBuffer;
-}
-
 class InterceptorSession : public
   std::enable_shared_from_this<InterceptorSession>  {
 
@@ -21,7 +17,8 @@ public:
 
   InterceptorSession(const Config::ServerConfig* config,
                      boost::asio::io_service& ioService);
-  ~InterceptorSession() = default;
+
+  ~InterceptorSession();
 
   boost::asio::ip::tcp::socket& socket() const;
 
@@ -31,27 +28,37 @@ public:
 
   void start();
 
-  void postReply(Http::HttpBuffer* httpBuffer);
+  void postReply(HttpBufferPtr httpBuffer);
 
   void closeConnection();
 
+private:
+  enum TimerType : uint8_t {
+    ReadTimer = 0x01,
+    WriteTimer = 0x02
+  };
+  enum State : uint8_t  {
+    CanSend = 0x01,
+    Reading = 0x02,
+    Sending = 0x04
+  };
 
 private:
   // handlers
   void handleHttpRequestRead(const boost::system::error_code& error,
                              size_t bytesTransferred);
-  void handleTransmissionCompleted(Http::HttpBuffer* httpBuffer,
+  void handleTransmissionCompleted(HttpBufferPtr httpBuffer,
                                    const boost::system::error_code& error, size_t bytesTransferred);
 
   // internal logic
-  void sendReply(Http::HttpBuffer* buffer);
-  void sendNext(Http::HttpBuffer* buffer);
+  void sendReply(HttpBufferPtr buffer);
+  void sendNext(HttpBufferPtr buffer);
 
   void startReadTimer();
   void startWriteTimer();
   void stopReadTimer();
   void stopWriteTimer();
-  void handleTimeout(const boost::system::error_code& error);
+  void handleTimeout(TimerType timerType, const boost::system::error_code& error);
 
 private:
   const Config::ServerConfig* m_config;
@@ -62,13 +69,15 @@ private:
   HttpRequestPtr m_request;
   HttpReplyPtr m_reply;
 
-  std::deque<Http::HttpBuffer*> m_buffers;
+  std::deque<HttpBufferPtr> m_buffers;
 
   // Timers
   boost::asio::deadline_timer m_readTimer;
   boost::asio::deadline_timer m_writeTimer;
 
-  bool m_canSend;
+  int m_state;
+
+
 };
 
 #endif //INTERCEPTOR_SESSION_H__

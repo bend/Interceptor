@@ -18,9 +18,14 @@ InterceptorSession::InterceptorSession(const Config::ServerConfig* config,
     m_strand(ioService),
     m_readTimer(ioService),
     m_writeTimer(ioService),
-    m_canSend(true)
+    m_state(CanSend)
 {
   m_connection = std::make_shared<TcpInboundConnection>(m_ioService);
+}
+
+InterceptorSession::~InterceptorSession()
+{
+  LOG_DEBUG("InterceptorSession::~InterceptorSession()");
 }
 
 boost::asio::ip::tcp::socket& InterceptorSession::socket() const
@@ -38,50 +43,55 @@ const Config::ServerConfig* InterceptorSession::config() const
   return m_config;
 }
 
-void InterceptorSession::postReply(Http::HttpBuffer* buffer)
+void InterceptorSession::postReply(HttpBufferPtr buffer)
 {
+  LOG_DEBUG("InterceptorSession::postReply()");
   m_ioService.post(
     m_strand.wrap(
       boost::bind(&InterceptorSession::sendNext, shared_from_this(), buffer)));
 }
 
-void InterceptorSession::sendNext(Http::HttpBuffer* buffer)
+void InterceptorSession::sendNext(HttpBufferPtr buffer)
 {
+  LOG_DEBUG("InterceptorSession::sendNext()");
   m_buffers.push_back(buffer);
 
-  if (m_canSend) {
+  if (m_state & CanSend) {
     auto v = m_buffers.front();
     m_buffers.pop_front();
     sendReply(v);
   }
 }
 
-void InterceptorSession::sendReply(Http::HttpBuffer* buffer)
+void InterceptorSession::sendReply(HttpBufferPtr buffer)
 {
-  startWriteTimer();
-  m_canSend = false;
-  m_connection->asyncWrite(buffer->m_buffers, m_strand.wrap
-                           (boost::bind
-                            (&InterceptorSession::handleTransmissionCompleted,
-                             shared_from_this(),
-                             buffer,
-                             boost::asio::placeholders::error,
-                             boost::asio::placeholders::bytes_transferred)
-                           )
-                          );
+  LOG_DEBUG("InterceptorSession::sendReply()");
+
+  if (m_connection) {
+    startWriteTimer();
+    m_state &= ~CanSend;
+    m_connection->asyncWrite(buffer->m_buffers, m_strand.wrap
+                             (boost::bind
+                              (&InterceptorSession::handleTransmissionCompleted,
+                               shared_from_this(),
+                               buffer,
+                               boost::asio::placeholders::error,
+                               boost::asio::placeholders::bytes_transferred)
+                             )
+                            );
+  }
 }
 
 void InterceptorSession::handleTransmissionCompleted(
-  Http::HttpBuffer* buffer,
+  HttpBufferPtr buffer,
   const boost::system::error_code& error, size_t bytesTransferred)
 {
+  LOG_DEBUG("InterceptorSession::handleTransmissionCompleted()");
   stopWriteTimer();
-  delete buffer;
 
   if (!error)  {
     LOG_DEBUG("Response sent ");
-    m_canSend = true;
-
+    m_state |= CanSend;
 
     if (!m_buffers.empty()) {
       auto v = m_buffers.front();
@@ -103,13 +113,21 @@ void InterceptorSession::handleTransmissionCompleted(
 
 void InterceptorSession::closeConnection()
 {
+  LOG_DEBUG("InterceptorSession::closeConnection()");
+  stopReadTimer();
+  stopWriteTimer();
+  m_state &= ~CanSend;
+  m_buffers.clear();
   m_ioService.post(
     m_strand.wrap(
       boost::bind(&InboundConnection::disconnect, m_connection)));
+  m_connection.reset();
+  m_request.reset();
 }
 
 void InterceptorSession::start()
 {
+  LOG_DEBUG("InterceptorSession::start()");
   // Avoid Slow Loris attacks, close connection if nothing read
   InterceptorSessionPtr isp = shared_from_this();
 
@@ -126,6 +144,7 @@ void InterceptorSession::start()
 void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
     error, size_t bytesTransferred)
 {
+  LOG_DEBUG("InterceptorSession::handleHttpRequestRead()");
   stopReadTimer();
 
   if (!error) {
@@ -147,12 +166,19 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
       start();
     }
   } else {
-    LOG_ERROR("Error reading request from " << m_connection->ip());
+    if (m_connection) {
+      LOG_ERROR("Error reading request from " << m_connection->ip());
+    } else {
+      LOG_ERROR("Error reading request");
+    }
+
   }
 }
 
 void InterceptorSession::startReadTimer()
 {
+  LOG_DEBUG("InterceptorSession::startReadTimer()");
+  m_state |= Reading;
   LOG_DEBUG("Setting timeout to " << m_config->m_clientTimeout);
   m_readTimer.expires_from_now(boost::posix_time::seconds(
                                  m_config->m_clientTimeout));
@@ -160,35 +186,50 @@ void InterceptorSession::startReadTimer()
   (m_strand.wrap
    (boost::bind(&InterceptorSession::handleTimeout,
                 shared_from_this(),
+                ReadTimer,
                 boost::asio::placeholders::error)));
 
 }
 
 void InterceptorSession::startWriteTimer()
 {
+  LOG_DEBUG("InterceptorSession::startWriteTimer()");
+  m_state |= Sending;
   m_writeTimer.expires_from_now(boost::posix_time::seconds(
                                   m_config->m_serverTimeout));
   m_writeTimer.async_wait
   (m_strand.wrap
    (boost::bind(&InterceptorSession::handleTimeout,
                 shared_from_this(),
+                WriteTimer,
                 boost::asio::placeholders::error)));
 }
 
 void InterceptorSession::stopReadTimer()
 {
-  LOG_DEBUG("cancel read timer");
+  LOG_DEBUG("InterceptorSession::stopReadTimer");
+  m_state &= ~Reading;
   m_readTimer.cancel();
 }
 
 void InterceptorSession::stopWriteTimer()
 {
+  LOG_DEBUG("InterceptorSession::stopWriteTimer()");
+  m_state &= ~Sending;
   m_writeTimer.cancel();
 }
 
-void InterceptorSession::handleTimeout(const boost::system::error_code& error)
+void InterceptorSession::handleTimeout(TimerType timerType,
+                                       const boost::system::error_code& error)
 {
+  LOG_DEBUG("InterceptorSession::handleTimeout()");
+
   if (error != boost::asio::error::operation_aborted) {
-    closeConnection();
+    if ((timerType == ReadTimer) && ((m_state & Reading & Sending)
+                                     || m_buffers.size() > 0)) {
+      startReadTimer();  // We are writing something on the socket, so start the timer again
+    } else {
+      closeConnection();
+    }
   }
 }

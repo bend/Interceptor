@@ -10,7 +10,11 @@ namespace Http {
 
   HttpHeaders::HttpHeaders(const std::string& headers)
     : m_request(headers)
+  {}
+
+  HttpHeaders::~HttpHeaders()
   {
+    LOG_DEBUG("HttpHeaders::~HttpHeaders()");
   }
 
 

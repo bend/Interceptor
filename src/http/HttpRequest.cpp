@@ -10,7 +10,7 @@
 
 namespace Http {
 
-  HttpRequest::HttpRequest(InterceptorSessionPtr session)
+  HttpRequest::HttpRequest(InterceptorSessionWeakPtr session)
     : m_method(Method::ERR),
       m_session(session),
       m_headers(nullptr),
@@ -21,6 +21,7 @@ namespace Http {
 
   HttpRequest::~HttpRequest()
   {
+    LOG_DEBUG("HttpRequest::~HttpRequest()");
     delete m_headers;
   }
 
@@ -56,7 +57,7 @@ namespace Http {
 
   InterceptorSessionPtr HttpRequest::session() const
   {
-    return m_session;
+    return m_session.lock();
   }
 
   bool HttpRequest::completed() const

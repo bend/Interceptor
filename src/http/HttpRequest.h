@@ -10,7 +10,7 @@ namespace Http {
 
   class HttpRequest {
   public:
-    HttpRequest(InterceptorSessionPtr session);
+    HttpRequest(InterceptorSessionWeakPtr session);
     ~HttpRequest();
 
     void appendData(const unsigned char* data, size_t length);
@@ -44,7 +44,7 @@ namespace Http {
     std::string m_index;
     std::string m_request;
     std::string m_httpVersion;
-    InterceptorSessionPtr m_session;
+    InterceptorSessionWeakPtr m_session;
     HttpHeaders* m_headers;
     bool m_completed;
     Host m_host;
