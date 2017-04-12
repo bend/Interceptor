@@ -5,6 +5,8 @@
 #include "Http.h"
 #include "core/Config.h"
 
+#include <chrono>
+
 namespace Http {
   class HttpHeaders;
 
@@ -48,6 +50,9 @@ namespace Http {
     HttpHeaders* m_headers;
     bool m_completed;
     Host m_host;
+
+    std::chrono::high_resolution_clock::time_point m_startTs;
+    std::chrono::high_resolution_clock::time_point m_endTs;
 
     friend class HttpReply;
 

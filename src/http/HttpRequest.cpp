@@ -73,6 +73,10 @@ namespace Http {
   void HttpRequest::setCompleted(bool completed)
   {
     m_completed = completed;
+    m_endTs = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>
+                    ( m_endTs - m_startTs ).count();
+    LOG_INFO(queryString() << "- processing time : " << duration << " ms");
   }
 
   bool HttpRequest::supportsCompression() const
@@ -126,7 +130,8 @@ namespace Http {
 
   Code HttpRequest::parse()
   {
-	LOG_DEBUG("HttpRequest::parse()");
+    m_startTs = std::chrono::high_resolution_clock::now();
+    LOG_DEBUG("HttpRequest::parse()");
     size_t pos = m_request.find_first_of("\r\n");
 
     if (pos == std::string::npos) {
