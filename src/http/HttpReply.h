@@ -10,6 +10,7 @@
 #include <bitset>
 
 #include <zlib.h>
+#include <boost/thread/mutex.hpp>
 
 namespace Http {
   class HttpHeaders;
@@ -83,6 +84,10 @@ namespace Http {
 
     z_stream m_gzip;
     bool m_gzipBusy;
+
+    HttpBufferPtr m_httpBuffer;
+
+    boost::mutex m_mutex;
   };
 
 }

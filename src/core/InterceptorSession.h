@@ -7,6 +7,7 @@
 
 #include <boost/asio.hpp>
 #include <deque>
+#include <boost/thread/mutex.hpp>
 
 class InboundConnection;
 
@@ -63,13 +64,15 @@ private:
 private:
   const Config::ServerConfig* m_config;
   boost::asio::io_service& m_ioService;
-  boost::asio::strand m_strand;
+  boost::asio::strand m_iostrand;
+  boost::asio::strand m_fsstrand;
   InboundConnectionPtr m_connection;
   unsigned char m_requestBuffer[4096];
   HttpRequestPtr m_request;
   HttpReplyPtr m_reply;
 
   std::deque<HttpBufferPtr> m_buffers;
+  boost::mutex m_buffersMutex;
 
   // Timers
   boost::asio::deadline_timer m_readTimer;

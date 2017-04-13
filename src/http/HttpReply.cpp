@@ -31,6 +31,7 @@ namespace Http {
   {
     LOG_DEBUG("HttpReply::process()");
     std::stringstream stream;
+    m_httpBuffer = std::make_shared<HttpBuffer>();
 
     if (m_replyHeaders) {
       delete m_replyHeaders;
@@ -221,11 +222,14 @@ namespace Http {
       size_t totalBytes)
   {
     LOG_DEBUG("HttpReply::requestLargeFileContents()");
+    boost::mutex::scoped_lock lock(
+      m_mutex); //needed to be sure that previous call is completed
     size_t bytes;
     size_t to = std::min((size_t) from + MAX_CHUNK_SIZE, totalBytes - 1);
     m_contentLength = totalBytes;
     setFlag(LargeFileRequest, true);
 
+    m_httpBuffer = std::make_shared<HttpBuffer>();
     std::stringstream stream;
 
     if (FileUtils::readFile(page, from, to, stream, bytes) == Code::Ok) {
@@ -234,6 +238,10 @@ namespace Http {
         post(stream);
         return true;
       } else {
+        from = to + 1;
+        m_httpBuffer->m_nextCall = std::bind(&HttpReply::requestLargeFileContents,
+                                             shared_from_this(), page, from , totalBytes);
+        m_httpBuffer->m_flags |= HttpBuffer::HasMore;
         post(stream);
       }
 
@@ -241,52 +249,52 @@ namespace Http {
       return false;
     }
 
-    from = to + 1;
-    return requestLargeFileContents(page, from, totalBytes);
+    return true;
   }
 
   void HttpReply::post(std::stringstream& stream)
   {
     LOG_DEBUG("HttpReply::post()");
-    HttpBufferPtr httpBuffer = std::make_shared<HttpBuffer>();
     std::vector<boost::asio::const_buffer> buffers;
 
     if (!getFlag(HeadersSent))
-      httpBuffer->m_buffers.push_back({}); // emtpy place for headers
+      m_httpBuffer->m_buffers.push_back({}); // emtpy place for headers
 
-    buffers.push_back(buf(httpBuffer, std::string(stream.str())));
+    buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
 
 #ifdef ENABLE_GZIP
 
     if (canEncodeResponse()) {
-      encodeResponse(httpBuffer, buffers);
+      encodeResponse(m_httpBuffer, buffers);
     }
 
 #endif // ENABLE_GZIP
 
     // We chunk only in the case that no header has been sent or if it's the last frame
     if (canChunkResponse()) {
-      chunkResponse(httpBuffer, buffers);
+      chunkResponse(m_httpBuffer, buffers);
     }
 
     if (!getFlag(HeadersSent)) {
-      buildHeaders(httpBuffer);
+      buildHeaders(m_httpBuffer);
       LOG_INFO(m_request->queryString() << " " << (int) m_status);
       setFlag(HeadersSent, true);
     }
 
-    httpBuffer->m_buffers.insert(httpBuffer->m_buffers.end(), buffers.begin(),
-                                 buffers.end());
+    m_httpBuffer->m_buffers.insert(m_httpBuffer->m_buffers.end(), buffers.begin(),
+                                   buffers.end());
 
     if (getFlag(Closing)) {
-      httpBuffer->m_flags |= HttpBuffer::Closing;
+      m_httpBuffer->m_flags |= HttpBuffer::Closing;
     }
 
     auto session = m_request->session();
 
     if (session) {
-      session->postReply(httpBuffer);
+      session->postReply(m_httpBuffer);
     }
+
+    m_httpBuffer.reset();
   }
 
   bool HttpReply::chunkResponse(HttpBufferPtr httpBuffer,

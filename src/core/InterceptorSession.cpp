@@ -15,7 +15,8 @@ InterceptorSession::InterceptorSession(const Config::ServerConfig* config,
                                        boost::asio::io_service& ioService)
   : m_config(config),
     m_ioService(ioService),
-    m_strand(ioService),
+    m_iostrand(ioService),
+    m_fsstrand(ioService),
     m_readTimer(ioService),
     m_writeTimer(ioService),
     m_state(CanSend)
@@ -47,19 +48,22 @@ void InterceptorSession::postReply(HttpBufferPtr buffer)
 {
   LOG_DEBUG("InterceptorSession::postReply()");
   m_ioService.post(
-    m_strand.wrap(
+    m_iostrand.wrap(
       boost::bind(&InterceptorSession::sendNext, shared_from_this(), buffer)));
 }
 
 void InterceptorSession::sendNext(HttpBufferPtr buffer)
 {
   LOG_DEBUG("InterceptorSession::sendNext()");
-  m_buffers.push_back(buffer);
+  {
+    boost::mutex::scoped_lock lock(m_buffersMutex);
+    m_buffers.push_back(buffer);
 
-  if (m_state & CanSend) {
-    auto v = m_buffers.front();
-    m_buffers.pop_front();
-    sendReply(v);
+    if (m_state & CanSend) {
+      auto v = m_buffers.front();
+      m_buffers.pop_front();
+      sendReply(v);
+    }
   }
 }
 
@@ -70,7 +74,12 @@ void InterceptorSession::sendReply(HttpBufferPtr buffer)
   if (m_connection) {
     startWriteTimer();
     m_state &= ~CanSend;
-    m_connection->asyncWrite(buffer->m_buffers, m_strand.wrap
+
+    if (buffer->flags() & Http::HttpBuffer::HasMore)
+      m_ioService.post(
+        m_fsstrand.wrap(buffer->nextCall()));
+
+    m_connection->asyncWrite(buffer->m_buffers, m_iostrand.wrap
                              (boost::bind
                               (&InterceptorSession::handleTransmissionCompleted,
                                shared_from_this(),
@@ -93,10 +102,15 @@ void InterceptorSession::handleTransmissionCompleted(
     LOG_DEBUG("Response sent ");
     m_state |= CanSend;
 
-    if (!m_buffers.empty()) {
-      auto v = m_buffers.front();
-      m_buffers.pop_front();
-      sendReply(v);
+    {
+      boost::mutex::scoped_lock lock(m_buffersMutex);
+
+      if (!m_buffers.empty()) {
+
+        auto v = m_buffers.front();
+        m_buffers.pop_front();
+        sendReply(v);
+      }
     }
 
   } else {
@@ -117,7 +131,7 @@ void InterceptorSession::closeConnection()
   m_state &= ~CanSend;
   m_buffers.clear();
   m_ioService.post(
-    m_strand.wrap(
+    m_iostrand.wrap(
       boost::bind(&InboundConnection::disconnect, m_connection)));
   m_connection.reset();
   m_request.reset();
@@ -181,7 +195,7 @@ void InterceptorSession::startReadTimer()
   m_readTimer.expires_from_now(boost::posix_time::seconds(
                                  m_config->m_clientTimeout));
   m_readTimer.async_wait
-  (m_strand.wrap
+  (m_iostrand.wrap
    (boost::bind(&InterceptorSession::handleTimeout,
                 shared_from_this(),
                 ReadTimer,
@@ -196,7 +210,7 @@ void InterceptorSession::startWriteTimer()
   m_writeTimer.expires_from_now(boost::posix_time::seconds(
                                   m_config->m_serverTimeout));
   m_writeTimer.async_wait
-  (m_strand.wrap
+  (m_iostrand.wrap
    (boost::bind(&InterceptorSession::handleTimeout,
                 shared_from_this(),
                 WriteTimer,

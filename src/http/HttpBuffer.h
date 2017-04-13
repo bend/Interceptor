@@ -8,7 +8,8 @@ namespace Http {
   class HttpBuffer {
   public:
     enum State {
-      Closing = 0x01
+      Closing = 0x01,
+      HasMore = 0x02
     };
 
     HttpBuffer()
@@ -30,6 +31,11 @@ namespace Http {
       return m_flags;
     }
 
+    auto nextCall() const
+    {
+      return m_nextCall;
+    }
+
   public:
     std::vector<boost::asio::const_buffer> m_buffers;
 
@@ -38,6 +44,8 @@ namespace Http {
     std::vector<char*> m_bufs2;
     friend class HttpReply;
     int m_flags;
+    std::function<bool()> m_nextCall;
+
   };
 
 }
