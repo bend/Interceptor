@@ -10,6 +10,7 @@
 #include <boost/thread/mutex.hpp>
 
 class InboundConnection;
+class AbstractCacheHandler;
 
 class InterceptorSession : public
   std::enable_shared_from_this<InterceptorSession>  {
@@ -17,6 +18,7 @@ class InterceptorSession : public
 public:
 
   InterceptorSession(const Config::ServerConfig* config,
+                     AbstractCacheHandler* cache,
                      boost::asio::io_service& ioService);
 
   ~InterceptorSession();
@@ -63,6 +65,7 @@ private:
 
 private:
   const Config::ServerConfig* m_config;
+  AbstractCacheHandler* m_cache;
   boost::asio::io_service& m_ioService;
   boost::asio::strand m_iostrand;
   boost::asio::strand m_fsstrand;

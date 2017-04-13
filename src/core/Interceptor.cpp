@@ -4,14 +4,17 @@
 #include "socket/InboundConnection.h"
 #include "utils/Logger.h"
 #include "utils/Server.h"
+#include "cache/generic_cache.h"
 
 #include <boost/bind.hpp>
 
 using boost::asio::ip::tcp;
 
 Interceptor::Interceptor(const Config::ServerConfig* config,
+                         AbstractCacheHandler* cache,
                          boost::asio::io_service& ioService)
   : m_config(config),
+    m_cache(cache),
     m_ioService(ioService),
     m_acceptor(m_ioService, tcp::endpoint(boost::asio::ip::address::from_string(
         m_config->m_listenHost), m_config->m_listenPort))
@@ -32,8 +35,9 @@ void Interceptor::init()
 
 void Interceptor::listen()
 {
-  InterceptorSessionPtr newSession = std::make_shared<InterceptorSession>
-                                     (m_config, m_ioService);
+  InterceptorSessionPtr newSession =
+    std::make_shared<InterceptorSession>
+    (m_config, m_cache, m_ioService);
   m_acceptor.async_accept(newSession->socket(),
                           boost::bind(&Interceptor::handleAccept, shared_from_this(), newSession,
                                       boost::asio::placeholders::error)

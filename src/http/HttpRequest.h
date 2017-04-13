@@ -7,12 +7,14 @@
 
 #include <chrono>
 
+class AbstractCacheHandler;
+
 namespace Http {
   class HttpHeaders;
 
   class HttpRequest {
   public:
-    HttpRequest(InterceptorSessionWeakPtr session);
+    HttpRequest(InterceptorSessionWeakPtr session, AbstractCacheHandler* cache);
     ~HttpRequest();
 
     void appendData(const unsigned char* data, size_t length);
@@ -22,6 +24,7 @@ namespace Http {
     std::string index() const;
     std::string httpVersion() const;
     InterceptorSessionPtr session() const;
+    AbstractCacheHandler* cacheHandler() const;
     std::string queryString() const;
     bool supportsCompression() const;
     bool supportsChunking() const;
@@ -42,11 +45,12 @@ namespace Http {
     bool parseHttpVersion(const std::string& version);
 
   private:
+    InterceptorSessionWeakPtr m_session;
+    AbstractCacheHandler* m_cache;
     Method m_method;
     std::string m_index;
     std::string m_request;
     std::string m_httpVersion;
-    InterceptorSessionWeakPtr m_session;
     HttpHeaders* m_headers;
     bool m_completed;
     Host m_host;

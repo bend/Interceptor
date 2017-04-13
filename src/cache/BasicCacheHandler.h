@@ -1,12 +1,12 @@
-#ifndef CACHE_HANDLER_H__
-#define CACHE_HANDLER_H__
+#ifndef BASIC_CACHE_HANDLER_H__
+#define BASIC_CACHE_HANDLER_H__
 
-#include <string>
 #include "AbstractCacheHandler.h"
+#include <string>
 
-class CacheHandler : public AbstractCacheHandler {
+class BasicCacheHandler : public AbstractCacheHandler {
 public:
-  CacheHandler(size_t maxCacheSize);
+  BasicCacheHandler();
 
   virtual std::string eTag(const std::string& file) override;
 
@@ -21,4 +21,4 @@ protected:
   virtual size_t cacheSize() const override;
 };
 
-#endif // ABSTRACT_CACHE_HANDLER_H__
+#endif // BASIC_CACHE_HANDLER_H__

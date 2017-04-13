@@ -2,6 +2,7 @@
 #include "core/Config.h"
 
 #include "utils/Logger.h"
+#include "cache/generic_cache.h"
 
 #include <memory>
 #include <boost/thread.hpp>
@@ -9,17 +10,25 @@
 
 int main(int argc, char** argv)
 {
+
+  //TODO handle params
   if (argc != 2) {
     return -1;
   }
 
   try {
     Config* config = new Config(std::string(argv[1]));
+    AbstractCacheHandler* cache;
+#ifdef ENABLE_LOCAL_CACHE
+    cache = new CacheHandler(config->maxCacheSize());
+#else
+    cache = new BasicCacheHandler();
+#endif //ENABLE_LOCAL_CACHE
     boost::asio::io_service ioService;
 
     for (const auto& serverConfig : config->serversConfig()) {
       std::shared_ptr<Interceptor> interceptor = std::make_shared<Interceptor>
-          (serverConfig, ioService);
+          (serverConfig, cache, ioService);
       interceptor->init();
     }
 

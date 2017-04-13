@@ -1,6 +1,7 @@
 #include "HttpReply.h"
 
 #include "core/InterceptorSession.h"
+#include "cache/CacheHandler.h"
 #include "HttpRequest.h"
 #include "HttpHeaders.h"
 #include "HttpBuffer.h"
@@ -145,7 +146,7 @@ namespace Http {
       if (m_request->partialRequest()) {
         ret = requestPartialFileContents(page, stream, bytes);
       } else {
-        if (!FileUtils::fileSize(page, bytes)) {
+        if (!m_request->cacheHandler()->size(page, bytes)) {
           buildErrorResponse(Code::InternalServerError, stream);
           return false;
         }
@@ -156,7 +157,7 @@ namespace Http {
           setMimeType(page);
           return requestLargeFileContents(page, 0, bytes);
         } else {
-          ret = FileUtils::readFile(page, stream, bytes);
+          ret = m_request->cacheHandler()->read(page, stream, bytes);
         }
       }
 
@@ -167,7 +168,7 @@ namespace Http {
         setMimeType(page);
       }
     } else if (method == Method::HEAD) {
-      if (!FileUtils::fileSize(page, bytes)) {
+      if (m_request->cacheHandler()->size(page, bytes)) {
         buildErrorResponse(Code::NotFound, stream);
         return false;
       } else {
@@ -216,7 +217,6 @@ namespace Http {
 
     return ret;
   }
-
 
   bool HttpReply::requestLargeFileContents(const std::string& page, size_t from,
       size_t totalBytes)
@@ -430,7 +430,7 @@ namespace Http {
     if (map.count(std::to_string((int)error)) > 0 ) {
       std::string url = map.at(std::to_string((int)error));
 
-      if (FileUtils::readFile(url, stream, bytes) == Code::Ok) {
+      if (m_request->cacheHandler()->read(url, stream, bytes) == Code::Ok) {
         found = true;
         setMimeType(url);
       }
@@ -487,14 +487,17 @@ namespace Http {
   void HttpReply::setMimeType(const std::string& filename)
   {
     m_replyHeaders->addHeader("Content-Type", FileUtils::mimeType(filename));
-    auto tuple = FileUtils::generateCacheData(filename);
 
-    if (std::get<0>(tuple).length() > 0) {
-      m_replyHeaders->addHeader("ETag", std::get<0>(tuple));
+    std::string eTag = m_request->cacheHandler()->eTag(filename);
+
+    if (eTag.length() > 0) {
+      m_replyHeaders->addHeader("ETag", eTag);
     }
 
-    if (std::get<1>(tuple).length() > 0) {
-      m_replyHeaders->addHeader("Last-Modified", std::get<1>(tuple));
+    std::string lm = m_request->cacheHandler()->lastModified(filename);
+
+    if (lm.length() > 0) {
+      m_replyHeaders->addHeader("Last-Modified", lm);
     }
 
     if (!m_request->hasMatchingSite()) {

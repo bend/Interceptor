@@ -4,15 +4,19 @@
 #include "HttpHeaders.h"
 #include "utils/Logger.h"
 
+#include "cache/generic_cache.h"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <regex>
 
 namespace Http {
 
-  HttpRequest::HttpRequest(InterceptorSessionWeakPtr session)
-    : m_method(Method::ERR),
-      m_session(session),
+  HttpRequest::HttpRequest(InterceptorSessionWeakPtr session,
+                           AbstractCacheHandler* cache)
+    : m_session(session),
+      m_cache(cache),
+      m_method(Method::ERR),
       m_headers(nullptr),
       m_completed(false),
       m_host("")
@@ -58,6 +62,11 @@ namespace Http {
   InterceptorSessionPtr HttpRequest::session() const
   {
     return m_session.lock();
+  }
+
+  AbstractCacheHandler* HttpRequest::cacheHandler() const
+  {
+    return m_cache;
   }
 
   bool HttpRequest::completed() const

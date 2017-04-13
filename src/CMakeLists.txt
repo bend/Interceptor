@@ -19,6 +19,13 @@ set(src
   main.cpp
 )
 
+if(ENABLE_LOCAL_CACHE)
+  set(src ${src} cache/CacheHandler.cpp)
+else(ENABLE_LOCAL_CACHE)
+  set(src ${src} cache/BasicCacheHandler.cpp)
+endif(ENABLE_LOCAL_CACHE)
+
+
 INCLUDE_DIRECTORIES(
   "."
   )

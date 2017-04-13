@@ -59,6 +59,7 @@ public:
   Config(const std::string& path);
   const std::vector<ServerConfig*> serversConfig() const;
   uint16_t threads() const;
+  uint64_t maxCacheSize() const;
 
 private:
   void parse();
@@ -73,6 +74,7 @@ private:
   uint32_t m_clientTimeout;
   uint32_t m_serverTimeout;
   uint16_t m_threadNr;
+  uint64_t m_maxCacheSize;
 
 };
 

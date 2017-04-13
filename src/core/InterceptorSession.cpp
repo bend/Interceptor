@@ -8,12 +8,16 @@
 #include "http/HttpBuffer.h"
 #include "http/HttpReply.h"
 
+#include "cache/generic_cache.h"
+
 #include <boost/bind.hpp>
 #include <boost/regex.hpp>
 
 InterceptorSession::InterceptorSession(const Config::ServerConfig* config,
+                                       AbstractCacheHandler* cache,
                                        boost::asio::io_service& ioService)
   : m_config(config),
+    m_cache(cache),
     m_ioService(ioService),
     m_iostrand(ioService),
     m_fsstrand(ioService),
@@ -164,7 +168,7 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
     LOG_INFO("Request read from " << m_connection->ip());
 
     if (!m_request || m_request->completed() ) {
-      m_request = std::make_shared<Http::HttpRequest>(shared_from_this());
+      m_request = std::make_shared<Http::HttpRequest>(shared_from_this(), m_cache);
     }
 
     m_request->appendData(m_requestBuffer, bytesTransferred);

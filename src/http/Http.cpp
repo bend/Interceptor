@@ -21,6 +21,10 @@ namespace Http {
         stream  << "404 Not Found" << "\r\n";
         break;
 
+      case Code::RequestRangeNotSatisfiable:
+        stream << "416 Request Range Not Satisfiable" << "\r\n";
+        break;
+
       case Code::UnprocessableEntity:
         stream << "422 Unprocessable Entity" << "\r\n";
         break;

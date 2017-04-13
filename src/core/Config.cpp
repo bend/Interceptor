@@ -1,5 +1,6 @@
 #include "Config.h"
 
+#include "vars.h"
 #include "utils/Logger.h"
 
 #include <fstream>
@@ -10,7 +11,8 @@
 Config::Config(const std::string& path)
   : m_path(path),
     m_clientTimeout(0),
-    m_serverTimeout(0)
+    m_serverTimeout(0),
+    m_maxCacheSize(0)
 {
   parse();
 }
@@ -47,6 +49,9 @@ void Config::parse()
       m_threadNr = std::thread::hardware_concurrency();
     }
 
+#ifdef ENABLE_LOCAL_CACHE
+    m_maxCacheSize = global["max-cache-size"];
+#endif // ENABLE_LOCAL_CACHE
 
     auto servers = j["servers"];
 
@@ -124,5 +129,10 @@ const std::vector<Config::ServerConfig*> Config::serversConfig() const
 uint16_t Config::threads() const
 {
   return m_threadNr;
+}
+
+uint64_t Config::maxCacheSize() const
+{
+  return m_maxCacheSize;
 }
 

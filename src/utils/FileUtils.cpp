@@ -98,7 +98,7 @@ namespace Http {
 
       if (from  == -1) {
         if (to == -1) {
-          return Code::BadRequest;
+          return Code::RequestRangeNotSatisfiable;
         }
 
         from = pos - to;
