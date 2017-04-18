@@ -2,7 +2,11 @@
 #define CACHE_HANDLER_H__
 
 #include <string>
+#include <memory>
 #include "AbstractCacheHandler.h"
+#include "FileDatabase.h"
+#include "FileMetadataDatabase.h"
+
 
 class CacheHandler : public AbstractCacheHandler {
 public:
@@ -19,6 +23,11 @@ public:
 
 protected:
   virtual size_t cacheSize() const override;
+
+private:
+  std::unique_ptr<FileDatabase> m_fileDatabase;
+  std::unique_ptr<FileMetadataDatabase> m_filemedataDatabase;
+
 };
 
 #endif // ABSTRACT_CACHE_HANDLER_H__
