@@ -29,7 +29,7 @@ namespace Http {
 
   void HttpReply::process()
   {
-	LOG_DEBUG("HttpReply::process()");
+    LOG_DEBUG("HttpReply::process()");
     std::stringstream stream;
 
     if (m_replyHeaders) {
@@ -88,7 +88,7 @@ namespace Http {
 
   void HttpReply::handleRetrievalRequest(Method method)
   {
-	LOG_DEBUG("HttpReply::handleRetrievalRequest()");
+    LOG_DEBUG("HttpReply::handleRetrievalRequest()");
     std::stringstream stream;
 
     if (!m_request->hasMatchingSite()) {
@@ -104,7 +104,7 @@ namespace Http {
   bool HttpReply::requestFileContents(Method method, const SiteConfig* site,
                                       std::stringstream& stream)
   {
-	LOG_DEBUG("HttpReply::requestFileContents()");
+    LOG_DEBUG("HttpReply::requestFileContents()");
     std::string page;
     bool found = false;
     size_t bytes = 0;
@@ -189,7 +189,7 @@ namespace Http {
   Code HttpReply::requestPartialFileContents(const std::string& page,
       std::stringstream& stream, size_t& bytes)
   {
-	LOG_DEBUG("HttpReply::requestPartialFileContents()");
+    LOG_DEBUG("HttpReply::requestPartialFileContents()");
     std::tuple<int64_t, int64_t> range = m_request->getRangeRequest();
     int64_t from = std::get<0>(range);
     int64_t to = std::get<1>(range);
@@ -226,23 +226,23 @@ namespace Http {
     m_contentLength = totalBytes;
     setFlag(LargeFileRequest, true);
 
-	std::stringstream stream;
+    std::stringstream stream;
 
-	if (FileUtils::readFile(page, from, to, stream, bytes) == Code::Ok) {
-	  if (to == totalBytes - 1) {
-		m_request->setCompleted(true);
-		post(stream);
-		return true;
-	  } else {
-		post(stream);
-	  }
+    if (FileUtils::readFile(page, from, to, stream, bytes) == Code::Ok) {
+      if (to == totalBytes - 1) {
+        m_request->setCompleted(true);
+        post(stream);
+        return true;
+      } else {
+        post(stream);
+      }
 
-	} else {
-	  return false;
-	}
+    } else {
+      return false;
+    }
 
-	from = to + 1;
-	return requestLargeFileContents(page, from, totalBytes);
+    from = to + 1;
+    return requestLargeFileContents(page, from, totalBytes);
   }
 
   void HttpReply::post(std::stringstream& stream)
@@ -292,7 +292,7 @@ namespace Http {
   bool HttpReply::chunkResponse(HttpBufferPtr httpBuffer,
                                 std::vector<boost::asio::const_buffer>& buffers)
   {
-	LOG_DEBUG("HttpReply::chunkResponse()");
+    LOG_DEBUG("HttpReply::chunkResponse()");
     size_t size = 0;
 
     // We cannot take the total Content Length here because the gzip compression changed that
@@ -328,7 +328,7 @@ namespace Http {
   bool HttpReply::encodeResponse(HttpBufferPtr httpBuffer,
                                  std::vector<boost::asio::const_buffer>& buffers)
   {
-	LOG_DEBUG("HttpReply::encodeResponse()");
+    LOG_DEBUG("HttpReply::encodeResponse()");
     std::vector<boost::asio::const_buffer> result;
 
     if (!m_gzipBusy) {
@@ -381,7 +381,7 @@ namespace Http {
 
   void HttpReply::buildHeaders(HttpBufferPtr httpBuffer)
   {
-	LOG_DEBUG("HttpReply::buildHeaders()");
+    LOG_DEBUG("HttpReply::buildHeaders()");
     std::stringstream stream;
     stream << "HTTP/" << m_request->httpVersion() << " ";
     stringValue(m_status, stream);
@@ -411,7 +411,7 @@ namespace Http {
   void HttpReply::buildErrorResponse(Code error, std::stringstream& stream,
                                      bool closeConnection)
   {
-	LOG_DEBUG("HttpReply::buildErrorResponse()");
+    LOG_DEBUG("HttpReply::buildErrorResponse()");
     bool found = false;
     size_t bytes = 0;
 
@@ -447,7 +447,7 @@ namespace Http {
 #ifdef ENABLE_GZIP
   void HttpReply::initGzip()
   {
-	LOG_DEBUG("HttpReply::initGzip()");
+    LOG_DEBUG("HttpReply::initGzip()");
     m_gzip.zalloc = Z_NULL;
     m_gzip.zfree = Z_NULL;
     m_gzip.opaque = Z_NULL;
