@@ -25,6 +25,7 @@ This program need libz, libboost, c++11 compliant compilator
   ```
   ENABLE_GZIP=[on|off] // whether you want to enable gzip support for compression, required libz
   DEBUG_LOGGING=[on|off] // whether you want verbose logging or not
+  ENABLE_LOCAL_CACHE=[on|off] // whether you want to enable local caching or not
 ```
 To compile it just run 
 
@@ -91,3 +92,12 @@ You can find a configuration example in the config/ directory. Be carefull that 
   ]
 }
 ````
+## Running
+
+The most simple way to run the progam is
+
+````
+./interceptor --config config.json
+````
+
+You can find more parameters with the --help flag

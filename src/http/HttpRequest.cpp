@@ -139,8 +139,8 @@ namespace Http {
 
   Code HttpRequest::parse()
   {
-    m_startTs = std::chrono::high_resolution_clock::now();
     LOG_DEBUG("HttpRequest::parse()");
+    m_startTs = std::chrono::high_resolution_clock::now();
     size_t pos = m_request.find_first_of("\r\n");
 
     if (pos == std::string::npos) {

@@ -248,8 +248,7 @@ namespace Http {
     } else {
       return false;
     }
-
-    return true;
+	return true;
   }
 
   void HttpReply::post(std::stringstream& stream)
