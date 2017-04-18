@@ -2,8 +2,8 @@
 #define FILE_DATABASE_H__
 
 class FileDatabase {
-  public:
-	FileDatabase() = default;
+public:
+  FileDatabase() = default;
 };
 
 #endif

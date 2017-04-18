@@ -9,7 +9,15 @@ option(CPACK_ENABLED OFF "Whether packaging with CPack is enabled (and the git v
 set(ENABLE_GZIP ON CACHE BOOL "ENABLE GZIP") # Configurable by user
 set(DEBUG_LOGGING OFF CACHE BOOL "DEBUG_LOGGING") # Configurable by user
 set(ENABLE_LOCAL_CACHE ON CACHE BOOL "ENABLE_LOCAL_CACHE") # Configurable by user
+
+include(./cmake/FindFam.cmake)
+
 configure_file(vars.h.in vars.h)
+
+if(NOT FAM_FOUND)
+  MESSAGE(WARNING "** libfam not found, disabling local cache **")
+  set(ENABLE_LOCAL_CACHE OFF)
+endif(NOT FAM_FOUND)
 
 if(CPACK_ENABLED)
   include(GetGitRevisionDescription)
@@ -42,12 +50,21 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}
 )
 
+
 string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
 
 set(LIBS
     ${Boost_LIBRARIES}
     pthread
   )
+
+if(ENABLE_LOCAL_CACHE)
+  include_directories(
+	${FAM_INCLUDE_DIR}
+	)
+  set(LIBS ${LIBS} ${FAM_LIBRARIES})
+endif(ENABLE_LOCAL_CACHE)
+
 
 if(ENABLE_GZIP)
   set(LIBS ${LIBS} z)

@@ -20,7 +20,10 @@ set(src
 )
 
 if(ENABLE_LOCAL_CACHE)
-  set(src ${src} cache/CacheHandler.cpp)
+  set(src ${src} 
+	cache/CacheHandler.cpp
+	cache/FileMetadataDatabase.cpp
+	)
 else(ENABLE_LOCAL_CACHE)
   set(src ${src} cache/BasicCacheHandler.cpp)
 endif(ENABLE_LOCAL_CACHE)
