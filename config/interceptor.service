@@ -1,0 +1,11 @@
+[Unit]
+Description=Interceptor Web Server
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/interceptor /etc/interceptor/config.json
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
