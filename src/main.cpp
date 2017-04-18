@@ -20,8 +20,7 @@ int main(int argc, char** argv)
     ("help", "produce help message")
     ("version,v", "print version string")
     ("config,c", po::value<std::string>(&config_file) , "input configuration file")
-    ("threads,t", po::value<uint16_t>(&nb_threads), "number of threads to use")
-    ;
+    ("threads,t", po::value<uint16_t>(&nb_threads), "number of threads to use");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
