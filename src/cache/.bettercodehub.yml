@@ -1,0 +1,6 @@
+exclude: 
+  - /src/json/json.hpp 
+component_depth: 1 
+languages: 
+  - cpp 
+  - script
