@@ -26,12 +26,12 @@ void FileMetadataDatabase::setETag(const std::string& filename, const std::strin
   m_eTagMap[filename] = eTag;
 }
 
-void FileMetadataDatabase::setLastModified(const std::string& filename, const std::string lm)
+void FileMetadataDatabase::setLastModified(const std::string& filename, const std::string& lm)
 {
   m_lastModifyMap[filename] = lm;
 }
 
-void FileMetadataDatabase::setSize(const std::string filename, size_t size)
+void FileMetadataDatabase::setSize(const std::string& filename, size_t size)
 {
   m_sizeMap[filename] = size;
 }

@@ -12,7 +12,6 @@ set(ENABLE_LOCAL_CACHE ON CACHE BOOL "ENABLE_LOCAL_CACHE") # Configurable by use
 
 include(./cmake/FindFam.cmake)
 
-configure_file(vars.h.in vars.h)
 
 if(NOT FAM_FOUND)
   MESSAGE(WARNING "** libfam not found, disabling local cache **")
@@ -86,3 +85,5 @@ if(CPACK_ENABLED)
 
 	include(CPack)
 endif(CPACK_ENABLED)
+
+configure_file(vars.h.in vars.h)

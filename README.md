@@ -18,7 +18,7 @@ A fast Web server written in C++
 
 ## Build & Install
 
-This program need libz, libboost, c++11 compliant compilator
+This program need libz, libboost, c++14 compliant compilator
 
 ### Compilation Flags 
   

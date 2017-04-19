@@ -12,8 +12,8 @@ public:
   int64_t size(const std::string& filename) const;
 
   void setETag(const std::string& filename, const std::string& eTag);
-  void setLastModified(const std::string& filename, const std::string lm);
-  void setSize(const std::string filename, size_t size);
+  void setLastModified(const std::string& filename, const std::string& lm);
+  void setSize(const std::string& filename, size_t size);
 
 private:
   template <class C>
