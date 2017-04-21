@@ -69,7 +69,7 @@ if(ENABLE_GZIP)
   set(LIBS ${LIBS} z)
 endif(ENABLE_GZIP)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Werror=return-type")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fext-numeric-literals -Wall -Werror=return-type")
 
 subdirs(src)
 

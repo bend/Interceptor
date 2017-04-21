@@ -6,6 +6,7 @@
 #include "AbstractCacheHandler.h"
 #include "FileDatabase.h"
 #include "FileMetadataDatabase.h"
+#include "CacheMonitor.h"
 
 
 class CacheHandler : public AbstractCacheHandler {
@@ -27,6 +28,7 @@ protected:
 private:
   std::unique_ptr<FileDatabase> m_fileDatabase;
   std::unique_ptr<FileMetadataDatabase> m_filemedataDatabase;
+  std::unique_ptr<CacheMonitor> m_monitor;
 
 };
 
