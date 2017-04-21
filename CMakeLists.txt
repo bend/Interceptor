@@ -15,7 +15,7 @@ include(./cmake/FindFam.cmake)
 
 if(NOT FAM_FOUND)
   MESSAGE(WARNING "** libfam not found, disabling local cache **")
-  set(ENABLE_LOCAL_CACHE OFF)
+  set(ENABLE_LOCAL_CACHE OFF FORCE)
 endif(NOT FAM_FOUND)
 
 if(CPACK_ENABLED)
