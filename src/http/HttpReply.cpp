@@ -1,12 +1,12 @@
 #include "HttpReply.h"
 
 #include "core/InterceptorSession.h"
-#include "cache/CacheHandler.h"
 #include "HttpRequest.h"
 #include "HttpHeaders.h"
 #include "HttpBuffer.h"
 #include "utils/FileUtils.h"
 #include "utils/Logger.h"
+#include "cache/generic_cache.h"
 
 #include <boost/bind.hpp>
 #include <algorithm>

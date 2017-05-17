@@ -9,7 +9,7 @@ CacheHandler::CacheHandler(size_t maxCacheSize)
   : AbstractCacheHandler(maxCacheSize),
     m_fileDatabase(std::make_unique<FileDatabase>()),
     m_filemedataDatabase(std::make_unique<FileMetadataDatabase>()),
-	m_monitor(std::make_unique<CacheMonitor>())
+    m_monitor(std::make_unique<CacheMonitor>())
 {
   LOG_INFO("Local Cache enabled, max size " << maxCacheSize);
   m_monitor->start();

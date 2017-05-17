@@ -12,14 +12,14 @@ CacheMonitor::~CacheMonitor()
 {
   LOG_DEBUG("CacheMonitor::~CacheMonitor()");
 
-  for(auto& kv :  m_requests) 
-  {
-	if (FAMCancelMonitor(m_fc, kv.second) < 0) {
-	  LOG_ERROR("Error while stopping Fam monitor");
-	} else {
-	  LOG_INFO("Fam stopped successfully");
-	}
-	delete kv.second;
+  for (auto& kv :  m_requests) {
+    if (FAMCancelMonitor(m_fc, kv.second) < 0) {
+      LOG_ERROR("Error while stopping Fam monitor");
+    } else {
+      LOG_INFO("Fam stopped successfully");
+    }
+
+    delete kv.second;
   }
 
   delete m_fc;
@@ -99,50 +99,53 @@ bool CacheMonitor::startCallBack()
 
   /* Loop forever. */
   while (true) {
-	LOG_DEBUG("FAM LOOP");
-	/*
-    if (select(fam_fd + 1, &readfds,
-               0, 0, 0) < 0) {
-      LOG_ERROR("CacheMonitor::startCallBack() : Select failed");
-      return false;
+    LOG_DEBUG("FAM LOOP");
+
+    /*
+      if (select(fam_fd + 1, &readfds,
+                 0, 0, 0) < 0) {
+        LOG_ERROR("CacheMonitor::startCallBack() : Select failed");
+        return false;
+      }
+    */
+    if (FAMPending(m_fc) > 0) {
+
+      if (FD_ISSET(fam_fd, &readfds)) {
+        if (FAMNextEvent(m_fc, &fe) < 0) {
+          LOG_ERROR("CacheMonitor::startCallBack() : FAMNextEvent Failed");
+          exit(1);
+        }
+
+        signal(fe.filename,	fe.code);
+      }
     }
-	*/
-	if(FAMPending(m_fc) > 0) {
 
-	  if (FD_ISSET(fam_fd, &readfds)) {
-		if (FAMNextEvent(m_fc, &fe) < 0) {
-		  LOG_ERROR("CacheMonitor::startCallBack() : FAMNextEvent Failed");
-		  exit(1);
-		}
+    for (auto& p : m_files) {
+      if (!doMonitorFile(p)) {
+        return false;
+      }
+    }
 
-		signal(fe.filename,	fe.code);
-	  } 
-	}
+    m_files.clear();
 
-	for (auto& p : m_files) {
-	  if (!doMonitorFile(p)) {
-		return false;
-	  }
-	}
+    for (auto& p : m_directories) {
+      if (!doMonitorDirectory(p)) {
+        return false;
+      }
+    }
 
-	m_files.clear();
+    m_directories.clear();
 
-	for (auto& p : m_directories) {
-	  if (!doMonitorDirectory(p)) {
-		return false;
-	  }
-	}
-	m_directories.clear();
+    for (auto& p : m_cancel) {
+      if (!doCancelMonitor(p)) {
+        return false;
+      }
+    }
 
-	for (auto& p : m_cancel) {
-	  if (!doCancelMonitor(p)) {
-		return false;
-	  }
-	}
-	m_cancel.clear();
+    m_cancel.clear();
 
 
-	std::this_thread::sleep_for(400ms);
+    std::this_thread::sleep_for(400ms);
   }
 }
 
@@ -150,6 +153,7 @@ bool CacheMonitor::startCallBack()
 bool CacheMonitor::signal(const std::string& filename, const int& code)
 {
   LOG_DEBUG("file changed " << filename << " code " << code );
+
   switch (code) {
     case FAMDeleted:
       LOG_DEBUG("CacheMonitor::signal() Change occured on  " << filename <<
@@ -185,8 +189,9 @@ bool CacheMonitor::doMonitorFile(const std::string& p)
   FAMRequest* fr = (FAMRequest*)malloc(sizeof(FAMRequest));
 
   LOG_DEBUG("++ wIILL adding file to monitor " << p );
+
   if (FAMMonitorFile(m_fc, p.c_str(), fr, 0) >= 0) {
-	LOG_DEBUG("++adding file to monitor " << p );
+    LOG_DEBUG("++adding file to monitor " << p );
     m_requests[p] = fr;
     return true;
   }
@@ -206,13 +211,15 @@ bool CacheMonitor::doMonitorDirectory(const std::string& p)
   return false;
 }
 
-bool CacheMonitor::doCancelMonitor(const std::string& p) 
+bool CacheMonitor::doCancelMonitor(const std::string& p)
 {
-  if(m_requests.count(p)) 
-  {
-	if(FAMCancelMonitor(m_fc, m_requests.at(p)) >= 0)
-	  return true;
-	return false;
+  if (m_requests.count(p)) {
+    if (FAMCancelMonitor(m_fc, m_requests.at(p)) >= 0) {
+      return true;
+    }
+
+    return false;
   }
+
   return false;
 }

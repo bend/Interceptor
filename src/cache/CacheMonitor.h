@@ -16,7 +16,7 @@ public:
   ~CacheMonitor();
 
   std::thread* start();
-  
+
   void monitorFile(const std::string& p);
 
   void monitorDirectory(const std::string& p);
@@ -30,7 +30,7 @@ private:
   bool doMonitorDirectory(const std::string& p);
 
   bool doMonitorFile(const std::string& p);
-  
+
   bool doCancelMonitor(const std::string& p);
 
   const char* eventName(const int& code);
