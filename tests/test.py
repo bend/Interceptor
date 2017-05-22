@@ -41,7 +41,7 @@ class TestHttpServer(unittest.TestCase):
             request.add_header('Accept-Encoding', 'gzip')
             response = urllib2.urlopen(request)
             self.assertEqual(response.getcode(), 200)
-            if os.environ.has_key("ENABLE_GZIP"):
+            if os.environ.has_key("ENABLE_GZIP") and os.environ["ENABLE_GZIP"] == "on":
                 self.assertEqual(response.info().get('Content-Encoding'), 'gzip')
 
     @classmethod
