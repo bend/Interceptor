@@ -6,8 +6,8 @@
 	"max-cache-size" : 10,
 	
 	"error-pages" : [
-		{ "404" : "/home/ben/projects/interceptor/config/404.html" }, 
-		{ "400" : "/home/ben/projects/interceptor/config/400.html" }
+		{ "404" : "error/404.html" }, 
+		{ "400" : "error/400.html" }
 	]
 
 
@@ -24,26 +24,10 @@
 		{
 		  "gzip": "css,html,js,png,mp4",
 		  "try-files" : [
-			"index.php",
 			"index.html"
 		  ],
 		  "host": "127.0.0.1",
-		  "docroot": "/usr/share/nginx/homepage/",
-
-		  "error-pages" : [
-			{ "404" : "404.html" },
-			{ "400" : "400.html" }
-		  ]
-
-		},
-		{
-		  "gzip": "css,html,js,png,mp4",
-		  "try-files" : [
-			"index.php",
-			"index.html"
-		  ],
-		  "host": "0xff.xyz",
-		  "docroot": "/usr/share/nginx/homepage/",
+		  "docroot": "site1/",
 
 		  "error-pages" : [
 			{ "404" : "404.html" },
@@ -64,12 +48,10 @@
 			"index.php",
 			"index.html"
 		  ],
-		  "host": "0xff.xyz",
-		  "docroot": "/home/ben/docker-data/cv-data/"
+		  "host": "localhost",
+		  "docroot": "site2/"
 		}
 	  ]
 	}
-
-
   ]
 }

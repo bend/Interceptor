@@ -61,6 +61,10 @@ public:
   uint16_t threads() const;
   uint64_t maxCacheSize() const;
 
+  static bool isLocalDomain(const std::string& domain);
+  static std::string localDomain();
+  static std::string replaceLocalDomain(const std::string& domain);
+
 private:
   void parse();
   void parseErrorPages(json& j, ErrorPageMap& map, const std::string& appendPath);

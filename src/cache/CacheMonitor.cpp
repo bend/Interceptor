@@ -99,8 +99,6 @@ bool CacheMonitor::startCallBack()
 
   /* Loop forever. */
   while (true) {
-    LOG_DEBUG("FAM LOOP");
-
     /*
       if (select(fam_fd + 1, &readfds,
                  0, 0, 0) < 0) {
@@ -160,9 +158,12 @@ bool CacheMonitor::signal(const std::string& filename, const int& code)
                 " - Code FamDeleted");
       break;
 
+    case FAMChanged:
+      LOG_DEBUG("CacheMonitor::signal() Change occured on " << filename <<
+                " - Code FamChanged");
+      break;
+
     case FAMCreated:
-      LOG_DEBUG("CacheMonitor::signal() : Change occured on  " << filename <<
-                " - Code FamCreated");
       break;
   }
 
@@ -188,7 +189,7 @@ bool CacheMonitor::doMonitorFile(const std::string& p)
 {
   FAMRequest* fr = (FAMRequest*)malloc(sizeof(FAMRequest));
 
-  LOG_DEBUG("++ wIILL adding file to monitor " << p );
+  LOG_DEBUG("++ will add file to monitor " << p );
 
   if (FAMMonitorFile(m_fc, p.c_str(), fr, 0) >= 0) {
     LOG_DEBUG("++adding file to monitor " << p );

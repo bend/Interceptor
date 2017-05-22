@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0015 NEW)
 project(Interceptor)
+enable_testing()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -87,3 +88,5 @@ if(CPACK_ENABLED)
 endif(CPACK_ENABLED)
 
 configure_file(vars.h.in vars.h)
+
+add_test(NAME httptests COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.py)

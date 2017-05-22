@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <thread>
 
 
@@ -74,7 +75,13 @@ void Config::parse()
 
       for (auto& site : server["sites"]) {
         ServerConfig::Site* s = new ServerConfig::Site();
-        s->m_host = site["host"];
+        std::string host = site["host"];
+
+        if (isLocalDomain(host)) {
+          host = replaceLocalDomain(host);
+        }
+
+        s->m_host = host;
         s->m_docroot = site["docroot"];
 
         for (auto& tryf : site["try-files"] ) {
@@ -134,5 +141,23 @@ uint16_t Config::threads() const
 uint64_t Config::maxCacheSize() const
 {
   return m_maxCacheSize;
+}
+
+bool Config::isLocalDomain(const std::string& domain)
+{
+  return domain.find("127.0.0.1") != std::string::npos
+         || domain.find("localhost") != std::string::npos;
+}
+
+std::string Config::localDomain()
+{
+  return "localhost";
+}
+
+std::string Config::replaceLocalDomain(const std::string& domain)
+{
+  std::string r = boost::algorithm::replace_all_copy(domain, "127.0.0.1",
+                  "localhost");
+  return r;
 }
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include <boost/thread.hpp>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 namespace po = boost::program_options;
 
@@ -65,7 +66,7 @@ int main(int argc, char** argv)
     }
 
     boost::thread_group tg;
-
+    LOG_DEBUG("Current cwd is "  << boost::filesystem::current_path());
     LOG_INFO("using " << nb_threads  << " threads");
 
     for (unsigned i = 0; i < nb_threads; ++i) {

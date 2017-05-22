@@ -258,7 +258,11 @@ namespace Http {
 
   const Config::ServerConfig::Site* HttpRequest::matchingSite() const
   {
-    const std::string host = m_host;
+    std::string host = m_host;
+
+    if (Config::isLocalDomain(host)) {
+      host = Config::replaceLocalDomain(host);
+    }
 
     for (const auto& site : session()->config()->m_sites) {
       if (site->m_host == host) {
