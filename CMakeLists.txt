@@ -89,4 +89,5 @@ endif(CPACK_ENABLED)
 
 configure_file(vars.h.in vars.h)
 
-add_test(NAME httptests COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.py)
+add_test(NAME httptests COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_valid.py)
+add_test(NAME httptests2 COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_invalid.py)

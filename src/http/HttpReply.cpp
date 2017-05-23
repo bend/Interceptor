@@ -168,7 +168,7 @@ namespace Http {
         setMimeType(page);
       }
     } else if (method == Method::HEAD) {
-      if (m_request->cacheHandler()->size(page, bytes)) {
+      if (!m_request->cacheHandler()->size(page, bytes)) {
         buildErrorResponse(Code::NotFound, stream);
         return false;
       } else {
