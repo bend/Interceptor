@@ -30,13 +30,14 @@ class TestHttpServer(unittest.TestCase):
         request.add_header('Accept-Encoding', 'gzip')
         response = urllib2.urlopen(request)
         self.assertEqual(response.getcode(), 200)
-        self.assertEqual(response.info().get('Content-Encoding'), 'gzip')
-        buf = StringIO(response.read())
-        f = gzip.GzipFile(fileobj = buf)
-        data = f.read()
+        if os.environ.has_key("ENABLE_GZIP") and os.environ["ENABLE_GZIP"] == "on":
+            self.assertEqual(response.info().get('Content-Encoding'), 'gzip')
+            buf = StringIO(response.read())
+            f = gzip.GzipFile(fileobj = buf)
+            data = f.read()
 
     def test4(self):
-        for i in range(0, 3):
+        for i in range(0, 30):
             request = urllib2.Request(HTTP_URL)
             request.add_header('Accept-Encoding', 'gzip')
             response = urllib2.urlopen(request)
