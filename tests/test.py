@@ -11,11 +11,28 @@ HTTP_URL = "http://localhost:8000"
 
 class TestHttpServer(unittest.TestCase):
 
+    @staticmethod
+    def read_file(path):
+        f = open(path, "r")
+        ret = f.read()
+        f.close()
+        return ret
+
+    @staticmethod
+    def uncompress_response(data):
+        buf = StringIO(data)
+        f = gzip.GzipFile(fileobj = buf)
+        data = f.read()
+        return data
+    
     # Basic test, get / page, should return 200
     def test1(self):
         request = urllib2.Request(HTTP_URL)
         response = urllib2.urlopen(request)
         self.assertEqual(response.getcode(), 200)
+        r = response.read()
+        r2 = TestHttpServer.read_file("site1/index.html")
+        self.assertEqual(r, r2)
 
     # Page not found test
     def test2(self):
@@ -32,9 +49,9 @@ class TestHttpServer(unittest.TestCase):
         self.assertEqual(response.getcode(), 200)
         if os.environ.has_key("ENABLE_GZIP") and os.environ["ENABLE_GZIP"] == "on":
             self.assertEqual(response.info().get('Content-Encoding'), 'gzip')
-            buf = StringIO(response.read())
-            f = gzip.GzipFile(fileobj = buf)
-            data = f.read()
+            data = TestHttpServer.uncompress_response(response.read())
+            r = TestHttpServer.read_file("site1/index.html")
+            self.assertEqual(data, r)
 
     def test4(self):
         for i in range(0, 30):
@@ -44,6 +61,24 @@ class TestHttpServer(unittest.TestCase):
             self.assertEqual(response.getcode(), 200)
             if os.environ.has_key("ENABLE_GZIP") and os.environ["ENABLE_GZIP"] == "on":
                 self.assertEqual(response.info().get('Content-Encoding'), 'gzip')
+                data = TestHttpServer.uncompress_response(response.read())
+            else:
+                self.assertEqual(response.info().get('Content-Encoding'), None)
+                data = response.read()
+            r = TestHttpServer.read_file("site1/index.html")
+            self.assertEqual(r, data)
+    
+    def test5(self):
+        request = urllib2.Request(HTTP_URL + "/lorem.html")
+        request.add_header('Accept-Encoding', 'gzip')
+        response = urllib2.urlopen(request)
+        self.assertEqual(response.getcode(), 200)
+        self.assertEqual(response.info().get('Transfer-Encoding'), 'chunked')
+        if os.environ.has_key("ENABLE_GZIP") and os.environ["ENABLE_GZIP"] == "on":
+            self.assertEqual(response.info().get('Content-Encoding'), 'gzip')
+            data = TestHttpServer.uncompress_response(response.read())
+            r = TestHttpServer.read_file("site1/lorem.html")
+            self.assertEqual(data, r)
 
     @classmethod
     def setUpClass(self):
