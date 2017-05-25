@@ -29,7 +29,7 @@ namespace Http {
     bool supportsCompression() const;
     bool supportsChunking() const;
     bool partialRequest() const;
-    std::tuple<int64_t, int64_t> getRangeRequest() const;
+    Code getRangeRequest(std::tuple<int64_t, int64_t>& range) const;
 
     void process();
     bool headersReceived() const;

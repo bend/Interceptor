@@ -105,7 +105,7 @@ namespace Http {
     return pr && pr->find("bytes=") != std::string::npos;
   }
 
-  std::tuple<int64_t, int64_t> HttpRequest::getRangeRequest() const
+  Code HttpRequest::getRangeRequest(std::tuple<int64_t, int64_t>& tuple) const
   {
     const std::string* pr = m_headers->getHeader("Range");
 
@@ -114,8 +114,9 @@ namespace Http {
 
     size_t pos = pr->find("bytes=");
 
-    if (pos == std::string::npos)
-      return {};
+    if (pos == std::string::npos) {
+      return Code::BadRequest;
+    }
 
     std::string range = pr->substr(pos + 6);
 
@@ -127,14 +128,20 @@ namespace Http {
 
     for (auto& token : tokenizer(range, sep)) {
       if (token.length() > 0) {
-        vals.push_back(std::stoi(boost::trim_copy(token)));
+        try {
+          vals.push_back(std::stoi(boost::trim_copy(token)));
+        } catch (std::out_of_range) {
+          return Code::RequestRangeNotSatisfiable;
+        }
       } else {
         vals.push_back(-1);
       }
 
     }
 
-    return std::tuple<int64_t, int64_t>(vals[0], vals[1]);
+    std::get<0>(tuple) = vals[0];
+    std::get<1>(tuple) = vals[1];
+    return Code::Ok;
   }
 
   Code HttpRequest::parse()

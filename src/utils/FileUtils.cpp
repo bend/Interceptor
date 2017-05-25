@@ -29,7 +29,14 @@ namespace Http {
 
       std::ifstream::pos_type pos = ifs.tellg();
       pageLength = pos;
-      *data = new unsigned char[pageLength]();
+
+      try {
+        *data = new unsigned char[pageLength]();
+      } catch (std::bad_alloc) {
+        ifs.close();
+        return Code::BadRequest;
+      }
+
       ifs.seekg(0, std::ios::beg);
       ifs.read(reinterpret_cast<char*>(*data), pageLength);
       ifs.close();
@@ -71,7 +78,15 @@ namespace Http {
       }
 
       ifs.seekg(from, std::ios::beg);
-      char* buffer = new char[to - from + 1];
+      char* buffer = nullptr;
+
+      try {
+        buffer = new char[to - from + 1];
+      } catch (std::bad_alloc) {
+        ifs.close();
+        return Code::RequestRangeNotSatisfiable;
+      }
+
       ifs.read(buffer, to - from + 1);
       ifs.close();
 

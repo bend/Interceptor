@@ -192,11 +192,17 @@ namespace Http {
       std::stringstream& stream, size_t& bytes)
   {
     LOG_DEBUG("HttpReply::requestPartialFileContents()");
-    std::tuple<int64_t, int64_t> range = m_request->getRangeRequest();
+    std::tuple<int64_t, int64_t> range;
+    Code ret;
+
+    if ((ret = m_request->getRangeRequest(range)) != Code::Ok) {
+      return ret;
+    }
+
     int64_t from = std::get<0>(range);
     int64_t to = std::get<1>(range);
     size_t total = 0;
-    Code ret = FileUtils::calculateBounds(page, from, to);
+    ret = FileUtils::calculateBounds(page, from, to);
 
     if (ret != Code::Ok) {
       return ret;
