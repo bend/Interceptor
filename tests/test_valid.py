@@ -51,7 +51,7 @@ class TestValidHttpServer(unittest.TestCase):
                 self.assertEqual(response.getheader('Content-Encoding'), 'gzip')
                 data = Utils.uncompress_response(response.read())
             else:
-                self.assertEqual(response.info().get('Content-Encoding'), None)
+                self.assertEqual(response.getheader('Content-Encoding'), None)
                 data = response.read()
             r = Utils.read_file("site1/index.html")
             self.assertEqual(r, data)
