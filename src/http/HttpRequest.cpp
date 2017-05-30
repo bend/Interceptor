@@ -181,7 +181,13 @@ namespace Http {
         break;
 
       case Method::POST:
-        //pase from form
+      case Method::PUT:
+      case Method::DELETE:
+      case Method::TRACE:
+      case Method::OPTIONS:
+      case Method::CONNECT:
+      case Method::PATCH:
+        return Http::Code::NotImplemented;
         break;
 
       default:

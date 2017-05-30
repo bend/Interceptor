@@ -6,12 +6,12 @@
 #include "AbstractCacheHandler.h"
 #include "FileDatabase.h"
 #include "FileMetadataDatabase.h"
-#include "CacheMonitor.h"
+#include "Subject.h"
 
 
 class CacheHandler : public AbstractCacheHandler {
 public:
-  CacheHandler(size_t maxCacheSize);
+  CacheHandler(size_t maxCacheSize, Subject& subject);
 
   virtual std::string eTag(const std::string& file) override;
 
@@ -22,13 +22,15 @@ public:
   virtual Http::Code read(const std::string& file, std::stringstream& out,
                           size_t& bytes) override;
 
+  void purge(const std::string& path);
+
 protected:
   virtual size_t cacheSize() const override;
 
 private:
+  Subject& m_subject;
   std::unique_ptr<FileDatabase> m_fileDatabase;
   std::unique_ptr<FileMetadataDatabase> m_filemedataDatabase;
-  std::unique_ptr<CacheMonitor> m_monitor;
 
 };
 

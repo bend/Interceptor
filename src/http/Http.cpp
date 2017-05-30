@@ -33,6 +33,10 @@ namespace Http {
         stream << "500 Internal Server Error" << "\r\n";
         break;
 
+      case Code::NotImplemented:
+        stream << "501 Not Implemented" << "\r\n";
+        break;
+
       case Code::HttpVersionNotSupported:
         stream << "505 HTTP Version Not Supported" << "\r\n";
         break;

@@ -4,7 +4,8 @@
 
 using namespace std::chrono_literals;
 
-CacheMonitor::CacheMonitor()
+CacheMonitor::CacheMonitor(Subject& subject)
+  : m_subject(subject)
 {
 }
 
@@ -156,11 +157,13 @@ bool CacheMonitor::signal(const std::string& filename, const int& code)
     case FAMDeleted:
       LOG_DEBUG("CacheMonitor::signal() Change occured on  " << filename <<
                 " - Code FamDeleted");
+      m_subject.notifyListeners({0x01, filename});
       break;
 
     case FAMChanged:
       LOG_DEBUG("CacheMonitor::signal() Change occured on " << filename <<
                 " - Code FamChanged");
+      m_subject.notifyListeners({0x01, filename});
       break;
 
     case FAMCreated:
@@ -187,12 +190,10 @@ void CacheMonitor::cancelMonitor(const std::string& p)
 
 bool CacheMonitor::doMonitorFile(const std::string& p)
 {
+  LOG_DEBUG("CacheMonitor::doMonitorFile() - adding " << p);
   FAMRequest* fr = (FAMRequest*)malloc(sizeof(FAMRequest));
 
-  LOG_DEBUG("++ will add file to monitor " << p );
-
   if (FAMMonitorFile(m_fc, p.c_str(), fr, 0) >= 0) {
-    LOG_DEBUG("++adding file to monitor " << p );
     m_requests[p] = fr;
     return true;
   }

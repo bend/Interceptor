@@ -52,7 +52,17 @@ int main(int argc, char** argv)
 
     AbstractCacheHandler* cache;
 #ifdef ENABLE_LOCAL_CACHE
-    cache = new CacheHandler(config->maxCacheSize());
+    //TODO rework this part
+    Subject subject;
+    cache = new CacheHandler(config->maxCacheSize(), subject);
+    auto monitor = new CacheMonitor(subject);
+    CacheListener* cacheListener = new CacheListener(dynamic_cast<CacheHandler*>
+        (cache));
+    MonitorListener* monitorListener = new MonitorListener(monitor);
+    subject.addListener(cacheListener);
+    subject.addListener(monitorListener);
+    monitor->start();
+
 #else
     cache = new BasicCacheHandler();
 #endif //ENABLE_LOCAL_CACHE

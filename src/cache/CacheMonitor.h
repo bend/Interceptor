@@ -1,6 +1,8 @@
 #ifndef CACHE_MONITOR_H__
 #define CACHE_MONITOR_H__
 
+#include "Subject.h"
+
 #include <fam.h>
 #include <vector>
 #include <map>
@@ -11,7 +13,7 @@ class CacheMonitor {
 
 public:
 
-  CacheMonitor();
+  CacheMonitor(Subject& subject);
 
   ~CacheMonitor();
 
@@ -44,6 +46,7 @@ private:
   std::map<std::string, FAMRequest*> m_requests;
 
   FAMConnection* m_fc;
+  Subject& m_subject;
 };
 
 #endif

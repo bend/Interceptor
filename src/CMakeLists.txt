@@ -23,7 +23,12 @@ if(ENABLE_LOCAL_CACHE)
   set(src ${src} 
 	cache/CacheHandler.cpp
 	cache/FileMetadataDatabase.cpp
+	cache/FileDatabase.cpp
 	cache/CacheMonitor.cpp
+	cache/Subject.cpp
+	cache/CacheListener.cpp
+	cache/MonitorListener.cpp
+
 	)
 else(ENABLE_LOCAL_CACHE)
   set(src ${src} cache/BasicCacheHandler.cpp)

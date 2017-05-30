@@ -44,3 +44,10 @@ void FileMetadataDatabase::setSize(const std::string& filename, size_t size)
 {
   m_sizeMap[filename] = size;
 }
+
+void FileMetadataDatabase::purge(const std::string& path)
+{
+  m_eTagMap.erase(path);
+  m_lastModifyMap.erase(path);
+  m_sizeMap.erase(path);
+}

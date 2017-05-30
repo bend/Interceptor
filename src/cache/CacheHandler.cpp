@@ -5,14 +5,13 @@
 #include "vars.h"
 #include <tuple>
 
-CacheHandler::CacheHandler(size_t maxCacheSize)
+CacheHandler::CacheHandler(size_t maxCacheSize, Subject& subject)
   : AbstractCacheHandler(maxCacheSize),
+    m_subject(subject),
     m_fileDatabase(std::make_unique<FileDatabase>()),
-    m_filemedataDatabase(std::make_unique<FileMetadataDatabase>()),
-    m_monitor(std::make_unique<CacheMonitor>())
+    m_filemedataDatabase(std::make_unique<FileMetadataDatabase>())
 {
   LOG_INFO("Local Cache enabled, max size " << maxCacheSize);
-  m_monitor->start();
 }
 
 std::string CacheHandler::eTag(const std::string& file)
@@ -29,6 +28,7 @@ std::string CacheHandler::eTag(const std::string& file)
     eTag = std::get<0>(tuple);
     m_filemedataDatabase->setETag(file, eTag);
     m_filemedataDatabase->setLastModified(file, std::get<1>(tuple));
+    m_subject.notifyListeners({0x02, file});
     return eTag;
   }
 
@@ -43,21 +43,19 @@ std::string CacheHandler::lastModified(const std::string& file)
     return lm;
   }
 
-  auto tuple = Http::FileUtils::generateCacheData(file);
-
-  if (std::get<1>(tuple).length() > 0) {
-    lm = std::get<1>(tuple);
-    m_filemedataDatabase->setETag(file, std::get<0>(tuple));
-    m_filemedataDatabase->setLastModified(file, lm);
-    return lm;
+  if (eTag(file).length() > 0) { // eTag is always the first thing to be generated
+    return m_filemedataDatabase->lastModified(file);
   }
 
   return {};
+
+
 }
 
 Http::Code CacheHandler::read(const std::string& file,
                               std::stringstream& stream, size_t& bytes)
 {
+
   return Http::FileUtils::readFile(file, stream, bytes);
 }
 
@@ -70,11 +68,23 @@ bool CacheHandler::size(const std::string& file, size_t& bytes)
     return true;
   }
 
+  if (eTag(file).length() ==
+      0) { // eTag is always the first thing to be generated
+    return false;
+  }
+
   if (Http::FileUtils::fileSize(file, bytes)) {
     m_filemedataDatabase->setSize(file, bytes);
   }
 
   return true;
+}
+
+void CacheHandler::purge(const std::string& path)
+{
+  LOG_DEBUG("CacheHandler::purge() - purging " << path);
+  m_filemedataDatabase->purge(path);
+  m_fileDatabase->purge(path);
 }
 
 size_t CacheHandler::cacheSize() const

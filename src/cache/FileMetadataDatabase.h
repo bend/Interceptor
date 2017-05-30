@@ -14,6 +14,7 @@ public:
   void setETag(const std::string& filename, const std::string& eTag);
   void setLastModified(const std::string& filename, const std::string& lm);
   void setSize(const std::string& filename, size_t size);
+  void purge(const std::string& path);
 
 private:
   template <class C>
