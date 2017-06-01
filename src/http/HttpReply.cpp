@@ -43,7 +43,7 @@ namespace Http {
 
     if ( !m_request->headersReceived() ) {
       std::stringstream stream;
-      buildErrorResponse(Code::BadRequest, stream, true);
+      buildErrorResponse(Code::BadRequest, true);
       return;
     }
 
@@ -54,7 +54,7 @@ namespace Http {
         m_replyHeaders->fillFrom(m_request->m_headers);
       }
 
-      buildErrorResponse(status, stream, true);
+      buildErrorResponse(status, true);
       return;
     }
 
@@ -91,21 +91,20 @@ namespace Http {
   void HttpReply::handleRetrievalRequest(Method method)
   {
     LOG_DEBUG("HttpReply::handleRetrievalRequest()");
-    std::stringstream stream;
 
     if (!m_request->hasMatchingSite()) {
-      buildErrorResponse(Code::NotFound, stream, true);
+      buildErrorResponse(Code::NotFound, true);
       return;
     }
 
     const SiteConfig* site = m_request->matchingSite();
 
-    requestFileContents(method, site, stream);
+    requestFileContents(method, site);
   }
 
-  bool HttpReply::requestFileContents(Method method, const SiteConfig* site,
-                                      std::stringstream& stream)
+  bool HttpReply::requestFileContents(Method method, const SiteConfig* site)
   {
+	std::stringstream stream;
     LOG_DEBUG("HttpReply::requestFileContents()");
     std::string page;
     bool found = false;
@@ -135,7 +134,7 @@ namespace Http {
     }
 
     if (!found) {
-      buildErrorResponse(Code::NotFound, stream);
+      buildErrorResponse(Code::NotFound);
       return false;
     }
 
@@ -147,7 +146,7 @@ namespace Http {
         ret = requestPartialFileContents(page, stream, bytes);
       } else {
         if (!m_request->cacheHandler()->size(page, bytes)) {
-          buildErrorResponse(Code::InternalServerError, stream);
+          buildErrorResponse(Code::InternalServerError);
           return false;
         }
 
@@ -162,14 +161,14 @@ namespace Http {
       }
 
       if (ret != Code::Ok) {
-        buildErrorResponse(ret, stream);
+        buildErrorResponse(ret);
         return false;
       } else {
         setMimeType(page);
       }
     } else if (method == Method::HEAD) {
       if (!m_request->cacheHandler()->size(page, bytes)) {
-        buildErrorResponse(Code::NotFound, stream);
+        buildErrorResponse(Code::NotFound);
         return false;
       } else {
         setMimeType(page);
@@ -188,8 +187,7 @@ namespace Http {
     return true;
   }
 
-  Code HttpReply::requestPartialFileContents(const std::string& page,
-      std::stringstream& stream, size_t& bytes)
+  Code HttpReply::requestPartialFileContents(const std::string& page, std::stringstream& stream, size_t& bytes)
   {
     LOG_DEBUG("HttpReply::requestPartialFileContents()");
     std::tuple<int64_t, int64_t> range;
@@ -258,7 +256,7 @@ namespace Http {
     return true;
   }
 
-  void HttpReply::post(std::stringstream& stream)
+  void HttpReply::post(const std::stringstream& stream)
   {
     LOG_DEBUG("HttpReply::post()");
     std::vector<boost::asio::const_buffer> buffers;
@@ -422,10 +420,10 @@ namespace Http {
     httpBuffer->m_buffers[0] = buf(httpBuffer, std::string(resp));
   }
 
-  void HttpReply::buildErrorResponse(Code error, std::stringstream& stream,
-                                     bool closeConnection)
+  void HttpReply::buildErrorResponse(Code error, bool closeConnection)
   {
     LOG_DEBUG("HttpReply::buildErrorResponse()");
+	std::stringstream stream;
     bool found = false;
     size_t bytes = 0;
 

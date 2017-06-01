@@ -43,9 +43,8 @@ namespace Http {
   private:
     void handleRetrievalRequest(Method method);
 
-    void post(std::stringstream& stream);
-    void buildErrorResponse(Code error, std::stringstream& response,
-                            bool closeConnection = false);
+    void post(const std::stringstream& stream);
+    void buildErrorResponse(Code error, bool closeConnection = false);
 
     bool chunkResponse(HttpBufferPtr httpBuffer,
                        std::vector<boost::asio::const_buffer>& buffers);
@@ -61,8 +60,7 @@ namespace Http {
 #endif // ENABLE_GZIP
 
     void setMimeType(const std::string& filename);
-    bool requestFileContents(Method method, const SiteConfig* site,
-                             std::stringstream& stream);
+    bool requestFileContents(Method method, const SiteConfig* site);
     Code requestPartialFileContents(const std::string& page,
                                     std::stringstream& stream, size_t& bytes);
     bool requestLargeFileContents(const std::string& page, size_t from,

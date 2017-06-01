@@ -50,8 +50,6 @@ std::string CacheHandler::lastModified(const std::string& file)
   }
 
   return {};
-
-
 }
 
 Http::Code CacheHandler::read(const std::string& file,

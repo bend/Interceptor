@@ -16,8 +16,8 @@ Main::Main()
   : m_cacheHandler(nullptr),
     m_subject(nullptr),
     m_monitor(nullptr),
-    m_config(nullptr)
-
+    m_config(nullptr),
+	m_nbThreads(0)
 {}
 
 
