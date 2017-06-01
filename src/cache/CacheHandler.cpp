@@ -19,6 +19,7 @@ std::string CacheHandler::eTag(const std::string& file)
   std::string eTag = m_filemedataDatabase->eTag(file);
 
   if (eTag.length() > 0) {
+    LOG_DEBUG("CacheHandler::eTag() - cache hit for " << file);
     return eTag;
   }
 
@@ -40,6 +41,7 @@ std::string CacheHandler::lastModified(const std::string& file)
   std::string lm = m_filemedataDatabase->lastModified(file);
 
   if (lm.length() > 0) {
+    LOG_DEBUG("CacheHandler::lastModified() - cache hit for " << file);
     return lm;
   }
 
@@ -64,6 +66,7 @@ bool CacheHandler::size(const std::string& file, size_t& bytes)
   int64_t s = m_filemedataDatabase->size(file);
 
   if (s > -1) {
+    LOG_DEBUG("CacheHandler::size() - cache hit for " << file);
     bytes = (size_t)s;
     return true;
   }

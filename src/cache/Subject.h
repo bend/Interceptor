@@ -11,6 +11,7 @@ class Subject {
 
 public:
   Subject() = default;
+  ~Subject();
 
   void addListener(AbstractListener* listener);
 

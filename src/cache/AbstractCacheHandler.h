@@ -10,7 +10,7 @@ public:
   AbstractCacheHandler(size_t maxCacheSize)
     : m_maxCacheSize(maxCacheSize) {};
 
-  ~AbstractCacheHandler() = default;
+  virtual ~AbstractCacheHandler() = default;
 
   virtual std::string eTag(const std::string& file) = 0;
 

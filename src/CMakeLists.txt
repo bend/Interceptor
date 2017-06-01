@@ -15,8 +15,8 @@ set(src
   utils/Logger.cpp
   utils/Server.cpp
   utils/FileUtils.cpp
-
-  main.cpp
+  
+  Main.cpp
 )
 
 if(ENABLE_LOCAL_CACHE)

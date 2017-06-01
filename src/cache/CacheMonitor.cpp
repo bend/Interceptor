@@ -151,8 +151,6 @@ bool CacheMonitor::startCallBack()
 
 bool CacheMonitor::signal(const std::string& filename, const int& code)
 {
-  LOG_DEBUG("file changed " << filename << " code " << code );
-
   switch (code) {
     case FAMDeleted:
       LOG_DEBUG("CacheMonitor::signal() Change occured on  " << filename <<

@@ -2,6 +2,15 @@
 
 #include "AbstractListener.h"
 
+Subject::~Subject()
+{
+  for (auto& listener : m_listeners) {
+    delete listener;
+  }
+
+  m_listeners.clear();
+}
+
 void Subject::addListener(AbstractListener* listener)
 {
   m_listeners.push_back(listener);
