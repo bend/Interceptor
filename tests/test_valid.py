@@ -123,6 +123,7 @@ class TestValidHttpServer(unittest.TestCase):
         self.assertEqual(response.status, 200)
         self.assertEqual(response.getheader('Transfer-Encoding'), 'chunked')
         lastmodifed = response.getheader("Last-Modified")
+        time.sleep(2)
         call(["/usr/bin/touch", "site1/index.html"])
         time.sleep(5)
         conn = httplib.HTTPConnection(HTTP_URL)
