@@ -55,8 +55,24 @@ std::string CacheHandler::lastModified(const std::string& file)
 Http::Code CacheHandler::read(const std::string& file,
                               std::stringstream& stream, size_t& bytes)
 {
+  const unsigned char* data = m_fileDatabase->data(file);
 
-  return Http::FileUtils::readFile(file, stream, bytes);
+  if (data) {
+    LOG_DEBUG("CacheHandler::read() - cache hit for " << file);
+    stream << data;
+    return Http::Code::Ok;
+  }
+
+  unsigned char* mdata;
+  Http::Code ret;
+  LOG_DEBUG("CacheHandler::read() - cache miss for " << file);
+
+  if ((ret = Http::FileUtils::readFile(file, &mdata, bytes)) == Http::Code::Ok) {
+    m_fileDatabase->setData(file, mdata);
+    stream << mdata;
+  }
+
+  return ret;
 }
 
 bool CacheHandler::size(const std::string& file, size_t& bytes)

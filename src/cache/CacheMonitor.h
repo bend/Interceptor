@@ -17,7 +17,7 @@ public:
 
   ~CacheMonitor();
 
-  std::thread* start();
+  std::thread& start();
 
   void monitorFile(const std::string& p);
 
@@ -44,6 +44,8 @@ private:
   std::vector<std::string> m_directories;
   std::vector<std::string> m_cancel;
   std::map<std::string, FAMRequest*> m_requests;
+  std::thread* m_runningThread;
+  bool m_monitoring;
 
   FAMConnection* m_fc;
   Subject& m_subject;

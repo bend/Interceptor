@@ -2,16 +2,22 @@
 
 #include "utils/Logger.h"
 
+#include <boost/filesystem.hpp>
+
 using namespace std::chrono_literals;
 
 CacheMonitor::CacheMonitor(Subject& subject)
-  : m_subject(subject)
+  : m_monitoring(false),
+    m_subject(subject)
+
 {
 }
 
 CacheMonitor::~CacheMonitor()
 {
   LOG_DEBUG("CacheMonitor::~CacheMonitor()");
+
+  m_monitoring = false;
 
   for (auto& kv :  m_requests) {
     if (FAMCancelMonitor(m_fc, kv.second) < 0) {
@@ -25,6 +31,10 @@ CacheMonitor::~CacheMonitor()
 
   delete m_fc;
   m_fc = nullptr;
+
+  m_runningThread->join();
+
+  delete m_runningThread;
 }
 
 const char* CacheMonitor::eventName(const int& code)
@@ -53,12 +63,17 @@ const char* CacheMonitor::eventName(const int& code)
   return famevent[code];
 }
 
-std::thread* CacheMonitor::start()
+std::thread& CacheMonitor::start()
 {
+  if (m_monitoring) {
+    throw new std::runtime_error("monitoring already active");
+  }
+
+  m_monitoring = true;
   /* Launch the threads that will monitor the files and the thread that will check the m_updater var */
-  std::thread* updater = new std::thread(std::bind(&CacheMonitor::startCallBack,
-                                         this));
-  return updater; //TODO free
+  m_runningThread = new std::thread(std::bind(&CacheMonitor::startCallBack,
+                                    this));
+  return *m_runningThread;
 }
 
 bool CacheMonitor::startCallBack()
@@ -156,12 +171,14 @@ bool CacheMonitor::signal(const std::string& filename, const int& code)
       LOG_DEBUG("CacheMonitor::signal() Change occured on  " << filename <<
                 " - Code FamDeleted");
       m_subject.notifyListeners({0x01, filename});
+      doCancelMonitor(filename);
       break;
 
     case FAMChanged:
       LOG_DEBUG("CacheMonitor::signal() Change occured on " << filename <<
                 " - Code FamChanged");
       m_subject.notifyListeners({0x01, filename});
+      doCancelMonitor(filename);
       break;
 
     case FAMCreated:
@@ -213,6 +230,8 @@ bool CacheMonitor::doMonitorDirectory(const std::string& p)
 
 bool CacheMonitor::doCancelMonitor(const std::string& p)
 {
+  LOG_DEBUG("CacheMonitor::doCancelMonitor() " << p);
+
   if (m_requests.count(p)) {
     if (FAMCancelMonitor(m_fc, m_requests.at(p)) >= 0) {
       return true;

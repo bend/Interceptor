@@ -9,6 +9,7 @@
 #include "cache/generic_cache.h"
 
 #include <boost/bind.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <algorithm>
 
 namespace Http {
@@ -104,7 +105,7 @@ namespace Http {
 
   bool HttpReply::requestFileContents(Method method, const SiteConfig* site)
   {
-	std::stringstream stream;
+    std::stringstream stream;
     LOG_DEBUG("HttpReply::requestFileContents()");
     std::string page;
     bool found = false;
@@ -116,7 +117,7 @@ namespace Http {
       std::vector<std::string> tryFiles = site->m_tryFiles;
 
       for (const auto& index : tryFiles) {
-        page = site->m_docroot + index;
+        page = site->m_docroot + "/" + index;
 
         if (FileUtils::exists(page)) {
           found = true;
@@ -141,6 +142,7 @@ namespace Http {
     // page found
     if ( method == Method::GET) {
       Code ret;
+      boost::algorithm::replace_all(page, "//", "/");
 
       if (m_request->partialRequest()) {
         ret = requestPartialFileContents(page, stream, bytes);
@@ -187,7 +189,8 @@ namespace Http {
     return true;
   }
 
-  Code HttpReply::requestPartialFileContents(const std::string& page, std::stringstream& stream, size_t& bytes)
+  Code HttpReply::requestPartialFileContents(const std::string& page,
+      std::stringstream& stream, size_t& bytes)
   {
     LOG_DEBUG("HttpReply::requestPartialFileContents()");
     std::tuple<int64_t, int64_t> range;
@@ -423,7 +426,7 @@ namespace Http {
   void HttpReply::buildErrorResponse(Code error, bool closeConnection)
   {
     LOG_DEBUG("HttpReply::buildErrorResponse()");
-	std::stringstream stream;
+    std::stringstream stream;
     bool found = false;
     size_t bytes = 0;
 

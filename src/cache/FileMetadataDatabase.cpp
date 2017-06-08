@@ -51,3 +51,8 @@ void FileMetadataDatabase::purge(const std::string& path)
   m_lastModifyMap.erase(path);
   m_sizeMap.erase(path);
 }
+
+size_t FileMetadataDatabase::size() const
+{
+  return 0;
+}

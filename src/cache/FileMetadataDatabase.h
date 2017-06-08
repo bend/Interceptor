@@ -1,9 +1,9 @@
 #ifndef FILE_METADATADATABASE_H__
 #define FILE_METADATADATABASE_H__
 
-#include <map>
+#include "AbstractDatabase.h"
 
-class FileMetadataDatabase {
+class FileMetadataDatabase : public AbstractDatabase {
 public:
   FileMetadataDatabase() = default;
 
@@ -14,11 +14,10 @@ public:
   void setETag(const std::string& filename, const std::string& eTag);
   void setLastModified(const std::string& filename, const std::string& lm);
   void setSize(const std::string& filename, size_t size);
-  void purge(const std::string& path);
+  virtual void purge(const std::string& path) override;
+  virtual size_t size() const override;
 
 private:
-  template <class C>
-  using MetaDataMap = std::map<std::string, C>;
   MetaDataMap<std::string> m_eTagMap;
   MetaDataMap<std::string> m_lastModifyMap;
   MetaDataMap<size_t> m_sizeMap;

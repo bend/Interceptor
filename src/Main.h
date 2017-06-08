@@ -2,6 +2,7 @@
 #define MAIN_H__
 
 #include <memory>
+#include "vars.h"
 
 class AbstractCacheHandler;
 class Config;
@@ -22,8 +23,10 @@ private:
 
 private:
   AbstractCacheHandler* m_cacheHandler;
+#ifdef ENABLE_LOCAL_CACHE
   Subject* m_subject;
   CacheMonitor* m_monitor;
+#endif // ENABLE_LOCAL_CACHE
   Config* m_config;
   uint16_t m_nbThreads;
 };

@@ -2,8 +2,8 @@
 import unittest
 import httplib
 from my_utils import *
+from subprocess import call
 
-HTTP_URL = "localhost:8000"
 
 class TestValidHttpServer(unittest.TestCase):
 
@@ -114,6 +114,25 @@ class TestValidHttpServer(unittest.TestCase):
         self.assertEqual(res.status, 206)
         data = res.read()
         self.assertEqual(len(data), 201)
+
+    def test9(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        headers = { 'Accept-Encoding' : 'gzip' }
+        conn.request("GET", "/index.html", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.getheader('Transfer-Encoding'), 'chunked')
+        lastmodifed = response.getheader("Last-Modified")
+        call(["/usr/bin/touch", "site1/index.html"])
+        time.sleep(5)
+        conn = httplib.HTTPConnection(HTTP_URL)
+        conn.request("GET", "/index.html", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.getheader('Transfer-Encoding'), 'chunked')
+        lastmodifed2 = response.getheader("Last-Modified")
+        self.assertNotEqual(lastmodifed, lastmodifed2)
+
 
     @classmethod
     def setUpClass(self):

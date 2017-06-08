@@ -6,7 +6,6 @@ import time
 import httplib
 from my_utils import *
 
-HTTP_URL = "localhost:8000"
 
 class TestInvalidHttpServer(unittest.TestCase):
 

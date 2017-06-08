@@ -68,9 +68,11 @@ public:
 private:
   void parse();
   void parseErrorPages(json& j, ErrorPageMap& map, const std::string& appendPath);
+  std::string parseDocRoot(const std::string& docroot) const;
 
 private:
   const std::string m_path;
+  std::string m_cwd;
   std::vector<ServerConfig*> m_serversConfig;
 
   /* Global section */

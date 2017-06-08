@@ -14,18 +14,22 @@ namespace po = boost::program_options;
 
 Main::Main()
   : m_cacheHandler(nullptr),
+#ifdef ENABLE_LOCAL_CACHE
     m_subject(nullptr),
     m_monitor(nullptr),
+#endif // ENABLE_LOCAL_CACHE
     m_config(nullptr),
-	m_nbThreads(0)
+    m_nbThreads(0)
 {}
 
 
 Main::~Main()
 {
   delete m_config;
-  delete m_monitor;
+#ifdef ENABLE_LOCAL_CACHE
   delete m_subject;
+  delete m_monitor;
+#endif // ENABLE_LOCAL_CACHE
   delete m_cacheHandler;
 }
 
@@ -111,7 +115,7 @@ void Main::run()
   }
 
   boost::thread_group tg;
-  LOG_DEBUG("Current cwd is "  << boost::filesystem::current_path());
+  LOG_DEBUG("CWD is "  << boost::filesystem::current_path());
   LOG_INFO("using " << m_nbThreads  << " threads");
 
   for (unsigned i = 0; i < m_nbThreads; ++i) {

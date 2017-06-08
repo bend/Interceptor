@@ -6,6 +6,8 @@ import os
 import subprocess
 import time
 
+HTTP_URL = "localhost:7000"
+
 class Utils:
     
     @staticmethod

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/filesystem.hpp>
 #include <thread>
 
 
@@ -15,6 +16,7 @@ Config::Config(const std::string& path)
     m_serverTimeout(0),
     m_maxCacheSize(0)
 {
+  m_cwd = boost::filesystem::current_path().string();
   parse();
 }
 
@@ -82,7 +84,7 @@ void Config::parse()
         }
 
         s->m_host = host;
-        s->m_docroot = site["docroot"];
+        s->m_docroot = parseDocRoot(site["docroot"]);
 
         for (auto& tryf : site["try-files"] ) {
           s->m_tryFiles.push_back(tryf);
@@ -161,3 +163,14 @@ std::string Config::replaceLocalDomain(const std::string& domain)
   return r;
 }
 
+std::string Config::parseDocRoot(const std::string& docroot) const
+{
+  if (docroot.at(0) == '/') {
+    return docroot;
+  }
+
+  std::string dr = m_cwd + "/" + docroot;
+  boost::replace_all(dr, "//", "/");
+  boost::replace_all(dr, "/./", "/");
+  return dr;
+}
