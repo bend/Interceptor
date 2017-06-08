@@ -4,6 +4,7 @@
 
 #include "vars.h"
 #include <tuple>
+#include <iomanip>
 
 CacheHandler::CacheHandler(size_t maxCacheSize, Subject& subject)
   : AbstractCacheHandler(maxCacheSize),
@@ -55,11 +56,11 @@ std::string CacheHandler::lastModified(const std::string& file)
 Http::Code CacheHandler::read(const std::string& file,
                               std::stringstream& stream, size_t& bytes)
 {
-  const unsigned char* data = m_fileDatabase->data(file);
+  auto data = m_fileDatabase->data(file);
 
   if (data) {
     LOG_DEBUG("CacheHandler::read() - cache hit for " << file);
-    stream << data;
+    stream.write(reinterpret_cast<const char*>(data->first), data->second);
     return Http::Code::Ok;
   }
 
@@ -68,8 +69,8 @@ Http::Code CacheHandler::read(const std::string& file,
   LOG_DEBUG("CacheHandler::read() - cache miss for " << file);
 
   if ((ret = Http::FileUtils::readFile(file, &mdata, bytes)) == Http::Code::Ok) {
-    m_fileDatabase->setData(file, mdata);
-    stream << mdata;
+    m_fileDatabase->setData(file, mdata, bytes);
+    stream.write(reinterpret_cast<const char*>(mdata), bytes);
   }
 
   return ret;
