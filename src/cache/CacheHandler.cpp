@@ -9,7 +9,7 @@
 CacheHandler::CacheHandler(size_t maxCacheSize, Subject& subject)
   : AbstractCacheHandler(maxCacheSize),
     m_subject(subject),
-    m_fileDatabase(std::make_unique<FileDatabase>()),
+    m_fileDatabase(std::make_unique<FileDatabase>(maxCacheSize)),
     m_filemedataDatabase(std::make_unique<FileMetadataDatabase>())
 {
   LOG_INFO("Local Cache enabled, max size " << maxCacheSize);
@@ -69,8 +69,8 @@ Http::Code CacheHandler::read(const std::string& file,
   LOG_DEBUG("CacheHandler::read() - cache miss for " << file);
 
   if ((ret = Http::FileUtils::readFile(file, &mdata, bytes)) == Http::Code::Ok) {
-    m_fileDatabase->setData(file, mdata, bytes);
     stream.write(reinterpret_cast<const char*>(mdata), bytes);
+    m_fileDatabase->setData(file, mdata, bytes);
   }
 
   return ret;

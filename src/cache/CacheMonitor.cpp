@@ -7,9 +7,9 @@
 using namespace std::chrono_literals;
 
 CacheMonitor::CacheMonitor(Subject& subject)
-  : m_monitoring(false),
+  : m_runningThread(nullptr),
+    m_monitoring(false),
     m_subject(subject)
-
 {
 }
 
@@ -18,6 +18,10 @@ CacheMonitor::~CacheMonitor()
   LOG_DEBUG("CacheMonitor::~CacheMonitor()");
 
   m_monitoring = false;
+
+  if (m_runningThread) {
+    m_runningThread->join();
+  }
 
   for (auto& kv :  m_requests) {
     if (FAMCancelMonitor(m_fc, kv.second) < 0) {
@@ -31,8 +35,6 @@ CacheMonitor::~CacheMonitor()
 
   delete m_fc;
   m_fc = nullptr;
-
-  m_runningThread->join();
 
   delete m_runningThread;
 }
@@ -114,7 +116,7 @@ bool CacheMonitor::startCallBack()
   FD_SET(fam_fd, &readfds);
 
   /* Loop forever. */
-  while (true) {
+  while (m_monitoring) {
     /*
       if (select(fam_fd + 1, &readfds,
                  0, 0, 0) < 0) {
@@ -161,6 +163,8 @@ bool CacheMonitor::startCallBack()
 
     std::this_thread::sleep_for(400ms);
   }
+
+  return true;
 }
 
 

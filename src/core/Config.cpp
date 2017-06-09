@@ -53,7 +53,7 @@ void Config::parse()
     }
 
 #ifdef ENABLE_LOCAL_CACHE
-    m_maxCacheSize = global["max-cache-size"];
+    m_maxCacheSize = ((float)global["max-cache-size"]) * 1024 * 1024;
 #endif // ENABLE_LOCAL_CACHE
 
     auto servers = j["servers"];

@@ -3,7 +3,7 @@
 	"server-timeout" : 200, 
 	"client-timeout" : 200,
 	"nb-threads": 5,
-	"max-cache-size" : 10,
+	"max-cache-size" : 1000000,
 	
 	"error-pages" : [
 		{ "404" : "error/404.html" }, 

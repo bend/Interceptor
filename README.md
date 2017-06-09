@@ -43,6 +43,7 @@ You can find a configuration example in the config/ directory. Be carefull that 
 	"server-timeout" : 200, //timeout in seconds
 	"client-timeout" : 200, //timeout in seconds
 	"nb-threads" : 10, // number of threads to use by default it will use the number of cores
+	"max-cache-size" : 100, // Size of the local cache to keep (in MB)
 	"error-pages" : [
 	  { "404" : "/home/ben/projects/interceptor/config/404.html" }, // displayed on error 404
 	  { "400" : "/home/ben/projects/interceptor/config/400.html" }  // displayed on error 400, if no page is specified or page is
