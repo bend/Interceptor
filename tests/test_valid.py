@@ -71,6 +71,16 @@ class TestValidHttpServer(unittest.TestCase):
             self.assertEqual(data, r)
         conn.close()
 
+
+    def test5_1(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        conn.request("GET", "/lorem.html")
+        res = conn.getresponse()
+        self.assertEqual(res.status, 200)
+        self.assertEqual(res.read(), Utils.read_file("site1/lorem.html"))
+        conn.close()
+
+
     def test6(self):
         conn = httplib.HTTPConnection(HTTP_URL)
         conn.request("HEAD", "/lorem.html")
@@ -79,6 +89,23 @@ class TestValidHttpServer(unittest.TestCase):
         size = len(Utils.read_file("site1/lorem.html"))
         size2 = int(res.getheader("Content-Length"))
         self.assertEqual(size, size2)
+        conn.close()
+
+    def test7_1(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        headers = { "Range" : "bytes=0-200" }
+        conn.request("GET", "/lorem.html", None, headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 206)
+        self.assertEqual(len(res.read()), 201)
+        conn.close()
+
+    def test7_2(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        headers = { "Range" : "bytes=201-" }
+        conn.request("GET", "/lorem.html", None, headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 206)
         conn.close()
 
     def test7(self):

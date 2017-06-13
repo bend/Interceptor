@@ -139,9 +139,10 @@ namespace Http {
       return false;
     }
 
+    Code ret = Code::Ok;
+
     // page found
     if ( method == Method::GET) {
-      Code ret;
       boost::algorithm::replace_all(page, "//", "/");
 
       if (m_request->partialRequest()) {
@@ -156,37 +157,45 @@ namespace Http {
           // File is too big to be sent at once, we will send it in multiple times to
           // avoid consuming to much memory
           setMimeType(page);
-          return requestLargeFileContents(page, 0, bytes);
+          m_contentLength = bytes;
+          return requestLargeFileContents(page, 0, bytes, bytes);
         } else {
-          ret = m_request->cacheHandler()->read(page, stream, bytes);
+          ret = requestFileContents(page, stream, bytes);
         }
-      }
-
-      if (ret != Code::Ok) {
-        buildErrorResponse(ret);
-        return false;
-      } else {
-        setMimeType(page);
       }
     } else if (method == Method::HEAD) {
       if (!m_request->cacheHandler()->size(page, bytes)) {
-        buildErrorResponse(Code::NotFound);
-        return false;
+        ret = Code::NotFound;
       } else {
         setMimeType(page);
+        m_contentLength = bytes;
+        m_request->setCompleted(true);
+        post(stream);
       }
 
-    } else {
+    }
+
+    if (ret != Code::Ok) {
+      buildErrorResponse(ret);
       return false;
     }
 
-    m_contentLength = bytes;
-
-    m_request->setCompleted(true);
-
-    post(stream);
-
     return true;
+  }
+
+  Code HttpReply::requestFileContents(const std::string& page,
+                                      std::stringstream& stream, size_t bytes)
+  {
+    Code ret = m_request->cacheHandler()->read(page, stream, bytes);
+
+    if (ret == Code::Ok) {
+      setMimeType(page);
+      m_request->setCompleted(true);
+      m_contentLength = bytes;
+      post(stream);
+    }
+
+    return ret;
   }
 
   Code HttpReply::requestPartialFileContents(const std::string& page,
@@ -205,49 +214,66 @@ namespace Http {
     size_t total = 0;
     ret = FileUtils::calculateBounds(page, from, to);
 
+
     if (ret != Code::Ok) {
       return ret;
     }
 
-    ret = FileUtils::readFile(page,	from, to , stream, total);
-
-    if (ret != Code::Ok) {
-      return ret;
+    if (!FileUtils::fileSize(page, total)) {
+      return Code::NotFound;
     }
 
     bytes = to - from + 1;
+    m_contentLength = bytes;
 
     m_replyHeaders->addHeader("Content-Range",
                               "bytes " + std::to_string(from) + "-"
                               + std::to_string(to) + "/" + std::to_string(total));
     m_status = Code::PartialContent;
+    setMimeType(page);
+
+    if (to - from > MAX_CHUNK_SIZE) {
+      // File is too big to be sent at once, we will send it in multiple times to
+      // avoid consuming to much memory
+      return requestLargeFileContents(page, from, to,
+                                      total) ? Code::Ok : Code::BadRequest;
+    } else {
+      ret = FileUtils::readFile(page,	from, to , stream,
+                                bytes); //TODO take it from cache
+
+      if (ret == Code::Ok) {
+        m_request->setCompleted(true);
+        post(stream);
+      }
+    }
 
     return ret;
   }
 
   bool HttpReply::requestLargeFileContents(const std::string& page, size_t from,
+      size_t limit,
       size_t totalBytes)
   {
     LOG_DEBUG("HttpReply::requestLargeFileContents()");
     boost::mutex::scoped_lock lock(
       m_mutex); //needed to be sure that previous call is completed
     size_t bytes;
-    size_t to = std::min((size_t) from + MAX_CHUNK_SIZE, totalBytes - 1);
-    m_contentLength = totalBytes;
+    size_t to = std::min(limit, std::min((size_t) from + MAX_CHUNK_SIZE,
+                                         totalBytes - 1));
     setFlag(LargeFileRequest, true);
 
     m_httpBuffer = std::make_shared<HttpBuffer>();
     std::stringstream stream;
 
     if (FileUtils::readFile(page, from, to, stream, bytes) == Code::Ok) {
-      if (to == totalBytes - 1) {
+      if (to == limit - 1) {
         m_request->setCompleted(true);
         post(stream);
         return true;
       } else {
         from = to + 1;
         m_httpBuffer->m_nextCall = std::bind(&HttpReply::requestLargeFileContents,
-                                             shared_from_this(), page, from , totalBytes);
+                                             shared_from_this(), page, from , limit, totalBytes);
         m_httpBuffer->m_flags |= HttpBuffer::HasMore;
         post(stream);
       }
@@ -531,7 +557,8 @@ namespace Http {
   bool HttpReply::canEncodeResponse() const
   {
 #ifdef ENABLE_GZIP
-    return getFlag(Flag::GzipEncoding) && m_request->method() != Method::HEAD;
+    return getFlag(Flag::GzipEncoding) && m_request->method() != Method::HEAD
+           && m_status != Code::PartialContent;
 #else
     return false;
 #endif // ENABLE_GZIP

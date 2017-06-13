@@ -120,6 +120,10 @@ namespace Http {
 
     std::string range = pr->substr(pos + 6);
 
+    if (range.find("-") == std::string::npos) {
+      return Code::BadRequest;
+    }
+
     typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
 
     boost::char_separator<char> sep("-", "", boost::keep_empty_tokens);
@@ -132,6 +136,8 @@ namespace Http {
           vals.push_back(std::stoi(boost::trim_copy(token)));
         } catch (std::out_of_range) {
           return Code::RequestRangeNotSatisfiable;
+        } catch (std::invalid_argument) {
+          return Code::BadRequest;
         }
       } else {
         vals.push_back(-1);
