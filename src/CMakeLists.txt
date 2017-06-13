@@ -19,25 +19,23 @@ set(src
   Main.cpp
 )
 
-if(ENABLE_LOCAL_CACHE)
-  set(src ${src} 
-	cache/CacheHandler.cpp
-	cache/FileMetadataDatabase.cpp
-	cache/FileDatabase.cpp
-	cache/CacheMonitor.cpp
-	cache/Subject.cpp
-	cache/CacheListener.cpp
-	cache/MonitorListener.cpp
-
-	)
-else(ENABLE_LOCAL_CACHE)
-  set(src ${src} cache/BasicCacheHandler.cpp)
-endif(ENABLE_LOCAL_CACHE)
-
-
 INCLUDE_DIRECTORIES(
   "."
-  )
+)
+
+subdirs(cache)
+
+set(LIBS
+  ${LIBS}
+  interceptor_cache
+)
+
+if(ENABLE_LOCAL_CACHE)
+  include_directories(
+	${FAM_INCLUDE_DIR}
+	)
+  set(LIBS ${LIBS} ${FAM_LIBRARIES})
+endif(ENABLE_LOCAL_CACHE)
 
 add_executable(interceptor ${src})
 target_link_libraries(interceptor ${LIBS})

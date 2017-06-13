@@ -13,7 +13,6 @@ set(ENABLE_LOCAL_CACHE ON CACHE BOOL "ENABLE_LOCAL_CACHE") # Configurable by use
 
 include(./cmake/FindFam.cmake)
 
-
 if(NOT FAM_FOUND)
   MESSAGE(WARNING "** libfam not found, disabling local cache **")
   set(ENABLE_LOCAL_CACHE OFF CACHE BOOL "ENABLE_LOCAL_CACHE" FORCE) # Configurable by user
@@ -57,13 +56,6 @@ set(LIBS
     ${Boost_LIBRARIES}
     pthread
   )
-
-if(ENABLE_LOCAL_CACHE)
-  include_directories(
-	${FAM_INCLUDE_DIR}
-	)
-  set(LIBS ${LIBS} ${FAM_LIBRARIES})
-endif(ENABLE_LOCAL_CACHE)
 
 
 if(ENABLE_GZIP)
