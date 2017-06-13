@@ -12,11 +12,11 @@
 
 Config::Config(const std::string& path)
   : m_path(path),
+    m_cwd(boost::filesystem::current_path().string()),
     m_clientTimeout(0),
     m_serverTimeout(0),
     m_maxCacheSize(0)
 {
-  m_cwd = boost::filesystem::current_path().string();
   parse();
 }
 

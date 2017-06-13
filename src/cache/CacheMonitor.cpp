@@ -9,6 +9,7 @@ using namespace std::chrono_literals;
 CacheMonitor::CacheMonitor(Subject& subject)
   : m_runningThread(nullptr),
     m_monitoring(false),
+    m_fc(nullptr),
     m_subject(subject)
 {
 }
@@ -85,7 +86,7 @@ bool CacheMonitor::startCallBack()
   fd_set readfds;
   std::string config;
 
-  m_fc = (FAMConnection*)malloc(sizeof(m_fc));
+  m_fc = (FAMConnection*)malloc(sizeof(FAMConnection));
 
   /* Open fam connection */
   if ((FAMOpen(m_fc)) < 0) {

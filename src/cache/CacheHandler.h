@@ -24,9 +24,6 @@ public:
 
   void purge(const std::string& path);
 
-protected:
-  virtual size_t cacheSize() const override;
-
 private:
   Subject& m_subject;
   std::unique_ptr<FileDatabase> m_fileDatabase;

@@ -132,7 +132,6 @@ class TestValidHttpServer(unittest.TestCase):
         self.assertEqual(res.status, 501)
         conn.close()
 
-    @unittest.skip("to fix")
     def test8(self):
         conn = httplib.HTTPConnection(HTTP_URL)
         headers = { "Accept-Encoding" : "gzip", "Range" : "bytes=0-200" }
@@ -172,3 +171,4 @@ class TestValidHttpServer(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

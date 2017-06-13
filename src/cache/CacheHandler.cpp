@@ -86,8 +86,8 @@ bool CacheHandler::size(const std::string& file, size_t& bytes)
     return true;
   }
 
-  if (eTag(file).length() ==
-      0) { // eTag is always the first thing to be generated
+  // eTag is always the first thing to be generated
+  if (eTag(file).length() == 0) {
     return false;
   }
 
@@ -103,9 +103,4 @@ void CacheHandler::purge(const std::string& path)
   LOG_DEBUG("CacheHandler::purge() - purging " << path);
   m_filemedataDatabase->purge(path);
   m_fileDatabase->purge(path);
-}
-
-size_t CacheHandler::cacheSize() const
-{
-  return 0;
 }

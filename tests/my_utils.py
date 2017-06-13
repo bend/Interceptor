@@ -8,7 +8,7 @@ import time
 
 HTTP_URL = "localhost:7000"
 
-class Utils:
+class Utils(object):
     
     @staticmethod
     def read_file(path):

@@ -22,9 +22,6 @@ public:
                           size_t& bytes) = 0;
 
 protected:
-  virtual size_t cacheSize() const = 0;
-
-protected:
   size_t m_maxCacheSize;
 
 };
