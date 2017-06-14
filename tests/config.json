@@ -32,6 +32,10 @@
 		  "error-pages" : [
 			{ "404" : "404.html" },
 			{ "400" : "400.html" }
+		  ],
+
+		  "locations" : [
+			{ "forbidden" : 403 }
 		  ]
 
 		}

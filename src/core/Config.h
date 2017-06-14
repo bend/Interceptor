@@ -10,6 +10,7 @@
 using json = nlohmann::json;
 
 typedef std::map<std::string, std::string> ErrorPageMap;
+typedef std::map<std::string, int16_t> LocationsMap;
 
 class ConfigException : public std::exception {
 public:
@@ -43,6 +44,7 @@ public:
       std::vector<std::string> m_tryFiles;
       std::set<std::string> m_gzip;
       ErrorPageMap m_errorPages;
+	  LocationsMap m_locations;
     };
 
     std::string m_listenHost;

@@ -40,6 +40,13 @@ class TestInvalidHttpServer(unittest.TestCase):
         res = conn.getresponse()
         self.assertEqual(res.status, 416)
         conn.close()
+
+    def test5(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        conn.request("GET", "/forbidden/index.html")
+        res = conn.getresponse()
+        self.assertEqual(res.status, 403)
+        conn.close()
     
 
     @classmethod

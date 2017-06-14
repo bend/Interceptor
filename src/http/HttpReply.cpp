@@ -11,6 +11,7 @@
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <algorithm>
+#include <regex>
 
 namespace Http {
 
@@ -100,6 +101,12 @@ namespace Http {
 
     const SiteConfig* site = m_request->matchingSite();
 
+	Code ret;
+	if( (ret = hasSpecialLocationCode(site)) != Code::Ok) {
+		buildErrorResponse(ret, true);
+		return;
+	}
+
     requestFileContents(method, site);
   }
 
@@ -112,12 +119,14 @@ namespace Http {
     size_t bytes = 0;
 
     if ( m_request->index() == ""
-         || m_request->index() == "/") {
+         || m_request->index() == "/"
+		 || m_request->index().at(m_request->index().length() - 1) == '/'
+		 ) {
       // This request does not contain a filename, we will use a page from try-file
       std::vector<std::string> tryFiles = site->m_tryFiles;
 
       for (const auto& index : tryFiles) {
-        page = site->m_docroot + "/" + index;
+        page = site->m_docroot + m_request->index() + "/" + index;
 
         if (FileUtils::exists(page)) {
           found = true;
@@ -564,4 +573,15 @@ namespace Http {
 #endif // ENABLE_GZIP
   }
 
+  Code HttpReply::hasSpecialLocationCode(const SiteConfig* site) const
+  {
+	std::string idx = m_request->index();
+	for(const auto& kv : site->m_locations) 
+	{
+	  std::regex reg(kv.first, std::regex_constants::ECMAScript);
+	  if(std::regex_search(idx, reg) > 0)
+		  return (Code)kv.second;
+	}
+	return Code::Ok;
+  }
 }

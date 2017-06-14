@@ -68,7 +68,10 @@ You can find a configuration example in the config/ directory. Be carefull that 
 		  "error-pages" : [         // error pages, overwrites default values
 			{ "404" : "404.html" },
 			{ "400" : "400.html" }
-		  ]
+		  ],
+		  "locations" : [			// Default code to return for a specific location
+			{ "/forbidden" : 403 } // The string is a regex using the ECMA grammar
+		  }
 		}
 	  ]
 	},

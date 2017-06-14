@@ -29,6 +29,14 @@
 		  ],
 		  "host": "127.0.0.1",
 		  "docroot": "/usr/share/nginx/homepage/",
+		  "fcgi" : {
+			  "host": "localhost:8000",
+			  "files": ".php"
+		  },
+
+		  "location" : {
+			{"\/css" : 403}
+		  },
 
 		  "error-pages" : [
 			{ "404" : "404.html" },
@@ -65,11 +73,21 @@
 			"index.html"
 		  ],
 		  "host": "0xff.xyz",
-		  "docroot": "/home/ben/docker-data/cv-data/"
+		  "docroot": "/home/ben/docker-data/cv-data/",
+		  "backend": "backend-test"
 		}
 	  ]
 	}
 
+
+  ],
+
+  "backends": [
+	{
+	  "name" : "backend-test",
+	  "host" : "localhost",
+	  "port": 24300
+	}
 
   ]
 }

@@ -17,6 +17,10 @@ namespace Http {
         stream << "400 Bad Request" << "\r\n";
         break;
 
+	  case Code::Forbidden:
+		stream << "403 Forbidden" << "\r\n";
+		break;
+
       case Code::NotFound:
         stream  << "404 Not Found" << "\r\n";
         break;

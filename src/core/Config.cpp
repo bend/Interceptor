@@ -107,6 +107,15 @@ void Config::parse()
         // Overwrite by local setting
         parseErrorPages(site["error-pages"], s->m_errorPages, s->m_docroot);
 
+		// Parse locations
+		
+		for(auto& loc : site["locations"])
+		{
+		  for (json::iterator it = loc.begin(); it != loc.end(); ++it) {
+			s->m_locations[it.key()] = it.value().get<uint16_t>();
+		  }
+		}
+
         sc->m_sites.push_back(s);
       }
 
