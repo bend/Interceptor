@@ -49,7 +49,8 @@ void Interceptor::handleAccept(InterceptorSessionPtr session,
 {
   if ( !error ) {
     session->start();
-    LOG_INFO("Incomming connection from " << session->connection()->ip());
+    LOG_INFO("Incomming connection from " << (session->connection() ?
+             session->connection()->ip() : " ! already closed ! "));
   } else {
     LOG_INFO("Could not accept connection " << error.message());
   }

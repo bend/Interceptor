@@ -1,5 +1,5 @@
-#ifndef CLIENT_CONNECTION_H__
-#define CLIENT_CONNECTION_H__
+#ifndef OUTBOUND_CONNECTION_H__
+#define OUTBOUND_CONNECTION_H__
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
@@ -7,13 +7,13 @@
 
 using boost::asio::ip::tcp;
 
-class ClientConnection {
+class OutboundConnection {
 public:
 
-  virtual ~ClientConnection() {}
+  virtual ~OutboundConnection() {}
 
-  ClientConnection(boost::asio::io_service& io_service, const std::string& host,
-                   const std::string& port);
+  OutboundConnection(boost::asio::io_service& io_service, const std::string& host,
+                     const std::string& port);
 
   void asyncResolve(
     boost::function2<void, boost::system::error_code, tcp::resolver::iterator>
@@ -45,13 +45,13 @@ protected:
   boost::asio::io_service& io_service_;
 };
 
-class ClientTcpConnection : public ClientConnection {
+class OutboundTcpConnection : public OutboundConnection {
 public:
 
-  virtual ~ClientTcpConnection() = default;
+  virtual ~OutboundTcpConnection() = default;
 
-  ClientTcpConnection(boost::asio::io_service& io_service,
-                      const std::string& host, const std::string& port);
+  OutboundTcpConnection(boost::asio::io_service& io_service,
+                        const std::string& host, const std::string& port);
 
   virtual void asyncConnect(boost::function1<void, boost::system::error_code>
                             callback) override;
@@ -77,4 +77,4 @@ private:
   SocketPtr m_spSocket;
 };
 
-#endif
+#endif // OUTBOUND_CONNECTION_H__

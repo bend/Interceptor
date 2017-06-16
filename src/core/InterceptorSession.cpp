@@ -136,22 +136,26 @@ void InterceptorSession::closeConnection()
   m_buffers.clear();
   m_ioService.post(
     m_iostrand.wrap(
-      boost::bind(&InboundConnection::disconnect, m_connection)));
-  m_connection.reset();
+      boost::bind(&InterceptorSession::doCloseConnection, shared_from_this())));
   m_request.reset();
   m_reply.reset();
+}
+
+void InterceptorSession::doCloseConnection()
+{
+  m_connection->disconnect();
+  m_connection.reset();
 }
 
 void InterceptorSession::start()
 {
   LOG_DEBUG("InterceptorSession::start()");
-  // Avoid Slow Loris attacks, close connection if nothing read
-  InterceptorSessionPtr isp = shared_from_this();
 
+  // Avoid Slow Loris attacks, close connection if nothing read
   if (m_connection) {
     startReadTimer();
     m_connection->asyncReadSome(m_requestBuffer, sizeof(m_requestBuffer),
-                                boost::bind(&InterceptorSession::handleHttpRequestRead, isp,
+                                boost::bind(&InterceptorSession::handleHttpRequestRead, shared_from_this(),
                                             boost::asio::placeholders::error,
                                             boost::asio::placeholders::bytes_transferred)
                                );

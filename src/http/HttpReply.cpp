@@ -101,11 +101,12 @@ namespace Http {
 
     const SiteConfig* site = m_request->matchingSite();
 
-	Code ret;
-	if( (ret = hasSpecialLocationCode(site)) != Code::Ok) {
-		buildErrorResponse(ret, true);
-		return;
-	}
+    Code ret;
+
+    if ( (ret = hasSpecialLocationCode(site)) != Code::Ok) {
+      buildErrorResponse(ret, true);
+      return;
+    }
 
     requestFileContents(method, site);
   }
@@ -120,8 +121,8 @@ namespace Http {
 
     if ( m_request->index() == ""
          || m_request->index() == "/"
-		 || m_request->index().at(m_request->index().length() - 1) == '/'
-		 ) {
+         || m_request->index().at(m_request->index().length() - 1) == '/'
+       ) {
       // This request does not contain a filename, we will use a page from try-file
       std::vector<std::string> tryFiles = site->m_tryFiles;
 
@@ -575,13 +576,16 @@ namespace Http {
 
   Code HttpReply::hasSpecialLocationCode(const SiteConfig* site) const
   {
-	std::string idx = m_request->index();
-	for(const auto& kv : site->m_locations) 
-	{
-	  std::regex reg(kv.first, std::regex_constants::ECMAScript);
-	  if(std::regex_search(idx, reg) > 0)
-		  return (Code)kv.second;
-	}
-	return Code::Ok;
+    std::string idx = m_request->index();
+
+    for (const auto& kv : site->m_locations) {
+      std::regex reg(kv.first, std::regex_constants::ECMAScript);
+
+      if (std::regex_search(idx, reg) > 0) {
+        return (Code)kv.second;
+      }
+    }
+
+    return Code::Ok;
   }
 }

@@ -6,11 +6,13 @@
 #include <map>
 #include <set>
 #include "json/json.hpp"
+#include "backend/Backend.h"
 
 using json = nlohmann::json;
 
 typedef std::map<std::string, std::string> ErrorPageMap;
 typedef std::map<std::string, int16_t> LocationsMap;
+typedef std::map<std::string, Backend> BackendsMap;
 
 class ConfigException : public std::exception {
 public:
@@ -44,7 +46,8 @@ public:
       std::vector<std::string> m_tryFiles;
       std::set<std::string> m_gzip;
       ErrorPageMap m_errorPages;
-	  LocationsMap m_locations;
+      LocationsMap m_locations;
+      std::string m_backend;
     };
 
     std::string m_listenHost;
@@ -71,6 +74,7 @@ private:
   void parse();
   void parseErrorPages(json& j, ErrorPageMap& map, const std::string& appendPath);
   std::string parseDocRoot(const std::string& docroot) const;
+  void parseBackends(json& j);
 
 private:
   const std::string m_path;
@@ -79,6 +83,7 @@ private:
 
   /* Global section */
   ErrorPageMap m_errorPages;
+  BackendsMap m_backends;
   uint32_t m_clientTimeout;
   uint32_t m_serverTimeout;
   uint16_t m_threadNr;

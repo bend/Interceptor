@@ -75,7 +75,7 @@ namespace Http {
     bool canChunkResponse() const;
     bool canEncodeResponse() const;
 
-	Code hasSpecialLocationCode(const SiteConfig* site) const;
+    Code hasSpecialLocationCode(const SiteConfig* site) const;
 
   private:
     HttpRequestPtr m_request;

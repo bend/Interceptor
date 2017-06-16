@@ -32,6 +32,7 @@ void Config::parse()
   }
 
   try {
+    // global section
     json j = json::parse(config);
 
     auto global = j["global"];
@@ -56,6 +57,12 @@ void Config::parse()
     m_maxCacheSize = ((float)global["max-cache-size"]) * 1024 * 1024;
 #endif // ENABLE_LOCAL_CACHE
 
+    // backends section
+    if (j.count("backends")) {
+      parseBackends(j["backends"]);
+    }
+
+    // servers section
     auto servers = j["servers"];
 
     for (auto& server : servers) {
@@ -75,6 +82,7 @@ void Config::parse()
         sc->m_serverTimeout = m_serverTimeout;
       }
 
+      // sites section
       for (auto& site : server["sites"]) {
         ServerConfig::Site* s = new ServerConfig::Site();
         std::string host = site["host"];
@@ -107,14 +115,17 @@ void Config::parse()
         // Overwrite by local setting
         parseErrorPages(site["error-pages"], s->m_errorPages, s->m_docroot);
 
-		// Parse locations
-		
-		for(auto& loc : site["locations"])
-		{
-		  for (json::iterator it = loc.begin(); it != loc.end(); ++it) {
-			s->m_locations[it.key()] = it.value().get<uint16_t>();
-		  }
-		}
+        // Parse locations
+
+        for (auto& loc : site["locations"]) {
+          for (json::iterator it = loc.begin(); it != loc.end(); ++it) {
+            s->m_locations[it.key()] = it.value().get<uint16_t>();
+          }
+        }
+
+        if (site.count("backend") > 0) {
+          s->m_backend = site["backend"];
+        }
 
         sc->m_sites.push_back(s);
       }
@@ -183,3 +194,21 @@ std::string Config::parseDocRoot(const std::string& docroot) const
   boost::replace_all(dr, "/./", "/");
   return dr;
 }
+
+void Config::parseBackends(json& j)
+{
+  for (auto& backend : j) {
+    std::string backendName = backend["name"];
+
+    if (m_backends.count(backendName)) {
+      throw ConfigException("Backend " + backendName + " already defined");
+    }
+
+    Backend b;
+    b.name = backend["name"];
+    b.host = backend["host"];
+    b.port = backend["port"];
+    m_backends[backendName] = b;
+  }
+}
+

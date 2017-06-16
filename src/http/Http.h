@@ -8,7 +8,7 @@ namespace Http {
     Ok								= 200,
     PartialContent					= 206,
     BadRequest						= 400,
-	Forbidden						= 403,
+    Forbidden						= 403,
     NotFound						= 404,
     RequestRangeNotSatisfiable		= 416,
     UnprocessableEntity				= 422,

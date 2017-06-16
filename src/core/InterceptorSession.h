@@ -62,6 +62,7 @@ private:
   void stopReadTimer();
   void stopWriteTimer();
   void handleTimeout(TimerType timerType, const boost::system::error_code& error);
+  void doCloseConnection();
 
 private:
   const Config::ServerConfig* m_config;
