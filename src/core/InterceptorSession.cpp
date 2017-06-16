@@ -130,6 +130,7 @@ void InterceptorSession::handleTransmissionCompleted(
 void InterceptorSession::closeConnection()
 {
   LOG_DEBUG("InterceptorSession::closeConnection()");
+  m_state |= Closing;
   stopReadTimer();
   stopWriteTimer();
   m_state &= ~CanSend;
@@ -143,8 +144,8 @@ void InterceptorSession::closeConnection()
 
 void InterceptorSession::doCloseConnection()
 {
-  m_connection->disconnect();
-  m_connection.reset();
+  if(m_connection)
+	m_connection->disconnect();
 }
 
 void InterceptorSession::start()
@@ -152,7 +153,7 @@ void InterceptorSession::start()
   LOG_DEBUG("InterceptorSession::start()");
 
   // Avoid Slow Loris attacks, close connection if nothing read
-  if (m_connection) {
+  if (!(m_state & Closing)) {
     startReadTimer();
     m_connection->asyncReadSome(m_requestBuffer, sizeof(m_requestBuffer),
                                 boost::bind(&InterceptorSession::handleHttpRequestRead, shared_from_this(),
