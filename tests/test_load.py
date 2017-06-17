@@ -17,27 +17,31 @@ class TestChargeHttpServer(unittest.TestCase):
             self.outer = outer
 
         def run(self):
-            for i in range(1,NB_REPEAT_PER_THREAD):
-                conn = httplib.HTTPConnection(HTTP_URL)
-                conn.request("GET", "/forbidden/index.html")
-                res = conn.getresponse()
-                self.outer.assertEqual(res.status, 403)
-                conn.close()
-                conn.request("GET", "/")
-                res = conn.getresponse()
-                self.outer.assertEqual(res.status, 200)
-                conn.close()
-                headers = { 'Accept-Encoding' : 'gzip' }
-                conn.request("GET", "/", None, headers)
-                response = conn.getresponse()
-                self.outer.assertEqual(response.status, 200)
-                r = response.read()
-                if os.environ.has_key("ENABLE_GZIP") and os.environ["ENABLE_GZIP"] == "on":
-                    self.outer.assertEqual(response.getheader('Content-Encoding'), 'gzip')
-                    data = Utils.uncompress_response(r)
-                    r = Utils.read_file("site1/index.html")
-                    self.outer.assertEqual(data, r)
-                conn.close()
+            try:
+                for i in range(1,NB_REPEAT_PER_THREAD):
+                    conn = httplib.HTTPConnection(HTTP_URL)
+                    conn.request("GET", "/forbidden/index.html")
+                    res = conn.getresponse()
+                    self.outer.assertEqual(res.status, 403)
+                    conn.close()
+                    conn.request("GET", "/")
+                    res = conn.getresponse()
+                    self.outer.assertEqual(res.status, 200)
+                    conn.close()
+                    headers = { 'Accept-Encoding' : 'gzip' }
+                    conn.request("GET", "/", None, headers)
+                    response = conn.getresponse()
+                    self.outer.assertEqual(response.status, 200)
+                    r = response.read()
+                    if os.environ.has_key("ENABLE_GZIP") and os.environ["ENABLE_GZIP"] == "on":
+                        self.outer.assertEqual(response.getheader('Content-Encoding'), 'gzip')
+                        data = Utils.uncompress_response(r)
+                        r = Utils.read_file("site1/index.html")
+                        self.outer.assertEqual(data, r)
+                    conn.close()
+            except:
+                print "Exception raised"
+                self.outer.assertTrue(false)
     
 
     def test1(self):

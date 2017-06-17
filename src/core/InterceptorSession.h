@@ -44,7 +44,7 @@ private:
     CanSend = 0x01,
     Reading = 0x02,
     Sending = 0x04,
-	Closing = 0x08
+    Closing = 0x08
   };
 
 private:
