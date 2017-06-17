@@ -38,14 +38,19 @@ class TestChargeHttpServer(unittest.TestCase):
                     r = Utils.read_file("site1/index.html")
                     self.outer.assertEqual(data, r)
                 conn.close()
-        
+    
 
     def test1(self):
         print "Spawning ", NB_THREADS, " threads for tests"
         print "Total expected queries : ", NB_THREADS * NB_REPEAT_PER_THREAD * 2
+        threads = []
         for i in range(1, NB_THREADS):
             thread = TestChargeHttpServer.ThreadConnect(i, self)
+            threads.append(thread)
             thread.start()
+
+        for t in threads:
+            t.join()
 
     @classmethod
     def setUpClass(self):

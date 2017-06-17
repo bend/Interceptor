@@ -63,6 +63,7 @@ private:
   void stopReadTimer();
   void stopWriteTimer();
   void handleTimeout(TimerType timerType, const boost::system::error_code& error);
+  void doRead();
   void doCloseConnection();
 
 private:

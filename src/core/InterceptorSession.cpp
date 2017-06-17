@@ -130,16 +130,21 @@ void InterceptorSession::handleTransmissionCompleted(
 void InterceptorSession::closeConnection()
 {
   LOG_DEBUG("InterceptorSession::closeConnection()");
+
+  if(m_state & Closing)
+	return;
+
   m_state |= Closing;
   stopReadTimer();
   stopWriteTimer();
   m_state &= ~CanSend;
-  m_buffers.clear();
+//  m_buffers.clear();
   m_ioService.post(
-    m_iostrand.wrap(
-      boost::bind(&InterceptorSession::doCloseConnection, shared_from_this())));
-  m_request.reset();
-  m_reply.reset();
+  m_iostrand.wrap(
+	  boost::bind(&InterceptorSession::doCloseConnection, shared_from_this())));
+  //doCloseConnection();
+ // m_request.reset();
+  //m_reply.reset();
 }
 
 void InterceptorSession::doCloseConnection()
@@ -153,14 +158,23 @@ void InterceptorSession::start()
   LOG_DEBUG("InterceptorSession::start()");
 
   // Avoid Slow Loris attacks, close connection if nothing read
-  if (!(m_state & Closing)) {
+  if (!(m_state & Closing) && m_connection) {
     startReadTimer();
+	m_ioService.post(
+		m_iostrand.wrap(
+		  boost::bind(&InterceptorSession::doRead, shared_from_this())));
+
+  }
+}
+
+void InterceptorSession::doRead()
+{
     m_connection->asyncReadSome(m_requestBuffer, sizeof(m_requestBuffer),
                                 boost::bind(&InterceptorSession::handleHttpRequestRead, shared_from_this(),
-                                            boost::asio::placeholders::error,
+								  boost::asio::placeholders::error,
                                             boost::asio::placeholders::bytes_transferred)
                                );
-  }
+
 }
 
 void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
