@@ -17,8 +17,6 @@ public:
   virtual Http::Code read(const std::string& file, std::stringstream& out,
                           size_t& bytes) override;
 
-protected:
-  virtual size_t cacheSize() const override;
 };
 
 #endif // BASIC_CACHE_HANDLER_H__
