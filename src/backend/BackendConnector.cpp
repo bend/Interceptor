@@ -15,3 +15,8 @@ bool BackendConnector::connect()
                  m_backend.host, std::to_string(m_backend.port));
   return true;
 }
+
+const std::string& BackendConnector::name() const
+{
+  return m_backend.name;
+}

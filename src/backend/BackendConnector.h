@@ -13,6 +13,7 @@ class BackendConnector {
 public:
   BackendConnector(const Backend& backend, boost::asio::io_service& ioService);
   bool connect();
+  const std::string& name() const;
 
 private:
   const Backend& m_backend;

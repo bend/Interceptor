@@ -55,6 +55,9 @@ class TestChargeHttpServer(unittest.TestCase):
 
         for t in threads:
             t.join()
+    
+    def test_lastest(self):
+        self.assertEqual(self.proc.poll(), None)
 
     @classmethod
     def setUpClass(self):

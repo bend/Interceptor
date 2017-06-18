@@ -199,12 +199,14 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
       start();
     }
   } else {
-    if (m_connection) {
-      LOG_ERROR("Error reading request from " << m_connection->ip());
-    } else {
-      LOG_ERROR("Error reading request");
-    }
-
+	  if(error != boost::asio::error::eof && error != boost::asio::error::connection_reset) {
+		if (m_connection) {
+		  LOG_ERROR("Error reading request from " << m_connection->ip());
+		} else if( !(m_state & Closing)) {
+		  LOG_ERROR("Error reading request");
+		}
+	}
+	  closeConnection();
   }
 }
 

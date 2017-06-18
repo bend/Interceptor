@@ -169,6 +169,9 @@ class TestValidHttpServer(unittest.TestCase):
         self.assertEqual(response.getheader('Transfer-Encoding'), 'chunked')
         lastmodifed2 = response.getheader("Last-Modified")
         self.assertNotEqual(lastmodifed, lastmodifed2)
+    
+    def test_lastest(self):
+        self.assertEqual(self.proc.poll(), None)
 
 
     @classmethod

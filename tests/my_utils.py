@@ -37,4 +37,4 @@ class Utils(object):
     @staticmethod
     def tearDownClass(proc):
         print "cleaning environment..."
-        proc.kill()
+        proc.terminate()
