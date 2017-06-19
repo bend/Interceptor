@@ -14,7 +14,7 @@ namespace Http {
     std::string getVersion();
     std::string getName();
     std::string getOsName();
-
+    std::string getBuild();
   }
 
 }

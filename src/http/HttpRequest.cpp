@@ -3,7 +3,7 @@
 #include "core/InterceptorSession.h"
 #include "HttpHeaders.h"
 #include "utils/Logger.h"
-
+#include "common/Params.h"
 #include "cache/generic_cache.h"
 
 #include <boost/algorithm/string.hpp>
@@ -12,10 +12,8 @@
 
 namespace Http {
 
-  HttpRequest::HttpRequest(InterceptorSessionWeakPtr session,
-                           AbstractCacheHandler* cache)
+  HttpRequest::HttpRequest(InterceptorSessionWeakPtr session)
     : m_session(session),
-      m_cache(cache),
       m_method(Method::ERR),
       m_headers(nullptr),
       m_completed(false),
@@ -66,7 +64,7 @@ namespace Http {
 
   AbstractCacheHandler* HttpRequest::cacheHandler() const
   {
-    return m_cache;
+    return m_session.lock()->params()->cache();
   }
 
   bool HttpRequest::completed() const
@@ -283,7 +281,7 @@ namespace Http {
       host = Config::replaceLocalDomain(host);
     }
 
-    for (const auto& site : session()->config()->m_sites) {
+    for (const auto& site : session()->params()->config()->m_sites) {
       if (site->m_host == host) {
         return site;
       }

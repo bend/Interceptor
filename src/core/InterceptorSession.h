@@ -1,8 +1,7 @@
 #ifndef INTERCEPTOR_SESSION_H__
 #define INTERCEPTOR_SESSION_H__
 
-#include "Defs.h"
-
+#include "common/Defs.h"
 #include "Config.h"
 
 #include <boost/asio.hpp>
@@ -10,15 +9,14 @@
 #include <boost/thread/mutex.hpp>
 
 class InboundConnection;
-class AbstractCacheHandler;
+class Params;
 
 class InterceptorSession : public
   std::enable_shared_from_this<InterceptorSession>  {
 
 public:
 
-  InterceptorSession(const Config::ServerConfig* config,
-                     AbstractCacheHandler* cache,
+  InterceptorSession(Params* params,
                      boost::asio::io_service& ioService);
 
   ~InterceptorSession();
@@ -27,7 +25,7 @@ public:
 
   InboundConnectionPtr connection() const;
 
-  const Config::ServerConfig* config() const;
+  Params* params() const;
 
   void start();
 
@@ -67,8 +65,7 @@ private:
   void doCloseConnection();
 
 private:
-  const Config::ServerConfig* m_config;
-  AbstractCacheHandler* m_cache;
+  Params* m_params;
   boost::asio::io_service& m_ioService;
   boost::asio::strand m_iostrand;
   boost::asio::strand m_fsstrand;

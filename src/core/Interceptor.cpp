@@ -5,27 +5,28 @@
 #include "utils/Logger.h"
 #include "utils/Server.h"
 #include "cache/generic_cache.h"
+#include "common/Params.h"
 
 #include <boost/bind.hpp>
 
 using boost::asio::ip::tcp;
 
-Interceptor::Interceptor(const Config::ServerConfig* config,
-                         AbstractCacheHandler* cache,
+Interceptor::Interceptor(Params* params,
                          boost::asio::io_service& ioService)
-  : m_config(config),
-    m_cache(cache),
+  : m_params(params),
     m_ioService(ioService),
     m_acceptor(m_ioService, tcp::endpoint(boost::asio::ip::address::from_string(
-        m_config->m_listenHost), m_config->m_listenPort))
+        m_params->config()->m_listenHost), m_params->config()->m_listenPort))
 {
   LOG_INFO("Launching " << Http::Server::getName() << "/" <<
            Http::Server::getVersion() <<
-           " on " << m_config->m_listenHost << ":" << m_config->m_listenPort);
+           " on " << m_params->config()->m_listenHost << ":" <<
+           m_params->config()->m_listenPort);
 }
 
 Interceptor::~Interceptor()
 {
+  delete m_params;
 }
 
 void Interceptor::init()
@@ -37,7 +38,7 @@ void Interceptor::listen()
 {
   InterceptorSessionPtr newSession =
     std::make_shared<InterceptorSession>
-    (m_config, m_cache, m_ioService);
+    (m_params, m_ioService);
   m_acceptor.async_accept(newSession->socket(),
                           boost::bind(&Interceptor::handleAccept, shared_from_this(), newSession,
                                       boost::asio::placeholders::error)

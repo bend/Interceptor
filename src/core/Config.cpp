@@ -20,6 +20,24 @@ Config::Config(const std::string& path)
   parse();
 }
 
+Config::~Config()
+{
+  for (auto& sc : m_serversConfig) {
+    delete sc;
+  }
+
+  m_serversConfig.clear();
+}
+
+Config::ServerConfig::~ServerConfig()
+{
+  for (auto& s : m_sites) {
+    delete s;
+  }
+
+  m_sites.clear();
+}
+
 void Config::parse()
 {
 
@@ -163,6 +181,11 @@ uint16_t Config::threads() const
 uint64_t Config::maxCacheSize() const
 {
   return m_maxCacheSize;
+}
+
+const BackendsMap& Config::backends() const
+{
+  return m_backends;
 }
 
 bool Config::isLocalDomain(const std::string& domain)

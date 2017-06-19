@@ -1,7 +1,7 @@
 #ifndef HTTP_REPLY_H__
 #define HTTP_REPLY_H__
 
-#include "Defs.h"
+#include "common/Defs.h"
 #include "vars.h"
 #include "Http.h"
 #include "core/Config.h"

@@ -31,6 +31,15 @@ option(Boost_USE_MULTITHREADED ON "Use multithreaded boost")
   
 find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options system regex thread)
 
+if(ENABLE_GZIP)
+  find_package(ZLIB REQUIRED)
+endif(ENABLE_GZIP)
+
+if(NOT ZLIB_FOUND)
+  MESSAGE(WARNING "** zlib not found, disabling gzip compression **")
+  set(ENABLE_GZIP OFF CACHE BOOL "ENABLE_GZIP" FORCE) # Configurable by user
+endif(NOT ZLIB_FOUND)
+
 execute_process(
   COMMAND git log -1 --format=%h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -45,10 +54,8 @@ link_directories(
 
 include_directories(
 	${Boost_INCLUDE_DIRS}
-	/opt/local/include
 	${CMAKE_CURRENT_BINARY_DIR}
 )
-
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
 
@@ -57,9 +64,11 @@ set(LIBS
     pthread
   )
 
-
 if(ENABLE_GZIP)
-  set(LIBS ${LIBS} z)
+  set(LIBS ${LIBS} ${ZLIB_LIBRARIES})
+  include_directories(
+	${ZLIB_INCLUDE_DIRS}
+  )
 endif(ENABLE_GZIP)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fext-numeric-literals -Wall -Werror=return-type")

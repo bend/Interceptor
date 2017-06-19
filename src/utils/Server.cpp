@@ -38,6 +38,11 @@ namespace Http {
 #endif
     }
 
+    std::string getBuild()
+    {
+      return INTERCEPTOR_GIT_COMMIT_ID;
+    }
+
   }
 
 }

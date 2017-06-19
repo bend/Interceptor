@@ -1,7 +1,7 @@
 #ifndef HTTP_REQUEST_H__
 #define HTTP_REQUEST_H__
 
-#include "Defs.h"
+#include "common/Defs.h"
 #include "Http.h"
 #include "core/Config.h"
 
@@ -14,7 +14,7 @@ namespace Http {
 
   class HttpRequest {
   public:
-    HttpRequest(InterceptorSessionWeakPtr session, AbstractCacheHandler* cache);
+    HttpRequest(InterceptorSessionWeakPtr session);
     ~HttpRequest();
 
     void appendData(const unsigned char* data, size_t length);
@@ -46,7 +46,6 @@ namespace Http {
 
   private:
     InterceptorSessionWeakPtr m_session;
-    AbstractCacheHandler* m_cache;
     Method m_method;
     std::string m_index;
     std::string m_request;

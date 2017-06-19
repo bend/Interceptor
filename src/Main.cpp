@@ -1,14 +1,17 @@
 #include "Main.h"
+#include "common/Params.h"
 #include "core/Interceptor.h"
 #include "core/Config.h"
 
 #include "utils/Logger.h"
 #include "cache/generic_cache.h"
 #include "utils/Server.h"
+#include "backend/BackendsPool.cpp"
 
 #include <boost/thread.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <csignal>
 
 namespace po = boost::program_options;
 
@@ -19,6 +22,7 @@ Main::Main()
     m_monitor(nullptr),
 #endif // ENABLE_LOCAL_CACHE
     m_config(nullptr),
+    m_pool(nullptr),
     m_nbThreads(0)
 {}
 
@@ -31,6 +35,7 @@ Main::~Main()
   delete m_monitor;
 #endif // ENABLE_LOCAL_CACHE
   delete m_cacheHandler;
+  delete m_pool;
 }
 
 bool Main::init(int argc, char** argv)
@@ -40,6 +45,10 @@ bool Main::init(int argc, char** argv)
   }
 
   if (!initCache()) {
+    return false;
+  }
+
+  if (!initBackendsPool()) {
     return false;
   }
 
@@ -67,6 +76,7 @@ bool Main::parsePO(int argc, char** argv)
 
   if (vm.count("version")) {
     std::cout << Http::Server::getName() << " " << Http::Server::getVersion() <<
+              " (build " << Http::Server::getBuild() << ")" <<
               std::endl;
     return false;
   }
@@ -104,13 +114,25 @@ bool Main::initCache()
   return true;
 }
 
+bool Main::initBackendsPool()
+{
+  m_pool = new BackendsPool(m_ioService);
+
+  std::vector<Backend> backends;
+
+  for (auto& kv : m_config->backends()) {
+    backends.push_back(kv.second);
+  }
+
+  return m_pool->initPool(backends);
+}
+
 void Main::run()
 {
-  boost::asio::io_service ioService;
-
   for (const auto& serverConfig : m_config->serversConfig()) {
-    std::shared_ptr<Interceptor> interceptor = std::make_shared<Interceptor>
-        (serverConfig, m_cacheHandler, ioService);
+    Params* params = new Params(serverConfig, m_cacheHandler, m_pool);
+    std::shared_ptr<Interceptor> interceptor = std::make_shared<Interceptor>(params,
+        m_ioService);
     interceptor->init();
   }
 
@@ -119,25 +141,38 @@ void Main::run()
   LOG_INFO("using " << m_nbThreads  << " threads");
 
   for (unsigned i = 0; i < m_nbThreads; ++i) {
-    tg.create_thread(boost::bind(&boost::asio::io_service::run, &ioService));
+    tg.create_thread(boost::bind(&boost::asio::io_service::run, &m_ioService));
   }
 
   tg.join_all();
 
 }
 
+void Main::stop()
+{
+  m_ioService.stop();
+}
+
+Main mainHandler;
+
+void signalHandler(int signum)
+{
+  LOG_INFO("Stopping Interceptor ...");
+  mainHandler.stop();
+}
 
 int main(int argc, char** argv)
 {
+  signal(SIGINT, signalHandler);
+
   try {
 
-    Main main;
 
-    if (!main.init(argc, argv)) {
+    if (!mainHandler.init(argc, argv)) {
       return 1;
     }
 
-    main.run();
+    mainHandler.run();
 
   } catch (ConfigException& e) {
     LOG_ERROR("Exception raised " << e.what());

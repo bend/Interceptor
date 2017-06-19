@@ -1,6 +1,5 @@
 #include "OutboundConnection.h"
 #include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
 #include <boost/bind.hpp>
 
 OutboundConnection::OutboundConnection(boost::asio::io_service& io_service,

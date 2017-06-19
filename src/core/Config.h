@@ -40,6 +40,8 @@ public:
     ServerConfig(const ErrorPageMap& map)
       : m_errorPages(map) {}
 
+    ~ServerConfig();
+
     struct Site {
       std::string m_host;
       std::string m_docroot;
@@ -62,9 +64,11 @@ public:
 
 public:
   Config(const std::string& path);
+  ~Config();
   const std::vector<ServerConfig*> serversConfig() const;
   uint16_t threads() const;
   uint64_t maxCacheSize() const;
+  const BackendsMap& backends() const;
 
   static bool isLocalDomain(const std::string& domain);
   static std::string localDomain();

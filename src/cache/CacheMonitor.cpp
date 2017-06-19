@@ -34,7 +34,7 @@ CacheMonitor::~CacheMonitor()
     delete kv.second;
   }
 
-  delete m_fc;
+  FAMClose(m_fc);
   m_fc = nullptr;
 
   delete m_runningThread;

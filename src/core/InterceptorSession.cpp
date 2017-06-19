@@ -1,6 +1,5 @@
 #include "InterceptorSession.h"
 
-#include "Defs.h"
 #include "utils/Logger.h"
 
 #include "socket/InboundConnection.h"
@@ -9,15 +8,14 @@
 #include "http/HttpReply.h"
 
 #include "cache/generic_cache.h"
+#include "common/Params.h"
 
 #include <boost/bind.hpp>
 #include <boost/regex.hpp>
 
-InterceptorSession::InterceptorSession(const Config::ServerConfig* config,
-                                       AbstractCacheHandler* cache,
+InterceptorSession::InterceptorSession(Params* params,
                                        boost::asio::io_service& ioService)
-  : m_config(config),
-    m_cache(cache),
+  : m_params(params),
     m_ioService(ioService),
     m_iostrand(ioService),
     m_fsstrand(ioService),
@@ -43,9 +41,9 @@ InboundConnectionPtr InterceptorSession::connection() const
   return m_connection;
 }
 
-const Config::ServerConfig* InterceptorSession::config() const
+Params* InterceptorSession::params() const
 {
-  return m_config;
+  return m_params;
 }
 
 void InterceptorSession::postReply(HttpBufferPtr buffer)
@@ -185,7 +183,7 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
     LOG_INFO("Request read from " << m_connection->ip());
 
     if (!m_request || m_request->completed() ) {
-      m_request = std::make_shared<Http::HttpRequest>(shared_from_this(), m_cache);
+      m_request = std::make_shared<Http::HttpRequest>(shared_from_this());
     }
 
     m_request->appendData(m_requestBuffer, bytesTransferred);
@@ -199,14 +197,16 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
       start();
     }
   } else {
-	  if(error != boost::asio::error::eof && error != boost::asio::error::connection_reset) {
-		if (m_connection) {
-		  LOG_ERROR("Error reading request from " << m_connection->ip());
-		} else if( !(m_state & Closing)) {
-		  LOG_ERROR("Error reading request");
-		}
-	}
-	  closeConnection();
+    if (error != boost::asio::error::eof
+        && error != boost::asio::error::connection_reset) {
+      if (m_connection) {
+        LOG_ERROR("Error reading request from " << m_connection->ip());
+      } else if ( !(m_state & Closing)) {
+        LOG_ERROR("Error reading request");
+      }
+    }
+
+    closeConnection();
   }
 }
 
@@ -214,9 +214,9 @@ void InterceptorSession::startReadTimer()
 {
   LOG_DEBUG("InterceptorSession::startReadTimer()");
   m_state |= Reading;
-  LOG_DEBUG("Setting timeout to " << m_config->m_clientTimeout);
+  LOG_DEBUG("Setting timeout to " << m_params->config()->m_clientTimeout);
   m_readTimer.expires_from_now(boost::posix_time::seconds(
-                                 m_config->m_clientTimeout));
+                                 m_params->config()->m_clientTimeout));
   m_readTimer.async_wait
   (m_iostrand.wrap
    (boost::bind(&InterceptorSession::handleTimeout,
@@ -231,7 +231,7 @@ void InterceptorSession::startWriteTimer()
   LOG_DEBUG("InterceptorSession::startWriteTimer()");
   m_state |= Sending;
   m_writeTimer.expires_from_now(boost::posix_time::seconds(
-                                  m_config->m_serverTimeout));
+                                  m_params->config()->m_serverTimeout));
   m_writeTimer.async_wait
   (m_iostrand.wrap
    (boost::bind(&InterceptorSession::handleTimeout,

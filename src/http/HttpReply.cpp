@@ -7,6 +7,7 @@
 #include "utils/FileUtils.h"
 #include "utils/Logger.h"
 #include "cache/generic_cache.h"
+#include "common/Params.h"
 
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/replace.hpp>
@@ -468,7 +469,7 @@ namespace Http {
 
     const ErrorPageMap& map = m_request->hasMatchingSite() ?
                               m_request->matchingSite()->m_errorPages :
-                              m_request->session()->config()->m_errorPages;
+                              m_request->session()->params()->config()->m_errorPages;
 
     if (map.count(std::to_string((int)error)) > 0 ) {
       std::string url = map.at(std::to_string((int)error));
