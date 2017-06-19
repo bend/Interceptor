@@ -12,6 +12,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <csignal>
+#include <functional>
 
 namespace po = boost::program_options;
 
@@ -43,6 +44,21 @@ bool Main::init(int argc, char** argv)
   if (!parsePO(argc, argv)) {
     return false;
   }
+
+  if (!initCache()) {
+    return false;
+  }
+
+  if (!initBackendsPool()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool Main::reinit()
+{
+  LOG_DEBUG("Main::reinit()");
 
   if (!initCache()) {
     return false;
@@ -129,50 +145,75 @@ bool Main::initBackendsPool()
 
 void Main::run()
 {
+  LOG_DEBUG("Main::run()");
+
   for (const auto& serverConfig : m_config->serversConfig()) {
+    LOG_DEBUG("init interceptor");
     Params* params = new Params(serverConfig, m_cacheHandler, m_pool);
+    LOG_DEBUG("param init interceptor");
     std::shared_ptr<Interceptor> interceptor = std::make_shared<Interceptor>(params,
         m_ioService);
+    LOG_DEBUG("will init");
     interceptor->init();
+    LOG_DEBUG("done init");
   }
 
-  boost::thread_group tg;
   LOG_DEBUG("CWD is "  << boost::filesystem::current_path());
   LOG_INFO("using " << m_nbThreads  << " threads");
+  std::vector<std::thread> threads;
 
   for (unsigned i = 0; i < m_nbThreads; ++i) {
-    tg.create_thread(boost::bind(&boost::asio::io_service::run, &m_ioService));
+    std::packaged_task<void()> task([ = ] {
+      m_ioService.run();
+    });
+
+    m_futures.push_back(task.get_future());
+    threads.push_back(std::thread(std::move(task)));
   }
 
-  tg.join_all();
-
+  std::for_each(threads.begin(), threads.end(), std::mem_fn(&std::thread::join));
 }
 
 void Main::stop()
 {
+  LOG_DEBUG("Main::stop()");
   m_ioService.stop();
+  m_futures.front().wait();
+  LOG_DEBUG("Stopped");
 }
 
-Main mainHandler;
+Main* mainHandler;
 
 void signalHandler(int signum)
 {
-  LOG_INFO("Stopping Interceptor ...");
-  mainHandler.stop();
+  switch (signum) {
+    case SIGINT:
+      LOG_INFO("Stopping Interceptor ...");
+      mainHandler->stop();
+      break;
+
+    case SIGHUP:
+      LOG_INFO("Reloading configuration...");
+      LOG_ERROR("Not yet implemented");
+      break;
+  }
 }
 
 int main(int argc, char** argv)
 {
   signal(SIGINT, signalHandler);
+  signal(SIGHUP, signalHandler);
 
   try {
+    mainHandler = new Main();
 
-
-    if (!mainHandler.init(argc, argv)) {
+    if (!mainHandler->init(argc, argv)) {
       return 1;
     }
 
-    mainHandler.run();
+    mainHandler->run();
+
+    delete mainHandler;
 
   } catch (ConfigException& e) {
     LOG_ERROR("Exception raised " << e.what());

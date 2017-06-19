@@ -2,6 +2,7 @@
 #define MAIN_H__
 
 #include <memory>
+#include <future>
 #include <boost/asio/io_service.hpp>
 #include "vars.h"
 
@@ -16,8 +17,13 @@ public:
   Main();
   ~Main();
   bool init(int argc, char** argv);
+  bool reinit();
   void run();
   void stop();
+
+public:
+  int _argc;
+  char** _argv;
 
 private:
 
@@ -35,6 +41,7 @@ private:
   Config* m_config;
   BackendsPool* m_pool;
   uint16_t m_nbThreads;
+  std::vector<std::future<void>> m_futures;
 };
 
 #endif // MAIN_H__
