@@ -8,11 +8,13 @@
 #include "utils/Logger.h"
 #include "cache/generic_cache.h"
 #include "common/Params.h"
+#include "gateway/GatewayHandler.h"
 
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <algorithm>
 #include <regex>
+#include <functional>
 
 namespace Http {
 
@@ -67,10 +69,24 @@ namespace Http {
     setFlag(Flag::GzipEncoding, m_request->supportsCompression());
 #endif // ENABLE_GZIP
 
+    if (!m_request->hasMatchingSite()) {
+      buildErrorResponse(Code::NotFound, true);
+      return;
+    }
+
+    const SiteConfig* site = m_request->matchingSite();
+
+    if (site->m_backend.length() > 0) {
+      GatewayHandler handler(site, m_request);
+      handler.route(std::bind(&HttpReply::handleGatewayReply, shared_from_this(),
+                              std::placeholders::_1, std::placeholders::_2));
+      return ;
+    }
+
     switch (m_request->method()) {
       case Method::GET:
       case Method::HEAD:
-        handleRetrievalRequest(m_request->method());
+        handleRetrievalRequest(m_request->method(), site);
         break;
 
       case Method::POST:
@@ -79,6 +95,14 @@ namespace Http {
       default:
         break;
     }
+  }
+
+  void HttpReply::handleGatewayReply(Code code, std::stringstream& stream)
+  {
+    boost::mutex::scoped_lock lock(m_mutex);
+    m_httpBuffer = std::make_shared<HttpBuffer>();
+    LOG_DEBUG("Received from gateway " << (int)code << " data : " << stream.str());
+    buildErrorResponse(code, false);
   }
 
   void HttpReply::setFlag(Flag flag, bool value)
@@ -91,16 +115,32 @@ namespace Http {
     return m_flags.test(flag);
   }
 
-  void HttpReply::handleRetrievalRequest(Method method)
-  {
-    LOG_DEBUG("HttpReply::handleRetrievalRequest()");
 
-    if (!m_request->hasMatchingSite()) {
-      buildErrorResponse(Code::NotFound, true);
-      return;
+  void HttpReply::declineRequest(Code error)
+  {
+    Code ret;
+    LOG_DEBUG("HttpReply::declineRequest()");
+    m_httpBuffer = std::make_shared<HttpBuffer>();
+    m_replyHeaders = new HttpHeaders();
+
+    if (m_request->headersReceived())  {
+      if (!m_request->parsed()) {
+        ret = m_request->parse();
+
+        if (ret != Code::Ok) {
+          error = ret;
+        }
+      }
+    } else {
+      m_httpBuffer->m_flags |= HttpBuffer::State::InvalidRequest;
     }
 
-    const SiteConfig* site = m_request->matchingSite();
+    buildErrorResponse(error, true);
+  }
+
+  void HttpReply::handleRetrievalRequest(Method method, const SiteConfig* site)
+  {
+    LOG_DEBUG("HttpReply::handleRetrievalRequest()");
 
     Code ret;
 
@@ -266,8 +306,8 @@ namespace Http {
       size_t totalBytes)
   {
     LOG_DEBUG("HttpReply::requestLargeFileContents()");
-    boost::mutex::scoped_lock lock(
-      m_mutex); //needed to be sure that previous call is completed
+    //needed to be sure that previous call is completed
+    boost::mutex::scoped_lock lock(m_mutex);
     size_t bytes;
     size_t to = std::min(limit, std::min((size_t) from + MAX_CHUNK_SIZE,
                                          totalBytes - 1));
@@ -299,37 +339,40 @@ namespace Http {
   void HttpReply::post(const std::stringstream& stream)
   {
     LOG_DEBUG("HttpReply::post()");
-    std::vector<boost::asio::const_buffer> buffers;
 
-    if (!getFlag(HeadersSent))
-      m_httpBuffer->m_buffers.push_back({}); // emtpy place for headers
+    if (!(m_httpBuffer->flags() & HttpBuffer::InvalidRequest)) {
+      std::vector<boost::asio::const_buffer> buffers;
 
-    buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
+      if (!getFlag(HeadersSent))
+        m_httpBuffer->m_buffers.push_back({}); // emtpy place for headers
+
+      buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
 
 #ifdef ENABLE_GZIP
 
-    if (canEncodeResponse()) {
-      encodeResponse(m_httpBuffer, buffers);
-    }
+      if (canEncodeResponse()) {
+        encodeResponse(m_httpBuffer, buffers);
+      }
 
 #endif // ENABLE_GZIP
 
-    // We chunk only in the case that no header has been sent or if it's the last frame
-    if (canChunkResponse()) {
-      chunkResponse(m_httpBuffer, buffers);
-    }
+      // We chunk only in the case that no header has been sent or if it's the last frame
+      if (canChunkResponse()) {
+        chunkResponse(m_httpBuffer, buffers);
+      }
 
-    if (!getFlag(HeadersSent)) {
-      buildHeaders(m_httpBuffer);
-      LOG_INFO(m_request->queryString() << " " << (int) m_status);
-      setFlag(HeadersSent, true);
-    }
+      if (!getFlag(HeadersSent)) {
+        buildHeaders(m_httpBuffer);
+        LOG_INFO(m_request->queryString() << " " << (int) m_status);
+        setFlag(HeadersSent, true);
+      }
 
-    m_httpBuffer->m_buffers.insert(m_httpBuffer->m_buffers.end(), buffers.begin(),
-                                   buffers.end());
+      m_httpBuffer->m_buffers.insert(m_httpBuffer->m_buffers.end(), buffers.begin(),
+                                     buffers.end());
 
-    if (getFlag(Closing)) {
-      m_httpBuffer->m_flags |= HttpBuffer::Closing;
+      if (getFlag(Closing)) {
+        m_httpBuffer->m_flags |= HttpBuffer::Closing;
+      }
     }
 
     auto session = m_request->session();

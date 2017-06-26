@@ -17,6 +17,8 @@ namespace Http {
       m_method(Method::ERR),
       m_headers(nullptr),
       m_completed(false),
+      m_parsed(false),
+      m_dumpingToFile(false),
       m_host("")
   {
   }
@@ -27,9 +29,27 @@ namespace Http {
     delete m_headers;
   }
 
-  void HttpRequest::appendData(const unsigned char* data, size_t length)
+  Code HttpRequest::appendData(const unsigned char* data, size_t length)
   {
+    LOG_DEBUG("HttpRequest::appendData()");
     m_request.append(std::string(data, data + length));
+
+    uint64_t mrs =
+      m_session.lock()->params()->config()->m_globalConfig->maxRequestSize();
+    uint64_t mirs =
+      m_session.lock()->params()->config()->m_globalConfig->maxInMemRequestSize();
+
+    if (mrs > 0  && m_request.length() > mrs) {
+      return Code::RequestEntityTooLarge;  //TODO check also size of dumped data
+    }
+
+    if ((mirs > 0 && m_request.length() > mrs) || m_dumpingToFile) {
+      // Dump contents to file to avoid using too much memory
+      //dumpToFile();
+    }
+
+    LOG_DEBUG(m_request);
+    return Code::Ok;
   }
 
   bool HttpRequest::headersReceived() const
@@ -288,6 +308,11 @@ namespace Http {
     }
 
     return nullptr;
+  }
+
+  bool HttpRequest::parsed()
+  {
+    return m_parsed;
   }
 
 }

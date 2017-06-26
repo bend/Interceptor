@@ -17,7 +17,7 @@ namespace Http {
     HttpRequest(InterceptorSessionWeakPtr session);
     ~HttpRequest();
 
-    void appendData(const unsigned char* data, size_t length);
+    Code appendData(const unsigned char* data, size_t length);
 
     Method method() const;
     Host host() const;
@@ -40,6 +40,7 @@ namespace Http {
 
   private:
     Code parse();
+    bool parsed();
     bool parseMethod(const std::string& method);
     bool parseParameters(const std::string& parameters);
     bool parseHttpVersion(const std::string& version);
@@ -52,6 +53,8 @@ namespace Http {
     std::string m_httpVersion;
     HttpHeaders* m_headers;
     bool m_completed;
+    bool m_parsed;
+    bool m_dumpingToFile;
     Host m_host;
 
     std::chrono::high_resolution_clock::time_point m_startTs;

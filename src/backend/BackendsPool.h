@@ -1,33 +1,36 @@
 #ifndef BACKENDS_POOL_H__
 #define BACKENDS_POOL_H__
 
+#include "gateway/AbstractGateway.h"
+
 #include <memory>
 #include <vector>
 #include <map>
 #include <list>
+#include <mutex>
 #include <boost/asio/io_service.hpp>
 
 class BackendConnector;
-class Backend;
-
-typedef std::shared_ptr<BackendConnector> BackendConnection;
 
 class BackendsPool {
 public:
   BackendsPool(boost::asio::io_service& ioService);
 
-  bool initPool(std::vector<Backend>& backends);
+  bool initPool(std::vector<BackendCPtr>& backends);
 
-  BackendConnection takeConnection(const std::string& backendName);
+  AbstractConnectorPtr takeConnection(const std::string& backendName);
 
-  void putConnection(BackendConnection connection);
+  void putConnection(AbstractConnectorPtr connection);
+
+private:
+  void initConnection(BackendCPtr backend);
 
 private:
   boost::asio::io_service& m_ioService;
-  typedef std::map<std::string, std::list<BackendConnection>> ConnectionsMap;
+  typedef std::map<std::string, std::list<AbstractConnectorPtr>> ConnectionsMap;
   ConnectionsMap m_connections;
-
-
+  std::map<std::string, BackendCPtr> m_backends;
+  std::recursive_mutex m_mutex;
 
 };
 

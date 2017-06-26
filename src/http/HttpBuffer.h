@@ -9,7 +9,8 @@ namespace Http {
   public:
     enum State {
       Closing = 0x01,
-      HasMore = 0x02
+      HasMore = 0x02,
+      InvalidRequest = 0x04
     };
 
     HttpBuffer()

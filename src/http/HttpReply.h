@@ -40,8 +40,11 @@ namespace Http {
 
     bool getFlag(Flag flag) const;
 
+    void declineRequest(Code error);
+
   private:
-    void handleRetrievalRequest(Method method);
+    void handleRetrievalRequest(Method method, const SiteConfig* site);
+    void handleGatewayReply(Code code, std::stringstream& stream);
 
     void post(const std::stringstream& stream);
     void buildErrorResponse(Code error, bool closeConnection = false);

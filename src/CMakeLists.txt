@@ -10,6 +10,7 @@ subdirs(core)
 subdirs(http)
 subdirs(cache)
 subdirs(backend)
+subdirs(gateway)
 subdirs(utils)
 subdirs(socket)
 
@@ -18,6 +19,7 @@ set(LIBS
   interceptor_http
   interceptor_cache
   interceptor_backend
+  interceptor_gateway
   interceptor_utils
   interceptor_socket
   ${LIBS}

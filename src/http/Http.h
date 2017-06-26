@@ -10,6 +10,7 @@ namespace Http {
     BadRequest						= 400,
     Forbidden						= 403,
     NotFound						= 404,
+    RequestEntityTooLarge			= 413,
     RequestRangeNotSatisfiable		= 416,
     UnprocessableEntity				= 422,
     InternalServerError				= 500,

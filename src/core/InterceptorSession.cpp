@@ -49,9 +49,14 @@ Params* InterceptorSession::params() const
 void InterceptorSession::postReply(HttpBufferPtr buffer)
 {
   LOG_DEBUG("InterceptorSession::postReply()");
-  m_ioService.post(
-    m_iostrand.wrap(
-      boost::bind(&InterceptorSession::sendNext, shared_from_this(), buffer)));
+
+  if (buffer->flags() & Http::HttpBuffer::InvalidRequest) {
+    closeConnection();
+  } else {
+    m_ioService.post(
+      m_iostrand.wrap(
+        boost::bind(&InterceptorSession::sendNext, shared_from_this(), buffer)));
+  }
 }
 
 void InterceptorSession::sendNext(HttpBufferPtr buffer)
@@ -186,7 +191,16 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
       m_request = std::make_shared<Http::HttpRequest>(shared_from_this());
     }
 
-    m_request->appendData(m_requestBuffer, bytesTransferred);
+    Http::Code ret =  m_request->appendData(m_requestBuffer, bytesTransferred);
+
+    if (ret != Http::Code::Ok) {
+      if (!m_reply) {
+        m_reply = std::make_shared<Http::HttpReply>(m_request);
+      }
+
+      m_reply->declineRequest(ret);
+      return;
+    }
 
     if (!m_request->headersReceived()) {
       start();
@@ -242,7 +256,7 @@ void InterceptorSession::startWriteTimer()
 
 void InterceptorSession::stopReadTimer()
 {
-  LOG_DEBUG("InterceptorSession::stopReadTimer");
+  LOG_DEBUG("InterceptorSession::stopReadTimer()");
   m_state &= ~Reading;
   m_readTimer.cancel();
 }

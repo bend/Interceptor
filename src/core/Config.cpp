@@ -15,7 +15,9 @@ Config::Config(const std::string& path)
     m_cwd(boost::filesystem::current_path().string()),
     m_clientTimeout(0),
     m_serverTimeout(0),
-    m_maxCacheSize(0)
+    m_maxCacheSize(0),
+    m_maxRequestSize(0),
+    m_maxInMemRequest(0)
 {
   parse();
 }
@@ -72,8 +74,17 @@ void Config::parse()
     }
 
 #ifdef ENABLE_LOCAL_CACHE
-    m_maxCacheSize = ((float)global["max-cache-size"]) * 1024 * 1024;
+    m_maxCacheSize = ((float)global["max-cache-size"]) * mbToBytesFactor();
 #endif // ENABLE_LOCAL_CACHE
+
+    if (global.count("max-request-size")) {
+      m_maxRequestSize = ((int64_t)global["max-request-size"]) * mbToBytesFactor();
+    }
+
+    if (global.count("max-in-mem-request-size")) {
+      m_maxInMemRequest = ((int64_t) global["max-in-mem-request-size"]) *
+                          mbToBytesFactor();
+    }
 
     // backends section
     if (j.count("backends")) {
@@ -137,15 +148,32 @@ void Config::parse()
 
         for (auto& loc : site["locations"]) {
           for (json::iterator it = loc.begin(); it != loc.end(); ++it) {
-            s->m_locations[it.key()] = it.value().get<uint16_t>();
+            if (it.value().is_structured()) {
+              BackendPtr backend = std::make_shared<Backend>();
+              backend->name = it.value()["name"];
+              backend->host = it.value()["host"];
+              backend->port = it.value()["port"];
+              s->m_connectors[it.key()] = backend;
+            } else {
+              s->m_locations[it.key()] = it.value().get<uint16_t>();
+            }
           }
         }
 
         if (site.count("backend") > 0) {
-          s->m_backend = site["backend"];
+          if (s->m_connectors.size() > 0) {
+            throw ConfigException("Cannot define connectors and backend at the same time");
+          }
+
+          if (m_backends.count(site["backend"])) {
+            s->m_backend = site["backend"];
+          } else {
+            throw ConfigException("Unknown backend " + site["backend"].get<std::string>());
+          }
         }
 
         sc->m_sites.push_back(s);
+        sc->m_globalConfig = this;
       }
 
       m_serversConfig.push_back(sc);
@@ -181,6 +209,16 @@ uint16_t Config::threads() const
 uint64_t Config::maxCacheSize() const
 {
   return m_maxCacheSize;
+}
+
+uint64_t Config::maxRequestSize() const
+{
+  return m_maxRequestSize;
+}
+
+uint64_t Config::maxInMemRequestSize() const
+{
+  return m_maxInMemRequest;
 }
 
 const BackendsMap& Config::backends() const
@@ -227,11 +265,15 @@ void Config::parseBackends(json& j)
       throw ConfigException("Backend " + backendName + " already defined");
     }
 
-    Backend b;
-    b.name = backend["name"];
-    b.host = backend["host"];
-    b.port = backend["port"];
+    BackendPtr b = std::make_shared<Backend>();
+    b->name = backend["name"];
+    b->host = backend["host"];
+    b->port = backend["port"];
     m_backends[backendName] = b;
   }
 }
 
+constexpr uint32_t  Config::mbToBytesFactor()
+{
+  return 1024 * 1024;
+}

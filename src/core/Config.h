@@ -12,7 +12,7 @@ using json = nlohmann::json;
 
 typedef std::map<std::string, std::string> ErrorPageMap;
 typedef std::map<std::string, int16_t> LocationsMap;
-typedef std::map<std::string, Backend> BackendsMap;
+typedef std::map<std::string, BackendPtr> BackendsMap;
 
 class ConfigException : public std::exception {
 public:
@@ -21,7 +21,7 @@ public:
 
   virtual ~ConfigException() noexcept {}
 
-  virtual const char* what() noexcept
+  virtual const char* what() const noexcept
   {
     return m_what.c_str();
   }
@@ -50,6 +50,7 @@ public:
       ErrorPageMap m_errorPages;
       LocationsMap m_locations;
       std::string m_backend;
+      BackendsMap m_connectors;
     };
 
     std::string m_listenHost;
@@ -59,6 +60,7 @@ public:
     const ErrorPageMap& m_errorPages;
     uint32_t m_clientTimeout;
     uint32_t m_serverTimeout;
+    Config* m_globalConfig;
 
   };
 
@@ -68,11 +70,14 @@ public:
   const std::vector<ServerConfig*> serversConfig() const;
   uint16_t threads() const;
   uint64_t maxCacheSize() const;
+  uint64_t maxRequestSize() const;
+  uint64_t maxInMemRequestSize() const;
   const BackendsMap& backends() const;
 
   static bool isLocalDomain(const std::string& domain);
   static std::string localDomain();
   static std::string replaceLocalDomain(const std::string& domain);
+  static constexpr uint32_t  mbToBytesFactor();
 
 private:
   void parse();
@@ -92,6 +97,8 @@ private:
   uint32_t m_serverTimeout;
   uint16_t m_threadNr;
   uint64_t m_maxCacheSize;
+  uint64_t m_maxRequestSize;
+  uint64_t m_maxInMemRequest;
 
 };
 

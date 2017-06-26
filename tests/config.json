@@ -35,8 +35,19 @@
 		  ],
 
 		  "locations" : [
-			{ "forbidden" : 403 }
+			{ 
+			  "forbidden" : 403
+			}, 
+			{
+			  "REGEX" : {
+				"name": "php",
+				"host": "localhost",
+				"port": 5000
+			  }
+			}
 		  ]
+
+
 
 		}
 	  ]
@@ -53,9 +64,17 @@
 			"index.html"
 		  ],
 		  "host": "localhost",
-		  "docroot": "site2/"
+		  "docroot": "site2/",
+		  "backend" : "backend_test"
 		}
 	  ]
+	}
+  ],
+
+  "backends" : [
+	{ "name" : "backend_test",
+	  "host": "localhost",
+	  "port" : 7000
 	}
   ]
 }

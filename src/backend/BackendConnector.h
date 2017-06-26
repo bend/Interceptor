@@ -2,21 +2,22 @@
 #define BACKEND_CONNECTOR_H__
 
 #include "Backend.h"
-
+#include "gateway/AbstractConnector.h"
 #include <memory>
 #include <boost/asio/io_service.hpp>
 
 class OutboundConnection;
 
-class BackendConnector {
+class BackendConnector : public AbstractConnector {
 
 public:
-  BackendConnector(const Backend& backend, boost::asio::io_service& ioService);
-  bool connect();
-  const std::string& name() const;
+  BackendConnector(BackendCPtr backend, boost::asio::io_service& ioService);
+  ~BackendConnector();
+  virtual bool connect() override;
+  virtual const std::string& name() const override;
 
 private:
-  const Backend& m_backend;
+  BackendCPtr m_backend;
   boost::asio::io_service& m_ioService;
   std::shared_ptr<OutboundConnection> m_connection;
 

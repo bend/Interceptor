@@ -13,6 +13,7 @@
 #include <boost/filesystem.hpp>
 #include <csignal>
 #include <functional>
+#include <memory>
 
 namespace po = boost::program_options;
 
@@ -134,10 +135,10 @@ bool Main::initBackendsPool()
 {
   m_pool = new BackendsPool(m_ioService);
 
-  std::vector<Backend> backends;
+  std::vector<BackendCPtr> backends;
 
   for (auto& kv : m_config->backends()) {
-    backends.push_back(kv.second);
+    backends.push_back(std::const_pointer_cast<const Backend>(kv.second));
   }
 
   return m_pool->initPool(backends);
@@ -148,14 +149,10 @@ void Main::run()
   LOG_DEBUG("Main::run()");
 
   for (const auto& serverConfig : m_config->serversConfig()) {
-    LOG_DEBUG("init interceptor");
     Params* params = new Params(serverConfig, m_cacheHandler, m_pool);
-    LOG_DEBUG("param init interceptor");
     std::shared_ptr<Interceptor> interceptor = std::make_shared<Interceptor>(params,
         m_ioService);
-    LOG_DEBUG("will init");
     interceptor->init();
-    LOG_DEBUG("done init");
   }
 
   LOG_DEBUG("CWD is "  << boost::filesystem::current_path());
@@ -202,6 +199,7 @@ void signalHandler(int signum)
 int main(int argc, char** argv)
 {
   signal(SIGINT, signalHandler);
+
   signal(SIGHUP, signalHandler);
 
   try {
@@ -216,7 +214,7 @@ int main(int argc, char** argv)
     delete mainHandler;
 
   } catch (ConfigException& e) {
-    LOG_ERROR("Exception raised " << e.what());
+    LOG_ERROR("Configuration error " << e.what());
   } catch (std::exception& e) {
     LOG_ERROR("Exception raised " << e.what());
   }
