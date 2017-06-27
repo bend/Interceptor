@@ -24,7 +24,7 @@ std::string CacheHandler::eTag(const std::string& file)
     return eTag;
   }
 
-  auto tuple = Http::FileUtils::generateCacheData(file);
+  auto tuple = FileUtils::generateCacheData(file);
 
   if (std::get<0>(tuple).length() > 0) {
     eTag = std::get<0>(tuple);
@@ -68,7 +68,7 @@ Http::Code CacheHandler::read(const std::string& file,
   Http::Code ret;
   LOG_DEBUG("CacheHandler::read() - cache miss for " << file);
 
-  if ((ret = Http::FileUtils::readFile(file, &mdata, bytes)) == Http::Code::Ok) {
+  if ((ret = FileUtils::readFile(file, &mdata, bytes)) == Http::Code::Ok) {
     stream.write(reinterpret_cast<const char*>(mdata), bytes);
     m_fileDatabase->setData(file, mdata, bytes);
   }
@@ -91,7 +91,7 @@ bool CacheHandler::size(const std::string& file, size_t& bytes)
     return false;
   }
 
-  if (Http::FileUtils::fileSize(file, bytes)) {
+  if (FileUtils::fileSize(file, bytes)) {
     m_filemedataDatabase->setSize(file, bytes);
   }
 

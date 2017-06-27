@@ -8,6 +8,7 @@
 #include <chrono>
 
 class AbstractCacheHandler;
+class FileBuffer;
 
 namespace Http {
   class HttpHeaders;
@@ -44,6 +45,7 @@ namespace Http {
     bool parseMethod(const std::string& method);
     bool parseParameters(const std::string& parameters);
     bool parseHttpVersion(const std::string& version);
+	bool dumpToFile(const unsigned char* data, size_t length);
 
   private:
     InterceptorSessionWeakPtr m_session;
@@ -56,6 +58,7 @@ namespace Http {
     bool m_parsed;
     bool m_dumpingToFile;
     Host m_host;
+	std::unique_ptr<FileBuffer> m_buffer;
 
     std::chrono::high_resolution_clock::time_point m_startTs;
     std::chrono::high_resolution_clock::time_point m_endTs;

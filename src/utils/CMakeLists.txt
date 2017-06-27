@@ -2,7 +2,8 @@ set(libutils_src
   Logger.cpp
   Server.cpp
   FileUtils.cpp
-  
+  FileBuffer.cpp
+  StringUtils.cpp 
 )
 
 INCLUDE_DIRECTORIES(

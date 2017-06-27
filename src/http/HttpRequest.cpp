@@ -3,6 +3,7 @@
 #include "core/InterceptorSession.h"
 #include "HttpHeaders.h"
 #include "utils/Logger.h"
+#include "utils/FileBuffer.h"
 #include "common/Params.h"
 #include "cache/generic_cache.h"
 
@@ -19,7 +20,8 @@ namespace Http {
       m_completed(false),
       m_parsed(false),
       m_dumpingToFile(false),
-      m_host("")
+      m_host(""),
+	  m_buffer(nullptr)
   {
   }
 
@@ -39,13 +41,13 @@ namespace Http {
     uint64_t mirs =
       m_session.lock()->params()->config()->m_globalConfig->maxInMemRequestSize();
 
-    if (mrs > 0  && m_request.length() > mrs) {
-      return Code::RequestEntityTooLarge;  //TODO check also size of dumped data
+    if (mrs > 0  &&( m_request.length() > mrs
+    || (m_dumpingToFile && m_buffer->size() > mrs))) {
+      return Code::RequestEntityTooLarge;
     }
 
     if ((mirs > 0 && m_request.length() > mrs) || m_dumpingToFile) {
-      // Dump contents to file to avoid using too much memory
-      //dumpToFile();
+      dumpToFile(data, length);
     }
 
     LOG_DEBUG(m_request);
@@ -54,7 +56,7 @@ namespace Http {
 
   bool HttpRequest::headersReceived() const
   {
-    return m_request.find("\r\n\r\n") != std::string::npos;
+    return m_dumpingToFile ? m_buffer->headersReceived() : m_request.find("\r\n\r\n") != std::string::npos; 
   }
 
   Host HttpRequest::host() const
@@ -313,6 +315,18 @@ namespace Http {
   bool HttpRequest::parsed()
   {
     return m_parsed;
+  }
+
+  bool HttpRequest::dumpToFile(const unsigned char* data, size_t length)
+  {
+	if(!m_buffer) {
+	  m_buffer = std::make_unique<FileBuffer>();
+	  m_dumpingToFile = true;
+	}
+  
+	m_buffer->append(data, length);
+
+	return true;
   }
 
 }

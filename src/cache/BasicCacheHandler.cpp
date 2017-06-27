@@ -12,7 +12,7 @@ BasicCacheHandler::BasicCacheHandler()
 
 std::string BasicCacheHandler::eTag(const std::string& file)
 {
-  auto tuple = Http::FileUtils::generateCacheData(file);
+  auto tuple = FileUtils::generateCacheData(file);
 
   if (std::get<0>(tuple).length() > 0) {
     return std::get<0>(tuple);
@@ -23,7 +23,7 @@ std::string BasicCacheHandler::eTag(const std::string& file)
 
 std::string BasicCacheHandler::lastModified(const std::string& file)
 {
-  auto tuple = Http::FileUtils::generateCacheData(file);
+  auto tuple = FileUtils::generateCacheData(file);
 
   if (std::get<1>(tuple).length() > 0) {
     return std::get<1>(tuple);
@@ -34,13 +34,13 @@ std::string BasicCacheHandler::lastModified(const std::string& file)
 
 bool BasicCacheHandler::size(const std::string& file, size_t& bytes)
 {
-  return Http::FileUtils::fileSize(file, bytes);
+  return FileUtils::fileSize(file, bytes);
 }
 
 Http::Code BasicCacheHandler::read(const std::string& file,
                                    std::stringstream& stream, size_t& bytes)
 {
-  return Http::FileUtils::readFile(file, stream, bytes);
+  return FileUtils::readFile(file, stream, bytes);
 }
 
 size_t BasicCacheHandler::cacheSize() const
