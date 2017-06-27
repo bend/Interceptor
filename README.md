@@ -15,10 +15,12 @@ A fast Web server written in C++
 - Server Timeout
 - Virtual servers
 - Custom Error pages
+- Locations access restriction
+- Local cache 
 
 ## Build & Install
 
-This program need libz, libboost, c++14 compliant compilator
+This program need libz, libboost, **c++14** compliant compiler
 
 ### Compilation Flags 
   
