@@ -20,12 +20,15 @@ public:
 
   bool headersReceived() const;
 
+  std::string headersData() const;
+
 private:
   size_t m_size;
   std::FILE* m_tmpfile;
   std::ofstream m_stream;
   bool m_headersReceived;
-  bool m_lastcharIsCarriage;
+  size_t m_headersLength;
+  unsigned char m_lastCharacters[3];
 };
 
 #endif

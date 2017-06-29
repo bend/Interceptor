@@ -5,7 +5,7 @@
 	"nb-threads": 5,
 	"max-cache-size" : 100,
 	"max-request-size": 4,
-	"max-in-mem-request" : 2,
+	"max-in-mem-request-size" : 2,
 	
 	"error-pages" : [
 		{ "404" : "/home/ben/projects/interceptor/config/404.html" }, 

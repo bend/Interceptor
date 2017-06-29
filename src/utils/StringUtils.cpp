@@ -10,7 +10,7 @@ namespace StringUtils {
 		for(size_t j = 1; j < pattern.length(); ++j) {
 		  if( data[i + j] != pattern[j])
 			break;
-		  if( j == pattern.length())
+		  if( j == pattern.length() - 1)
 			return true;
 		}
 	  }

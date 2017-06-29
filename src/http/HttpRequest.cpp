@@ -32,7 +32,8 @@ namespace Http {
   }
 
   Code HttpRequest::appendData(const unsigned char* data, size_t length)
-  {
+  { 
+	try {
     LOG_DEBUG("HttpRequest::appendData()");
     m_request.append(std::string(data, data + length));
 
@@ -46,12 +47,22 @@ namespace Http {
       return Code::RequestEntityTooLarge;
     }
 
-    if ((mirs > 0 && m_request.length() > mrs) || m_dumpingToFile) {
+    if ((/*mirs > 0*&& */m_request.length() > mirs) || m_dumpingToFile) {
+	  if(!m_dumpingToFile) {
+		dumpToFile(reinterpret_cast<const unsigned char*>(m_request.c_str()), m_request.length());
+		m_request.clear();
+	  }
       dumpToFile(data, length);
     }
 
     LOG_DEBUG(m_request);
-    return Code::Ok;
+
+	}catch(std::exception e)
+	 {
+		LOG_ERROR("Exception");
+	  return Code::InternalServerError;
+	 }
+	 return Code::Ok;
   }
 
   bool HttpRequest::headersReceived() const
@@ -170,19 +181,30 @@ namespace Http {
     return Code::Ok;
   }
 
+  std::string HttpRequest::headersData()
+  {
+	if(m_dumpingToFile)  
+	  return m_buffer->headersData();
+
+	size_t pos = m_request.find("\r\n\r\n");
+
+	return m_request.substr(0, pos);
+  }
+
   Code HttpRequest::parse()
   {
     LOG_DEBUG("HttpRequest::parse()");
     m_startTs = std::chrono::high_resolution_clock::now();
-    size_t pos = m_request.find_first_of("\r\n");
+	std::string headers = headersData();
+    size_t pos = headers.find_first_of("\r\n");
 
     if (pos == std::string::npos) {
       LOG_ERROR("HttpRequest missing separator.. aborting");
       return Code::BadRequest;
     }
 
-    std::string get = m_request.substr(0, pos);
-    m_request = m_request.substr(pos);
+    std::string get = headers.substr(0, pos);
+    headers= headers.substr(pos);
     std::vector<std::string> getParts;
     boost::split(getParts, get , boost::is_any_of(" "));
 
@@ -226,8 +248,7 @@ namespace Http {
       return Code::HttpVersionNotSupported;
     }
 
-
-    m_headers = new HttpHeaders(m_request);
+    m_headers = new HttpHeaders(headers);
 
     Code code = m_headers->parse();
 

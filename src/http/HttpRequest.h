@@ -46,6 +46,7 @@ namespace Http {
     bool parseParameters(const std::string& parameters);
     bool parseHttpVersion(const std::string& version);
 	bool dumpToFile(const unsigned char* data, size_t length);
+	std::string headersData();
 
   private:
     InterceptorSessionWeakPtr m_session;
