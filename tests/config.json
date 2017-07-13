@@ -5,7 +5,7 @@
 	"nb-threads": 5,
 	"max-cache-size" : 1000000,
 	"max-in-mem-request-size" : 0,
-	"max-request-size": 1,
+	"max-request-size": 0,
 	
 	"error-pages" : [
 		{ "404" : "error/404.html" }, 

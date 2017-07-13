@@ -51,8 +51,8 @@ namespace Http {
 	  if(!m_dumpingToFile) {
 		dumpToFile(reinterpret_cast<const unsigned char*>(m_request.c_str()), m_request.length());
 		m_request.clear();
-	  }
-      dumpToFile(data, length);
+	  } else 
+		dumpToFile(data, length);
     }
 
     LOG_DEBUG(m_request);

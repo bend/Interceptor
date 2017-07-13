@@ -28,17 +28,19 @@ FileBuffer::FileBuffer()
 
 FileBuffer::~FileBuffer() noexcept
 {
-  if(m_stream)
-	std::fclose(m_tmpfile);
+  LOG_DEBUG("FileBuffer::~FileBuffer()");
   m_stream.close();
+  if(m_tmpfile) 
+	std::fclose(m_tmpfile);
+  std::remove(std::to_string(fileno(m_tmpfile)).c_str());
 }
 
 void FileBuffer::append(const unsigned char* data, size_t size)
 {
   assert(m_stream.is_open());
   m_stream.write(reinterpret_cast<const char*>(data), size);
+  m_stream.flush();
   m_size += size;
-  // TODO set m_headersLength
   std::array<const unsigned char, 6> chr = {m_lastCharacters[0], m_lastCharacters[1], m_lastCharacters[2],
 							  data[0], data[1], data[2]};
 
@@ -88,5 +90,5 @@ bool FileBuffer::headersReceived() const
 
 std::string FileBuffer::headersData() const
 {
-  return getData(0, m_headersLength); 
+  return getData(0, m_headersLength - 1); 
 }
