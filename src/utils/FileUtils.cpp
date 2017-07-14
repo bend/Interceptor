@@ -72,6 +72,7 @@ namespace FileUtils {
     }
 
     if (to > (size_t)pos - 1) {
+      ifs.close();
       return Http::Code::BadRequest;
     }
 
@@ -112,6 +113,7 @@ namespace FileUtils {
 
     if (from  == -1) {
       if (to == -1) {
+        ifs.close();
         return Http::Code::RequestRangeNotSatisfiable;
       }
 

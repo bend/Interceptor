@@ -21,7 +21,7 @@ namespace Http {
       m_parsed(false),
       m_dumpingToFile(false),
       m_host(""),
-	  m_buffer(nullptr)
+      m_buffer(nullptr)
   {
   }
 
@@ -32,42 +32,45 @@ namespace Http {
   }
 
   Code HttpRequest::appendData(const unsigned char* data, size_t length)
-  { 
-	try {
-    LOG_DEBUG("HttpRequest::appendData()");
-    m_request.append(std::string(data, data + length));
+  {
+    try {
+      LOG_DEBUG("HttpRequest::appendData()");
+      m_request.append(std::string(data, data + length));
 
-    uint64_t mrs =
-      m_session.lock()->params()->config()->m_globalConfig->maxRequestSize();
-    uint64_t mirs =
-      m_session.lock()->params()->config()->m_globalConfig->maxInMemRequestSize();
+      uint64_t mrs =
+        m_session.lock()->params()->config()->m_globalConfig->maxRequestSize();
+      uint64_t mirs =
+        m_session.lock()->params()->config()->m_globalConfig->maxInMemRequestSize();
 
-    if (mrs > 0  &&( m_request.length() > mrs
-    || (m_dumpingToFile && m_buffer->size() > mrs))) {
-      return Code::RequestEntityTooLarge;
+      if (mrs > 0  && ( m_request.length() > mrs
+                        || (m_dumpingToFile && m_buffer->size() > mrs))) {
+        return Code::RequestEntityTooLarge;
+      }
+
+      if ((/*mirs > 0*&& */m_request.length() > mirs) || m_dumpingToFile) {
+        if (!m_dumpingToFile) {
+          dumpToFile(reinterpret_cast<const unsigned char*>(m_request.c_str()),
+                     m_request.length());
+          m_request.clear();
+        } else {
+          dumpToFile(data, length);
+        }
+      }
+
+      LOG_DEBUG(m_request);
+
+    } catch (std::exception e) {
+      LOG_ERROR("Exception");
+      return Code::InternalServerError;
     }
 
-    if ((/*mirs > 0*&& */m_request.length() > mirs) || m_dumpingToFile) {
-	  if(!m_dumpingToFile) {
-		dumpToFile(reinterpret_cast<const unsigned char*>(m_request.c_str()), m_request.length());
-		m_request.clear();
-	  } else 
-		dumpToFile(data, length);
-    }
-
-    LOG_DEBUG(m_request);
-
-	}catch(std::exception e)
-	 {
-		LOG_ERROR("Exception");
-	  return Code::InternalServerError;
-	 }
-	 return Code::Ok;
+    return Code::Ok;
   }
 
   bool HttpRequest::headersReceived() const
   {
-    return m_dumpingToFile ? m_buffer->headersReceived() : m_request.find("\r\n\r\n") != std::string::npos; 
+    return m_dumpingToFile ? m_buffer->headersReceived() :
+           m_request.find("\r\n\r\n") != std::string::npos;
   }
 
   Host HttpRequest::host() const
@@ -183,19 +186,20 @@ namespace Http {
 
   std::string HttpRequest::headersData()
   {
-	if(m_dumpingToFile)  
-	  return m_buffer->headersData();
+    if (m_dumpingToFile) {
+      return m_buffer->headersData();
+    }
 
-	size_t pos = m_request.find("\r\n\r\n");
+    size_t pos = m_request.find("\r\n\r\n");
 
-	return m_request.substr(0, pos);
+    return m_request.substr(0, pos);
   }
 
   Code HttpRequest::parse()
   {
     LOG_DEBUG("HttpRequest::parse()");
     m_startTs = std::chrono::high_resolution_clock::now();
-	std::string headers = headersData();
+    std::string headers = headersData();
     size_t pos = headers.find_first_of("\r\n");
 
     if (pos == std::string::npos) {
@@ -204,7 +208,7 @@ namespace Http {
     }
 
     std::string get = headers.substr(0, pos);
-    headers= headers.substr(pos);
+    headers = headers.substr(pos);
     std::vector<std::string> getParts;
     boost::split(getParts, get , boost::is_any_of(" "));
 
@@ -340,14 +344,14 @@ namespace Http {
 
   bool HttpRequest::dumpToFile(const unsigned char* data, size_t length)
   {
-	if(!m_buffer) {
-	  m_buffer = std::make_unique<FileBuffer>();
-	  m_dumpingToFile = true;
-	}
-  
-	m_buffer->append(data, length);
+    if (!m_buffer) {
+      m_buffer = std::make_unique<FileBuffer>();
+      m_dumpingToFile = true;
+    }
 
-	return true;
+    m_buffer->append(data, length);
+
+    return true;
   }
 
 }

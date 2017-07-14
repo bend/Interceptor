@@ -24,7 +24,8 @@ public:
 
 private:
   size_t m_size;
-  std::FILE* m_tmpfile;
+  int m_tmpfile;
+  char* m_tmpname;
   std::ofstream m_stream;
   bool m_headersReceived;
   size_t m_headersLength;
