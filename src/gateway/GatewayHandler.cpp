@@ -30,8 +30,5 @@ GatewayHandler::~GatewayHandler()
 void GatewayHandler::route(std::function<void(Http::Code, std::stringstream&)>
                            func)
 {
-  std::stringstream str("this is a reply from gateway");
-  std::stringstream str2("this is a second reply from gateway");
-  func(Http::Code::Ok, str);
-  func(Http::Code::Ok, str2);
+  m_gateway->handleRequest(func);
 }

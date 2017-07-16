@@ -13,6 +13,9 @@ public:
 
   virtual AbstractConnectorPtr takeConnection() override;
 
+  virtual void handleRequest(std::function<void(Http::Code, std::stringstream&)>
+                             func) override;
+
 private:
   AbstractConnectorPtr m_connection;
 };

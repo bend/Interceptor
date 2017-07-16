@@ -135,7 +135,7 @@ class TestValidHttpServer(unittest.TestCase):
         self.assertEqual(fdata, data + data2)
         conn.close()
 
-    def test8(self):
+    def test8_1(self):
         conn = httplib.HTTPConnection(HTTP_URL)
         conn.request("DELETE", "/lorem.html", None, headers)
         res = conn.getresponse()

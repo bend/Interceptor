@@ -5,16 +5,23 @@
 #include "gateway/AbstractConnector.h"
 #include <memory>
 #include <boost/asio/io_service.hpp>
+#include <boost/asio.hpp>
 
 class OutboundConnection;
 
-class BackendConnector : public AbstractConnector {
+class BackendConnector : public AbstractConnector,
+  public std::enable_shared_from_this<BackendConnector> {
 
 public:
   BackendConnector(BackendCPtr backend, boost::asio::io_service& ioService);
   ~BackendConnector();
   virtual bool connect() override;
   virtual const std::string& name() const override;
+
+private:
+  void handleResolved(const boost::system::error_code& error,
+                      boost::asio::ip::tcp::resolver::iterator it);
+  void handleConnected(const boost::system::error_code& error);
 
 private:
   BackendCPtr m_backend;

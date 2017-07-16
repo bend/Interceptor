@@ -24,7 +24,6 @@ void BackendsPool::initConnection(BackendCPtr backend)
   AbstractConnectorPtr connector = std::make_unique<BackendConnector>(backend,
                                    m_ioService);
   m_backends[backend->name] = backend;
-  connector->connect();
   putConnection(std::move(connector));
 }
 
@@ -41,8 +40,6 @@ AbstractConnectorPtr BackendsPool::takeConnection(const std::string&
       initConnection(m_backends[backendName]);
     }
 
-    LOG_DEBUG("BP : takeConnection : " << m_connections.at(
-                backendName).front()->name());
     auto connection = std::move(connections.front());
     connections.pop_front();
     return connection;
@@ -55,7 +52,6 @@ void BackendsPool::putConnection(AbstractConnectorPtr connection)
 {
   std::lock_guard<std::recursive_mutex> lock(m_mutex);
   LOG_DEBUG("BackendsPool::putConnection()");
-  LOG_DEBUG(connection->name());
 
   if (m_connections.count(connection->name()) == 0) {
     m_connections[connection->name()] = std::list<AbstractConnectorPtr>();

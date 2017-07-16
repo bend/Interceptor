@@ -12,6 +12,6 @@ public:
 
 };
 
-typedef std::unique_ptr<AbstractConnector> AbstractConnectorPtr;
+typedef std::shared_ptr<AbstractConnector> AbstractConnectorPtr;
 
 #endif

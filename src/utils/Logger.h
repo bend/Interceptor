@@ -39,7 +39,8 @@ static inline LogEntry trace(const std::string& type)
 #define LOG_ERROR(A)  trace("err ") << A
 
 #ifdef DEBUG_LOGGING
-#define LOG_DEBUG(A) trace("dbg ") << A
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define LOG_DEBUG(A) trace("dbg ") << __FILENAME__ << ":" << __LINE__ << " - " << A
 #else
 #define LOG_DEBUG(A)
 #endif // DEBUG_LOGGING

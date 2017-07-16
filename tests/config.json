@@ -75,7 +75,7 @@
 
   "backends" : [
 	{ "name" : "backend_test",
-	  "host": "localhost",
+	  "host": "127.0.0.1",
 	  "port" : 7000
 	}
   ]
