@@ -7,8 +7,6 @@
 #include "cache/generic_cache.h"
 #include "common/Params.h"
 
-#include <boost/bind.hpp>
-
 using boost::asio::ip::tcp;
 
 Interceptor::Interceptor(Params* params,
@@ -40,8 +38,8 @@ void Interceptor::listen()
     std::make_shared<InterceptorSession>
     (m_params, m_ioService);
   m_acceptor.async_accept(newSession->socket(),
-                          boost::bind(&Interceptor::handleAccept, shared_from_this(), newSession,
-                                      boost::asio::placeholders::error)
+                          std::bind(&Interceptor::handleAccept, shared_from_this(), newSession,
+                                    std::placeholders::_1)
                          );
 }
 

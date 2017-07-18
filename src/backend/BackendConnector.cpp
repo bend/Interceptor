@@ -3,9 +3,6 @@
 #include "socket/OutboundConnection.h"
 #include "utils/Logger.h"
 
-#include <boost/bind.hpp>
-
-
 BackendConnector::BackendConnector(BackendCPtr backend,
                                    boost::asio::io_service& ioService)
   : m_backend(backend),
@@ -24,9 +21,10 @@ BackendConnector::~BackendConnector()
 bool BackendConnector::connect()
 {
   LOG_DEBUG("BackendConnector::connect()");
-  m_connection->asyncResolve(boost::bind(&BackendConnector::handleResolved,
-                                         shared_from_this(), boost::asio::placeholders::error,
-                                         boost::asio::placeholders::iterator));
+  m_connection->asyncResolve(std::bind(&BackendConnector::handleResolved,
+                                       shared_from_this(),
+                                       std::placeholders::_1,
+                                       std::placeholders::_2));
   return true;
 }
 
@@ -37,8 +35,9 @@ void BackendConnector::handleResolved(const boost::system::error_code& error,
   if (!error) {
     LOG_INFO("BackendConnector::handleResolved() - Resolved");
     m_connection->setEndpoint(it);
-    m_connection->asyncConnect(boost::bind(&BackendConnector::handleConnected,
-                                           shared_from_this(), boost::asio::placeholders::error));
+    m_connection->asyncConnect(std::bind(&BackendConnector::handleConnected,
+                                         shared_from_this(),
+                                         std::placeholders::_1));
   } else {
     LOG_ERROR("BackendConnector::handleResolved() - could not resolve" <<
               error.message());

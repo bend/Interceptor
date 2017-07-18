@@ -10,7 +10,6 @@
 #include "common/Params.h"
 #include "gateway/GatewayHandler.h"
 
-#include <boost/bind.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <algorithm>
 #include <regex>
@@ -99,7 +98,7 @@ namespace Http {
 
   void HttpReply::handleGatewayReply(Code code, std::stringstream& stream)
   {
-    boost::mutex::scoped_lock lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_httpBuffer = std::make_shared<HttpBuffer>();
     LOG_DEBUG("Received from gateway " << (int)code << " data : " << stream.str());
     buildErrorResponse(code, false);
@@ -307,7 +306,7 @@ namespace Http {
   {
     LOG_DEBUG("HttpReply::requestLargeFileContents()");
     //needed to be sure that previous call is completed
-    boost::mutex::scoped_lock lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     size_t bytes;
     size_t to = std::min(limit, std::min((size_t) from + MAX_CHUNK_SIZE,
                                          totalBytes - 1));

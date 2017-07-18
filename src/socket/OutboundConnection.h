@@ -2,8 +2,6 @@
 #define OUTBOUND_CONNECTION_H__
 
 #include <boost/asio.hpp>
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
 
 using boost::asio::ip::tcp;
 
@@ -16,20 +14,20 @@ public:
                      const std::string& port);
 
   void asyncResolve(
-    boost::function2<void, boost::system::error_code, tcp::resolver::iterator>
+    std::function<void(boost::system::error_code, tcp::resolver::iterator)>
     callback);
 
   void setEndpoint(tcp::resolver::iterator iter);
 
-  virtual void asyncConnect(boost::function1<void, boost::system::error_code>
+  virtual void asyncConnect(std::function<void(boost::system::error_code)>
                             callback) = 0;
 
   virtual void asyncRead( void* data, size_t size,
-                          boost::function2<void, boost::system::error_code, size_t> callback) = 0;
+                          std::function<void(boost::system::error_code, size_t)> callback) = 0;
 
   virtual void asyncWrite( const void* data, size_t size,
-                           boost::function2<void, boost::system::error_code,
-                           size_t> callback) = 0;
+                           std::function<void(boost::system::error_code,
+                               size_t)> callback) = 0;
 
   virtual boost::system::error_code write(const void* data, size_t size) = 0;
 
@@ -53,17 +51,17 @@ public:
   OutboundTcpConnection(boost::asio::io_service& io_service,
                         const std::string& host, const std::string& port);
 
-  virtual void asyncConnect(boost::function1<void, boost::system::error_code>
+  virtual void asyncConnect(std::function<void(boost::system::error_code)>
                             callback) override;
 
   virtual void asyncRead( void* data, size_t size,
-                          boost::function2<void, boost::system::error_code, size_t> callback) override;
+                          std::function<void(boost::system::error_code, size_t)> callback) override;
 
   virtual boost::system::error_code write(const void* data, size_t size) override;
 
   virtual void asyncWrite( const void* data, size_t size,
-                           boost::function2<void, boost::system::error_code,
-                           size_t> callback) override;
+                           std::function<void(boost::system::error_code,
+                               size_t)> callback) override;
 
   virtual tcp::socket& socket() override
   {

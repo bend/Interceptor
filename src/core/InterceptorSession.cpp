@@ -10,9 +10,6 @@
 #include "cache/generic_cache.h"
 #include "common/Params.h"
 
-#include <boost/bind.hpp>
-#include <boost/regex.hpp>
-
 InterceptorSession::InterceptorSession(Params* params,
                                        boost::asio::io_service& ioService)
   : m_params(params),
@@ -55,7 +52,7 @@ void InterceptorSession::postReply(HttpBufferPtr buffer)
   } else {
     m_ioService.post(
       m_iostrand.wrap(
-        boost::bind(&InterceptorSession::sendNext, shared_from_this(), buffer)));
+        std::bind(&InterceptorSession::sendNext, shared_from_this(), buffer)));
   }
 }
 
@@ -63,7 +60,7 @@ void InterceptorSession::sendNext(HttpBufferPtr buffer)
 {
   LOG_DEBUG("InterceptorSession::sendNext()");
   {
-    boost::mutex::scoped_lock lock(m_buffersMutex);
+    std::lock_guard<std::mutex> lock(m_buffersMutex);
     m_buffers.push_back(buffer);
 
     if (m_state & CanSend) {
@@ -87,12 +84,12 @@ void InterceptorSession::sendReply(HttpBufferPtr buffer)
         m_fsstrand.wrap(buffer->nextCall()));
 
     m_connection->asyncWrite(buffer->m_buffers, m_iostrand.wrap
-                             (boost::bind
+                             (std::bind
                               (&InterceptorSession::handleTransmissionCompleted,
                                shared_from_this(),
                                buffer,
-                               boost::asio::placeholders::error,
-                               boost::asio::placeholders::bytes_transferred)
+                               std::placeholders::_1,
+                               std::placeholders::_2)
                              )
                             );
   }
@@ -110,7 +107,7 @@ void InterceptorSession::handleTransmissionCompleted(
     m_state |= CanSend;
 
     {
-      boost::mutex::scoped_lock lock(m_buffersMutex);
+      std::lock_guard<std::mutex> lock(m_buffersMutex);
 
       if (!m_buffers.empty()) {
 
@@ -144,7 +141,7 @@ void InterceptorSession::closeConnection()
   m_state &= ~CanSend;
   m_ioService.post(
     m_iostrand.wrap(
-      boost::bind(&InterceptorSession::doCloseConnection, shared_from_this())));
+      std::bind(&InterceptorSession::doCloseConnection, shared_from_this())));
 }
 
 void InterceptorSession::doCloseConnection()
@@ -163,7 +160,7 @@ void InterceptorSession::start()
     startReadTimer();
     m_ioService.post(
       m_iostrand.wrap(
-        boost::bind(&InterceptorSession::doRead, shared_from_this())));
+        std::bind(&InterceptorSession::doRead, shared_from_this())));
 
   }
 }
@@ -171,9 +168,9 @@ void InterceptorSession::start()
 void InterceptorSession::doRead()
 {
   m_connection->asyncReadSome(m_requestBuffer, sizeof(m_requestBuffer),
-                              boost::bind(&InterceptorSession::handleHttpRequestRead, shared_from_this(),
-                                          boost::asio::placeholders::error,
-                                          boost::asio::placeholders::bytes_transferred)
+                              std::bind(&InterceptorSession::handleHttpRequestRead, shared_from_this(),
+                                        std::placeholders::_1,
+                                        std::placeholders::_2)
                              );
 
 }
@@ -233,10 +230,10 @@ void InterceptorSession::startReadTimer()
                                  m_params->config()->m_clientTimeout));
   m_readTimer.async_wait
   (m_iostrand.wrap
-   (boost::bind(&InterceptorSession::handleTimeout,
-                shared_from_this(),
-                ReadTimer,
-                boost::asio::placeholders::error)));
+   (std::bind(&InterceptorSession::handleTimeout,
+              shared_from_this(),
+              ReadTimer,
+              std::placeholders::_1)));
 
 }
 
@@ -248,10 +245,10 @@ void InterceptorSession::startWriteTimer()
                                   m_params->config()->m_serverTimeout));
   m_writeTimer.async_wait
   (m_iostrand.wrap
-   (boost::bind(&InterceptorSession::handleTimeout,
-                shared_from_this(),
-                WriteTimer,
-                boost::asio::placeholders::error)));
+   (std::bind(&InterceptorSession::handleTimeout,
+              shared_from_this(),
+              WriteTimer,
+              std::placeholders::_1)));
 }
 
 void InterceptorSession::stopReadTimer()

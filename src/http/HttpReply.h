@@ -8,9 +8,9 @@
 
 #include <boost/asio.hpp>
 #include <bitset>
+#include <mutex>
 
 #include <zlib.h>
-#include <boost/thread/mutex.hpp>
 
 namespace Http {
   class HttpHeaders;
@@ -93,7 +93,7 @@ namespace Http {
 
     HttpBufferPtr m_httpBuffer;
 
-    boost::mutex m_mutex;
+    std::mutex m_mutex;
   };
 
 }

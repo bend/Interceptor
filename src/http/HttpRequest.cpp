@@ -220,6 +220,11 @@ namespace Http {
     if (!parseMethod(getParts[0])) {
       return Code::BadRequest;
     }
+    
+	if (!parseHttpVersion(getParts[2])) {
+      return Code::HttpVersionNotSupported;
+    }
+
 
     switch (m_method) {
       case Method::GET: {
@@ -247,10 +252,6 @@ namespace Http {
     }
 
     m_index = getParts[1];
-
-    if (!parseHttpVersion(getParts[2])) {
-      return Code::HttpVersionNotSupported;
-    }
 
     m_headers = new HttpHeaders(headers);
 
@@ -304,7 +305,10 @@ namespace Http {
     } else if (method == "POST") {
       m_method = Method::POST;
       return true;
-    }
+    } else if (method == "DELETE") {
+	  m_method = Method::DELETE;
+	  return true;
+	}
 
     return false;
   }

@@ -1,8 +1,8 @@
 #include "Logger.h"
 
 #include <iostream>
+#include <thread>
 
-#include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 LogEntry::LogEntry(const std::string& type)
@@ -11,7 +11,7 @@ LogEntry::LogEntry(const std::string& type)
   ss << '[' <<
      boost::posix_time::to_simple_string(
        boost::posix_time::microsec_clock::local_time()
-     ) << ']' << '[' << boost::this_thread::get_id() << "] " << type << ' ';
+     ) << ']' << '[' << std::this_thread::get_id() << "] " << type << ' ';
   preamble_ = ss.str();
 }
 

@@ -8,7 +8,6 @@
 #include "utils/Server.h"
 #include "backend/BackendsPool.cpp"
 
-#include <boost/thread.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <csignal>

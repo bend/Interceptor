@@ -1,6 +1,5 @@
 #include "OutboundConnection.h"
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 
 OutboundConnection::OutboundConnection(boost::asio::io_service& io_service,
                                        const std::string& host, const std::string& port):
@@ -12,7 +11,7 @@ OutboundConnection::OutboundConnection(boost::asio::io_service& io_service,
 }
 
 void OutboundConnection::asyncResolve(
-  boost::function2<void, boost::system::error_code, tcp::resolver::iterator>
+  std::function<void(boost::system::error_code, tcp::resolver::iterator)>
   callback)
 {
   resolver_.async_resolve(tcp::resolver::query(host_, port_), callback);
@@ -32,7 +31,7 @@ OutboundTcpConnection::OutboundTcpConnection(boost::asio::io_service&
 }
 
 void OutboundTcpConnection::asyncRead( void* b, size_t size,
-                                       boost::function2<void, boost::system::error_code, size_t> callback)
+                                       std::function<void(boost::system::error_code, size_t)> callback)
 {
   async_read(*m_spSocket,
              boost::asio::buffer(b, size),
@@ -41,8 +40,8 @@ void OutboundTcpConnection::asyncRead( void* b, size_t size,
 }
 
 void OutboundTcpConnection::asyncWrite( const void* data, size_t size,
-                                        boost::function2<void, boost::system::error_code,
-                                        size_t> callback)
+                                        std::function<void(boost::system::error_code,
+                                            size_t)> callback)
 {
   async_write(*m_spSocket, boost::asio::buffer(data, size), callback);
 }
@@ -67,10 +66,10 @@ void OutboundTcpConnection::disconnect()
 }
 
 void OutboundTcpConnection::asyncConnect(
-  boost::function1<void, boost::system::error_code> callback)
+  std::function<void(boost::system::error_code)> callback)
 {
   m_spSocket.reset(new tcp::socket(io_service_));
   boost::asio::async_connect(*m_spSocket , endpointIterator_,
-                             boost::bind(callback,
-                                         boost::asio::placeholders::error));
+                             std::bind(callback,
+                                       std::placeholders::_1));
 }

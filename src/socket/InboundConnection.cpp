@@ -21,8 +21,7 @@ TcpInboundConnection::TcpInboundConnection(boost::asio::io_service& io_service)
 }
 
 void TcpInboundConnection::asyncRead( void* b, size_t size,
-                                      boost::function2<void, boost::system::error_code,
-                                      size_t> callback)
+                                      std::function<void(boost::system::error_code, size_t)> callback)
 {
   async_read(m_spSocket, boost::asio::buffer(b, size),
              boost::asio::transfer_at_least(size),
@@ -31,29 +30,29 @@ void TcpInboundConnection::asyncRead( void* b, size_t size,
 
 void TcpInboundConnection::asyncReadUntil(boost::asio::streambuf& buf,
     const boost::regex& delim,
-    boost::function2<void, boost::system::error_code, size_t> callback)
+    std::function<void(boost::system::error_code, size_t)> callback)
 {
   async_read_until(m_spSocket, buf, delim, callback);
 }
 
 void TcpInboundConnection::asyncReadSome(void* data, size_t size,
-    boost::function2<void, boost::system::error_code, size_t> callback)
+    std::function<void(boost::system::error_code, size_t)> callback)
 {
   m_spSocket.async_read_some(boost::asio::buffer(data, size),
                              callback);
 }
 
 void TcpInboundConnection::asyncWrite( const void* data, size_t size,
-                                       boost::function2<void, boost::system::error_code,
-                                       size_t> callback)
+                                       std::function<void(boost::system::error_code,
+                                           size_t)> callback)
 {
   async_write(m_spSocket, boost::asio::buffer(data, size), callback);
 }
 
 void TcpInboundConnection::asyncWrite(const
                                       std::vector<boost::asio::const_buffer>& buffers,
-                                      boost::function2<void, boost::system::error_code,
-                                      size_t> callback)
+                                      std::function<void(boost::system::error_code,
+                                          size_t)> callback)
 {
   async_write(m_spSocket, buffers, callback);
 }

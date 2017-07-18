@@ -6,7 +6,7 @@
 
 #include <boost/asio.hpp>
 #include <deque>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 
 class InboundConnection;
 class Params;
@@ -75,7 +75,7 @@ private:
   HttpReplyPtr m_reply;
 
   std::deque<HttpBufferPtr> m_buffers;
-  boost::mutex m_buffersMutex;
+  std::mutex m_buffersMutex;
 
   // Timers
   boost::asio::deadline_timer m_readTimer;
