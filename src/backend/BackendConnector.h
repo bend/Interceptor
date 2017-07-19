@@ -30,7 +30,7 @@ private:
   BackendCPtr m_backend;
   boost::asio::io_service& m_ioService;
   std::shared_ptr<OutboundConnection> m_connection;
-  unsigned char m_response[4096];
+  char m_response[4096];
 };
 
 #endif // OUTBOUND_CONNECTION_H__

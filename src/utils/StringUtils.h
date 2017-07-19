@@ -14,7 +14,7 @@ namespace StringUtils {
    *
    * @return true if pattern found, false otherwise
    */
-  bool containsString(const unsigned char* data, const std::string& pattern,
+  bool containsString(const char* data, const std::string& pattern,
                       size_t s);
 
   /**
@@ -26,7 +26,7 @@ namespace StringUtils {
    *
    * @return  the index of the last character of pattern in data if found, -1 otherwise
    */
-  int64_t findString(const unsigned char* data, const std::string& pattern,
+  int64_t findString(const char* data, const std::string& pattern,
                      size_t s);
 
 };

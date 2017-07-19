@@ -64,7 +64,7 @@ Http::Code CacheHandler::read(const std::string& file,
     return Http::Code::Ok;
   }
 
-  unsigned char* mdata;
+  char* mdata;
   Http::Code ret;
   LOG_DEBUG("CacheHandler::read() - cache miss for " << file);
 

@@ -9,14 +9,14 @@
 
 class FileDatabase : public AbstractDatabase {
 public:
-  typedef std::pair<const unsigned char*, size_t> Buffer;
+  typedef std::pair<const char*, size_t> Buffer;
   typedef std::pair<std::string, int64_t> BufferHit;
   FileDatabase(size_t maxSize);
 
   virtual void purge(const std::string& path) override;
   virtual size_t size() const override;
 
-  void setData(const std::string& path, unsigned char* data, size_t size);
+  void setData(const std::string& path, char* data, size_t size);
   const Buffer* data(const std::string& path) const;
   void shrinkToFit(size_t bytes);
 

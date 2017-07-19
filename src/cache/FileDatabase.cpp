@@ -13,7 +13,7 @@ bool compare_bufferhit(const std::shared_ptr<FileDatabase::BufferHit> b1,
   return b1->second < b2->second;
 }
 
-void FileDatabase::setData(const std::string& path, unsigned char* data,
+void FileDatabase::setData(const std::string& path, char* data,
                            size_t size)
 {
   std::lock_guard<std::recursive_mutex> lock(m_mutex);

@@ -70,7 +70,7 @@ private:
   boost::asio::strand m_iostrand;
   boost::asio::strand m_fsstrand;
   InboundConnectionPtr m_connection;
-  unsigned char m_requestBuffer[4096];
+  char m_requestBuffer[4096];
   HttpRequestPtr m_request;
   HttpReplyPtr m_reply;
 

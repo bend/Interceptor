@@ -39,13 +39,13 @@ FileBuffer::~FileBuffer() noexcept
   delete[] m_tmpname;
 }
 
-void FileBuffer::append(const unsigned char* data, size_t size)
+void FileBuffer::append(const char* data, size_t size)
 {
   LOG_DEBUG("FileBuffer::append()");
   assert(m_stream.is_open());
   m_stream.write(reinterpret_cast<const char*>(data), size);
   m_stream.flush();
-  std::array<const unsigned char, 6> chr = {m_lastCharacters[0], m_lastCharacters[1], m_lastCharacters[2],
+  std::array<const char, 6> chr = {m_lastCharacters[0], m_lastCharacters[1], m_lastCharacters[2],
                                             data[0], data[1], data[2]
                                            };
   int64_t ret1 = -1, ret2 = -1;
@@ -70,7 +70,7 @@ size_t FileBuffer::size() const
 
 std::string FileBuffer::getData() const
 {
-  unsigned char* data;
+  char* data;
   size_t size;
   FileUtils::readFile(m_tmpname, &data, size);
 

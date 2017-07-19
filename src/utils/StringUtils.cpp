@@ -2,13 +2,13 @@
 
 
 namespace StringUtils {
-  bool containsString(const unsigned char* data, const std::string& pattern,
+  bool containsString(const char* data, const std::string& pattern,
                       size_t s)
   {
     return findString(data, pattern, s) > -1;
   }
 
-  int64_t findString(const unsigned char* data, const std::string& pattern,
+  int64_t findString(const char* data, const std::string& pattern,
                      size_t s)
   {
     for ( size_t i = 0; i < s; ++i) {

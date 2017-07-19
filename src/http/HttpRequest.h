@@ -6,6 +6,7 @@
 #include "core/Config.h"
 
 #include <chrono>
+#include <queue>
 
 class AbstractCacheHandler;
 class FileBuffer;
@@ -18,7 +19,7 @@ namespace Http {
     HttpRequest(InterceptorSessionWeakPtr session);
     ~HttpRequest();
 
-    Code appendData(const unsigned char* data, size_t length);
+    Code appendData(const char* data, size_t length);
 
     Method method() const;
     Host host() const;
@@ -47,7 +48,7 @@ namespace Http {
     bool parseMethod(const std::string& method);
     bool parseParameters(const std::string& parameters);
     bool parseHttpVersion(const std::string& version);
-    bool dumpToFile(const unsigned char* data, size_t length);
+    bool dumpToFile(const char* data, size_t length);
     std::string headersData();
 
   private:

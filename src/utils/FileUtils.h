@@ -12,7 +12,7 @@ namespace FileUtils {
    * Read the file content into a buffer
    * @return the initialized buffer and the size
    */
-  Http::Code readFile(const std::string& path, unsigned char** data,
+  Http::Code readFile(const std::string& path, char** data,
                       size_t& bytes);
 
   Http::Code readFile(const std::string& path, std::stringstream& stream,

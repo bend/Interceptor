@@ -10,7 +10,7 @@ public:
   FileBuffer();
   ~FileBuffer() noexcept;
 
-  void append(const unsigned char* data, size_t size);
+  void append(const char* data, size_t size);
 
   size_t size() const;
 
@@ -29,7 +29,7 @@ private:
   std::ofstream m_stream;
   bool m_headersReceived;
   size_t m_headersLength;
-  unsigned char m_lastCharacters[3];
+  char m_lastCharacters[3];
 };
 
 #endif

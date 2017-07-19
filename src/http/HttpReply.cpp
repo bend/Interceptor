@@ -437,10 +437,10 @@ namespace Http {
       m_gzip.next_in = (unsigned char*) boost::asio::detail::buffer_cast_helper(
                          buffer);
 
-      unsigned char out[16 * 1024];
+      char out[16 * 1024];
 
       do {
-        m_gzip.next_out = out;
+        m_gzip.next_out = (unsigned char*)out;
         m_gzip.avail_out = sizeof(out);
 
         int res = 0;

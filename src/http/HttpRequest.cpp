@@ -31,7 +31,7 @@ namespace Http {
     delete m_headers;
   }
 
-  Code HttpRequest::appendData(const unsigned char* data, size_t length)
+  Code HttpRequest::appendData(const char* data, size_t length)
   {
     try {
       LOG_DEBUG("HttpRequest::appendData()");
@@ -49,7 +49,7 @@ namespace Http {
 
       if ((/*mirs > 0*&& */m_request.length() > mirs) || m_dumpingToFile) {
         if (!m_dumpingToFile) {
-          dumpToFile(reinterpret_cast<const unsigned char*>(m_request.c_str()),
+          dumpToFile(m_request.c_str(),
                      m_request.length());
         } else {
           dumpToFile(data, length);
@@ -348,7 +348,7 @@ namespace Http {
     return m_parsed;
   }
 
-  bool HttpRequest::dumpToFile(const unsigned char* data, size_t length)
+  bool HttpRequest::dumpToFile(const char* data, size_t length)
   {
     if (!m_buffer) {
       m_buffer = std::make_unique<FileBuffer>();

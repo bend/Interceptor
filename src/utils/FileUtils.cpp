@@ -9,7 +9,7 @@
 
 namespace FileUtils {
 
-  Http::Code readFile(const std::string& filename, unsigned char** data,
+  Http::Code readFile(const std::string& filename, char** data,
                       size_t& pageLength)
   {
     namespace fs = boost::filesystem;
@@ -29,7 +29,7 @@ namespace FileUtils {
     pageLength = pos;
 
     try {
-      *data = new unsigned char[pageLength]();
+      *data = new char[pageLength]();
     } catch (std::bad_alloc) {
       ifs.close();
       return Http::Code::BadRequest;
