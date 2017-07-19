@@ -45,6 +45,10 @@ namespace Http {
         stream << "501 Not Implemented" << "\r\n";
         break;
 
+	  case Code::ServiceUnavailable:
+		stream << "503 Service Not Available" << "\r\n";
+		break;
+
       case Code::HttpVersionNotSupported:
         stream << "505 HTTP Version Not Supported" << "\r\n";
         break;
@@ -53,6 +57,20 @@ namespace Http {
         stream << (short)error << " Unknown" << "\r\n";
         break;
     }
+  }
+  
+  Code convertToHttpCode(const boost::system::error_code& error) 
+  {
+	switch(error.value())
+	{
+	  case boost::system::errc::network_down:
+	  case boost::system::errc::broken_pipe:
+	  case boost::system::errc::network_unreachable:
+		return Code::ServiceUnavailable;
+
+	  default:
+		return Code::InternalServerError;
+	}
   }
 
 

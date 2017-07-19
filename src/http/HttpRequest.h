@@ -38,6 +38,8 @@ namespace Http {
     void setCompleted(bool completed);
     bool hasMatchingSite() const;
     const SiteConfig* matchingSite() const;
+	const char* request() const;
+	size_t length() const;
 
   private:
     Code parse();
@@ -63,6 +65,7 @@ namespace Http {
 
     std::chrono::high_resolution_clock::time_point m_startTs;
     std::chrono::high_resolution_clock::time_point m_endTs;
+	std::queue<const char*> m_queue;
 
     friend class HttpReply;
 

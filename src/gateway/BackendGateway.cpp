@@ -23,5 +23,6 @@ AbstractConnectorPtr BackendGateway::takeConnection()
 void BackendGateway::handleRequest(
   std::function<void(Http::Code, std::stringstream&)> func)
 {
-  //m_connection->write(request);
+  LOG_DEBUG("BackendGateway::handleRequest");
+  m_connection->forward(m_request->request(), m_request->length(), func);
 }

@@ -51,10 +51,12 @@ namespace Http {
         if (!m_dumpingToFile) {
           dumpToFile(reinterpret_cast<const unsigned char*>(m_request.c_str()),
                      m_request.length());
-          m_request.clear();
         } else {
           dumpToFile(data, length);
         }
+		// set the data in m_request for big request to be able to forward data
+		m_request.clear();
+		m_request.append(std::string(data, data + length));
       }
 
       LOG_DEBUG(m_request);
@@ -358,4 +360,13 @@ namespace Http {
     return true;
   }
 
+  const char * HttpRequest::request() const
+  {
+	return m_request.data();
+  }
+
+  size_t HttpRequest::length() const
+  {
+	return m_request.length();
+  }
 }

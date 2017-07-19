@@ -30,5 +30,6 @@ GatewayHandler::~GatewayHandler()
 void GatewayHandler::route(std::function<void(Http::Code, std::stringstream&)>
                            func)
 {
+  LOG_DEBUG("GatewayHandler::route()");
   m_gateway->handleRequest(func);
 }

@@ -184,10 +184,12 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
   if (!error) {
     LOG_INFO("Request read from " << m_connection->ip());
 
+	// Previous request already done, this is a new request
     if (!m_request || m_request->completed() ) {
       m_request = std::make_shared<Http::HttpRequest>(shared_from_this());
     }
-
+	
+	// Append data to current request
     Http::Code ret =  m_request->appendData(m_requestBuffer, bytesTransferred);
 
     if (ret != Http::Code::Ok) {
@@ -202,7 +204,7 @@ void InterceptorSession::handleHttpRequestRead(const boost::system::error_code&
     if (!m_request->headersReceived()) {
       start();
     } else  {
-      // complete headers received
+      // Complete headers received
       m_reply = std::make_shared<Http::HttpReply>(m_request);
       m_reply->process();
       start();

@@ -3,6 +3,8 @@
 
 #include <sstream>
 
+#include <boost/system/error_code.hpp>
+
 namespace Http {
   enum class Code : short {
     Ok								= 200,
@@ -15,6 +17,7 @@ namespace Http {
     UnprocessableEntity				= 422,
     InternalServerError				= 500,
     NotImplemented					= 501,
+	ServiceUnavailable				= 503,
     HttpVersionNotSupported			= 505
   };
 
@@ -32,6 +35,8 @@ namespace Http {
   };
 
   void stringValue(Code error, std::stringstream& stream);
+
+  Code convertToHttpCode(const boost::system::error_code& error);
 
 }
 
