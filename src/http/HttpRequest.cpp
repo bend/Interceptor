@@ -153,7 +153,9 @@ namespace Http {
   Code HttpRequest::parse()
   {
     LOG_DEBUG("HttpRequest::parse()");
-	LOG_DEBUG("Request: " << m_request);
+#ifdef DUMP_NETWORK
+	LOG_DEBUG("Request: " << "\n" << m_request);
+#endif //DUMP_NETWORK
     m_startTs = std::chrono::high_resolution_clock::now();
     size_t pos = m_request.find_first_of("\r\n");
 
