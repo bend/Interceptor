@@ -43,7 +43,3 @@ Http::Code BasicCacheHandler::read(const std::string& file,
   return Http::FileUtils::readFile(file, stream, bytes);
 }
 
-size_t BasicCacheHandler::cacheSize() const
-{
-  return 0;
-}
