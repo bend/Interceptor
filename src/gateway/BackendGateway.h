@@ -17,6 +17,9 @@ public:
                              func) override;
 
 private:
+  void forward(const char* data, size_t length, std::function<void(Http::Code, std::stringstream& )> callback);
+
+private:
   AbstractConnectorPtr m_connection;
 };
 

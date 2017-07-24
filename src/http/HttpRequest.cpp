@@ -10,6 +10,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <regex>
+#include <utility>
 
 namespace Http {
 
@@ -17,9 +18,6 @@ namespace Http {
     : m_session(session),
       m_method(Method::ERR),
       m_headers(nullptr),
-      m_completed(false),
-      m_parsed(false),
-      m_dumpingToFile(false),
       m_host(""),
       m_buffer(nullptr)
   {
@@ -43,12 +41,12 @@ namespace Http {
         m_session.lock()->params()->config()->m_globalConfig->maxInMemRequestSize();
 
       if (mrs > 0  && ( m_request.length() > mrs
-                        || (m_dumpingToFile && m_buffer->size() > mrs))) {
+                        || (m_state.test(Dumping) && m_buffer->size() > mrs))) {
         return Code::RequestEntityTooLarge;
       }
 
-      if ((/*mirs > 0*&& */m_request.length() > mirs) || m_dumpingToFile) {
-        if (!m_dumpingToFile) {
+      if ((/*mirs > 0*&& */m_request.length() > mirs) || m_state.test(Dumping)) {
+        if (!m_state.test(Dumping)) {
           dumpToFile(m_request.c_str(),
                      m_request.length());
         } else {
@@ -56,7 +54,7 @@ namespace Http {
         }
 		// set the data in m_request for big request to be able to forward data
 		m_request.clear();
-		m_request.append(std::string(data, data + length));
+		pushRequest(data, length);
       }
 
       LOG_DEBUG(m_request);
@@ -71,7 +69,7 @@ namespace Http {
 
   bool HttpRequest::headersReceived() const
   {
-    return m_dumpingToFile ? m_buffer->headersReceived() :
+    return m_state.test(Dumping) ? m_buffer->headersReceived() :
            m_request.find("\r\n\r\n") != std::string::npos;
   }
 
@@ -107,7 +105,7 @@ namespace Http {
 
   bool HttpRequest::completed() const
   {
-    return m_completed;
+    return m_state.test(Completed);
   }
 
   std::string HttpRequest::queryString() const
@@ -117,7 +115,7 @@ namespace Http {
 
   void HttpRequest::setCompleted(bool completed)
   {
-    m_completed = completed;
+	m_state.set(Completed);
     m_endTs = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>
                     ( m_endTs - m_startTs ).count();
@@ -188,7 +186,7 @@ namespace Http {
 
   std::string HttpRequest::headersData()
   {
-    if (m_dumpingToFile) {
+    if (m_state.test(Dumping)) {
       return m_buffer->headersData();
     }
 
@@ -275,6 +273,9 @@ namespace Http {
 
     size_t spos = host->find(":");
     m_host = host->substr(0, spos);
+
+	// TODO parse body, check that everything is received
+	m_state.set(Received); // TODO FIXME check if actually received
     return Code::Ok;
   }
 
@@ -345,14 +346,14 @@ namespace Http {
 
   bool HttpRequest::parsed()
   {
-    return m_parsed;
+    return m_state.test(Parsed);
   }
 
   bool HttpRequest::dumpToFile(const char* data, size_t length)
   {
     if (!m_buffer) {
       m_buffer = std::make_unique<FileBuffer>();
-      m_dumpingToFile = true;
+	  m_state.set(Dumping);
     }
 
     m_buffer->append(data, length);
@@ -360,13 +361,36 @@ namespace Http {
     return true;
   }
 
-  const char * HttpRequest::request() const
+  std::pair<const char*, size_t> HttpRequest::request()
   {
-	return m_request.data();
+	if(m_state.test(Dumping)) 
+	  return popRequest();
+	return std::make_pair(m_request.data(), m_request.length());
   }
 
-  size_t HttpRequest::length() const
+  void HttpRequest::pushRequest(const char* data, size_t length)
   {
-	return m_request.length();
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_queue.push(std::make_pair(data, length));
+	m_sig(); // notify listeners that we have more data
   }
+
+  std::pair<const char*, size_t> HttpRequest::popRequest()
+  {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	auto p = m_queue.front();
+	m_queue.pop();
+	return p;
+  }
+
+  bool HttpRequest::received() const
+  {
+	return m_state.test(Received);
+  }
+
+  boost::signals2::signal<void()>& HttpRequest::hasMoreData() 
+  {
+	return m_sig;
+  }
+
 }

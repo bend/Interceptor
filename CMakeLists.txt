@@ -29,7 +29,7 @@ endif(CPACK_ENABLED)
 
 option(Boost_USE_MULTITHREADED ON "Use multithreaded boost")
   
-find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options system regex)
+find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options system regex signals)
 
 if(ENABLE_GZIP)
   find_package(ZLIB REQUIRED)

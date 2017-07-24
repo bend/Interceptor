@@ -54,24 +54,13 @@ void BackendConnector::handleConnected(const boost::system::error_code& error)
   }
 }
   
-void BackendConnector::forward(const char* data, size_t size, std::function<void(Http::Code, std::stringstream&)> callback)
+void BackendConnector::forward(const char* data, size_t size, std::function<void(Http::Code)> callback)
 {
   LOG_DEBUG("BackendConnector::forward()");
   m_connection->asyncWrite(data, size, std::bind([=](const boost::system::error_code& error) {
-	  if(error) 
-	  {
-		LOG_DEBUG("BackendConnector::forward() : error - " << error.message());
-		std::stringstream stream;
 		Http::Code code = Http::convertToHttpCode(error);
-		callback(code, stream);
-	  } else {
-		  LOG_DEBUG("BackendConnector::forward ok");
-		  m_connection->asyncRead(m_response, sizeof(m_response), 
-			  std::bind(&BackendConnector::handleResponseRead, this,
-				  std::placeholders::_1, std::placeholders::_2, callback)
-			  );
-	  }
-		}, std::placeholders::_1));
+		callback(code);
+	  }, std::placeholders::_1));
 }
 
 void BackendConnector::handleResponseRead(const boost::system::error_code& error, size_t bytesRead, std::function<void(Http::Code, std::stringstream&)> callback)

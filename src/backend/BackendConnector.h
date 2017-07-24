@@ -16,7 +16,7 @@ public:
   BackendConnector(BackendCPtr backend, boost::asio::io_service& ioService);
   ~BackendConnector();
   virtual bool connect() override;
-  virtual void forward(const char* data, size_t size, std::function<void(Http::Code, std::stringstream&)> callback) override;
+  virtual void forward(const char* data, size_t size, std::function<void(Http::Code)> callback) override;
   virtual const std::string& name() const override;
 
 private:
