@@ -41,6 +41,11 @@ static inline LogEntry trace(const std::string& type)
 #ifdef DEBUG_LOGGING
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define LOG_DEBUG(A) trace("dbg ") << __FILENAME__ << ":" << __LINE__ << " - " << A
+
+#ifdef DUMP_NETWORK
+#define LOG_NETWORK(A, B) trace("net") << A << "\n" << B
+#endif // DUMP_NETWORK
+
 #else
 #define LOG_DEBUG(A)
 #endif // DEBUG_LOGGING

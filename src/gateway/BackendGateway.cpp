@@ -27,26 +27,28 @@ void BackendGateway::handleRequest(
   auto data = m_request->request();
   forward(std::get<const char*>(data), std::get<size_t>(data), callback);
 
-  m_request->hasMoreData().connect(std::bind([=]() {
-	auto data = m_request->popRequest();
-	forward(std::get<const char*>(data), std::get<size_t>(data), callback);
-		}));
+  m_request->hasMoreData().connect(std::bind([ = ]() {
+    auto data = m_request->popRequest();
+    forward(std::get<const char*>(data), std::get<size_t>(data), callback);
+  }));
 
 }
 
-void BackendGateway::forward(const char* data, size_t length, std::function<void(Http::Code, std::stringstream&)> callback) 
+void BackendGateway::forward(const char* data, size_t length,
+                             std::function<void(Http::Code, std::stringstream&)> callback)
 {
-  m_connection->forward(data, length, 
-	  std::bind([=](const Http::Code code) {
-		  if(code != Http::Code::Ok){
-			std::stringstream stream;
-			callback(code, stream);
-		  } else {
-			if(m_request->completed())
-			;
-			  //m_connection->
-		  }
-		}, std::placeholders::_1));
+  m_connection->forward(data, length,
+  std::bind([ = ](const Http::Code code) {
+    if (code != Http::Code::Ok) {
+      std::stringstream stream;
+      callback(code, stream);
+    } else {
+      if (m_request->completed())
+        ;
+
+      //m_connection->
+    }
+  }, std::placeholders::_1));
 }
 
 

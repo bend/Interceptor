@@ -338,6 +338,10 @@ namespace Http {
   void HttpReply::post(const std::stringstream& stream)
   {
     LOG_DEBUG("HttpReply::post()");
+#ifdef DUMP_NETWORK
+    LOG_DEBUG("Reply: " << "\n" << stream.str());
+#endif //DUMP_NETWORK
+    std::vector<boost::asio::const_buffer> buffers;
 
     if (!(m_httpBuffer->flags() & HttpBuffer::InvalidRequest)) {
       std::vector<boost::asio::const_buffer> buffers;

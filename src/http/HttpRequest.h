@@ -39,14 +39,14 @@ namespace Http {
 
     void process();
     bool headersReceived() const;
-	bool received() const;
+    bool received() const;
     bool completed() const;
     void setCompleted(bool completed);
     bool hasMatchingSite() const;
     const SiteConfig* matchingSite() const;
-	std::pair<const char*, size_t> request();
-	std::pair<const char*, size_t> popRequest();
-	boost::signals2::signal<void()>& hasMoreData();
+    std::pair<const char*, size_t> request();
+    std::pair<const char*, size_t> popRequest();
+    boost::signals2::signal<void()>& hasMoreData();
 
   private:
     Code parse();
@@ -56,15 +56,15 @@ namespace Http {
     bool parseHttpVersion(const std::string& version);
     bool dumpToFile(const char* data, size_t length);
     std::string headersData();
-	void pushRequest(const char* data, size_t length);
+    void pushRequest(const char* data, size_t length);
 
   private:
-	enum State {
-	  Completed,
-	  Parsed,
-	  Dumping,
-	  Received
-	};
+    enum State {
+      Completed,
+      Parsed,
+      Dumping,
+      Received
+    };
 
   private:
     InterceptorSessionWeakPtr m_session;
@@ -73,14 +73,14 @@ namespace Http {
     std::string m_request;
     std::string m_httpVersion;
     HttpHeaders* m_headers;
-	std::bitset<4> m_state;
+    std::bitset<4> m_state;
     Host m_host;
     std::unique_ptr<FileBuffer> m_buffer;
     std::chrono::high_resolution_clock::time_point m_startTs;
     std::chrono::high_resolution_clock::time_point m_endTs;
-	std::queue<std::pair<const char*, size_t>> m_queue;
-	std::mutex m_mutex;
-	boost::signals2::signal<void()> m_sig;
+    std::queue<std::pair<const char*, size_t>> m_queue;
+    std::mutex m_mutex;
+    boost::signals2::signal<void()> m_sig;
 
     friend class HttpReply;
   };

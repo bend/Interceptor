@@ -52,9 +52,10 @@ namespace Http {
         } else {
           dumpToFile(data, length);
         }
-		// set the data in m_request for big request to be able to forward data
-		m_request.clear();
-		pushRequest(data, length);
+
+        // set the data in m_request for big request to be able to forward data
+        m_request.clear();
+        pushRequest(data, length);
       }
 
       LOG_DEBUG(m_request);
@@ -115,7 +116,7 @@ namespace Http {
 
   void HttpRequest::setCompleted(bool completed)
   {
-	m_state.set(Completed);
+    m_state.set(Completed);
     m_endTs = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>
                     ( m_endTs - m_startTs ).count();
@@ -198,6 +199,7 @@ namespace Http {
   Code HttpRequest::parse()
   {
     LOG_DEBUG("HttpRequest::parse()");
+    LOG_NETWORK("Request:", m_request);
     m_startTs = std::chrono::high_resolution_clock::now();
     std::string headers = headersData();
     size_t pos = headers.find_first_of("\r\n");
@@ -220,8 +222,8 @@ namespace Http {
     if (!parseMethod(getParts[0])) {
       return Code::BadRequest;
     }
-    
-	if (!parseHttpVersion(getParts[2])) {
+
+    if (!parseHttpVersion(getParts[2])) {
       return Code::HttpVersionNotSupported;
     }
 
@@ -274,8 +276,8 @@ namespace Http {
     size_t spos = host->find(":");
     m_host = host->substr(0, spos);
 
-	// TODO parse body, check that everything is received
-	m_state.set(Received); // TODO FIXME check if actually received
+    // TODO parse body, check that everything is received
+    m_state.set(Received); // TODO FIXME check if actually received
     return Code::Ok;
   }
 
@@ -309,9 +311,9 @@ namespace Http {
       m_method = Method::POST;
       return true;
     } else if (method == "DELETE") {
-	  m_method = Method::DELETE;
-	  return true;
-	}
+      m_method = Method::DELETE;
+      return true;
+    }
 
     return false;
   }
@@ -353,7 +355,7 @@ namespace Http {
   {
     if (!m_buffer) {
       m_buffer = std::make_unique<FileBuffer>();
-	  m_state.set(Dumping);
+      m_state.set(Dumping);
     }
 
     m_buffer->append(data, length);
@@ -363,34 +365,36 @@ namespace Http {
 
   std::pair<const char*, size_t> HttpRequest::request()
   {
-	if(m_state.test(Dumping)) 
-	  return popRequest();
-	return std::make_pair(m_request.data(), m_request.length());
+    if (m_state.test(Dumping)) {
+      return popRequest();
+    }
+
+    return std::make_pair(m_request.data(), m_request.length());
   }
 
   void HttpRequest::pushRequest(const char* data, size_t length)
   {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	m_queue.push(std::make_pair(data, length));
-	m_sig(); // notify listeners that we have more data
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_queue.push(std::make_pair(data, length));
+    m_sig(); // notify listeners that we have more data
   }
 
   std::pair<const char*, size_t> HttpRequest::popRequest()
   {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	auto p = m_queue.front();
-	m_queue.pop();
-	return p;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    auto p = m_queue.front();
+    m_queue.pop();
+    return p;
   }
 
   bool HttpRequest::received() const
   {
-	return m_state.test(Received);
+    return m_state.test(Received);
   }
 
-  boost::signals2::signal<void()>& HttpRequest::hasMoreData() 
+  boost::signals2::signal<void()>& HttpRequest::hasMoreData()
   {
-	return m_sig;
+    return m_sig;
   }
 
 }

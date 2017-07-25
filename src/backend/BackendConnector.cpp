@@ -53,26 +53,32 @@ void BackendConnector::handleConnected(const boost::system::error_code& error)
               error.message());
   }
 }
-  
-void BackendConnector::forward(const char* data, size_t size, std::function<void(Http::Code)> callback)
+
+void BackendConnector::forward(const char* data, size_t size,
+                               std::function<void(Http::Code)> callback)
 {
   LOG_DEBUG("BackendConnector::forward()");
-  m_connection->asyncWrite(data, size, std::bind([=](const boost::system::error_code& error) {
-		Http::Code code = Http::convertToHttpCode(error);
-		callback(code);
-	  }, std::placeholders::_1));
+  m_connection->asyncWrite(data, size,
+  std::bind([ = ](const boost::system::error_code & error) {
+    Http::Code code = Http::convertToHttpCode(error);
+    callback(code);
+  }, std::placeholders::_1));
 }
 
-void BackendConnector::handleResponseRead(const boost::system::error_code& error, size_t bytesRead, std::function<void(Http::Code, std::stringstream&)> callback)
+void BackendConnector::handleResponseRead(const boost::system::error_code&
+    error, size_t bytesRead,
+    std::function<void(Http::Code, std::stringstream&)> callback)
 {
   LOG_DEBUG("BackendConnector::handleResponseRead()");
-  if(error) {
-	LOG_DEBUG("BackendConnector::handleResponseRead() : error - " << error.message());
-	std::stringstream stream;
-	Http::Code code = Http::convertToHttpCode(error);
-	callback(code, stream);
+
+  if (error) {
+    LOG_DEBUG("BackendConnector::handleResponseRead() : error - " <<
+              error.message());
+    std::stringstream stream;
+    Http::Code code = Http::convertToHttpCode(error);
+    callback(code, stream);
   } else {
-	
+
   }
 }
 

@@ -17,7 +17,7 @@ namespace Http {
     UnprocessableEntity				= 422,
     InternalServerError				= 500,
     NotImplemented					= 501,
-	ServiceUnavailable				= 503,
+    ServiceUnavailable				= 503,
     HttpVersionNotSupported			= 505
   };
 
