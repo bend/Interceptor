@@ -44,8 +44,8 @@ namespace Http {
     void setCompleted(bool completed);
     bool hasMatchingSite() const;
     const SiteConfig* matchingSite() const;
-    std::pair<const char*, size_t> request();
-    std::pair<const char*, size_t> popRequest();
+    Packet request();
+    Packet popRequest();
     boost::signals2::signal<void()>& hasMoreData();
 
   private:

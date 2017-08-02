@@ -8,7 +8,7 @@ using boost::asio::ip::tcp;
 class OutboundConnection {
 public:
 
-  virtual ~OutboundConnection() {}
+  virtual ~OutboundConnection() = default;
 
   OutboundConnection(boost::asio::io_service& io_service, const std::string& host,
                      const std::string& port);

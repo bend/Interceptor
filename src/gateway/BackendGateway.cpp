@@ -5,6 +5,19 @@ BackendGateway::BackendGateway(HttpRequestPtr request)
   : AbstractGateway(request)
 {}
 
+BackendGateway::~BackendGateway()
+{
+  LOG_DEBUG("BackendGateway::~BackendGateway()");
+}
+
+void BackendGateway::reset()
+{
+  LOG_DEBUG("BackendGateway::reset()");
+  m_request.reset();
+  m_connection->reset();
+  m_signalCon.disconnect();
+}
+
 void BackendGateway::setConnection(AbstractConnectorPtr connection)
 {
   LOG_DEBUG("BackendGateway::setConnection()");
@@ -21,34 +34,43 @@ AbstractConnectorPtr BackendGateway::takeConnection()
 }
 
 void BackendGateway::handleRequest(
-  std::function<void(Http::Code, std::stringstream&)> callback)
+  std::function<void(Http::Code, std::stringstream*)> callback)
 {
   LOG_DEBUG("BackendGateway::handleRequest");
   auto data = m_request->request();
-  forward(std::get<const char*>(data), std::get<size_t>(data), callback);
-
-  m_request->hasMoreData().connect(std::bind([ = ]() {
-    auto data = m_request->popRequest();
-    forward(std::get<const char*>(data), std::get<size_t>(data), callback);
-  }));
-
+  forward(data, callback);
+  std::weak_ptr<BackendGateway> wp = shared_from_this();
+  m_signalCon = m_request->hasMoreData().connect(
+	  std::bind([=]() {
+		auto ptr = wp.lock();
+		if(ptr)
+		  ptr->hasMoreData(callback);
+		}));
 }
 
-void BackendGateway::forward(const char* data, size_t length,
-                             std::function<void(Http::Code, std::stringstream&)> callback)
+void BackendGateway::hasMoreData(std::function<void(Http::Code, std::stringstream*)> callback) {
+  LOG_DEBUG("BackendGateway::hasMoreData()");
+  auto data = m_request->popRequest();
+  forward(data, callback);
+}
+
+void BackendGateway::forward(Packet packet,
+                             std::function<void(Http::Code, std::stringstream*)> callback)
 {
-  m_connection->forward(data, length,
-  std::bind([ = ](const Http::Code code) {
+  m_connection->forward(packet,
+	  std::bind([ = ]( Http::Code code, HttpRequestPtr request) {
+		LOG_DEBUG("Gateway fw : " << (int) code );
     if (code != Http::Code::Ok) {
       std::stringstream stream;
-      callback(code, stream);
+      callback(code, nullptr);
     } else {
-      if (m_request->completed())
+      if (request->completed())
         ;
 
       //m_connection->
     }
-  }, std::placeholders::_1));
+	
+}, std::placeholders::_1, m_request));
 }
 
 

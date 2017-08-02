@@ -20,6 +20,7 @@ namespace Http {
   HttpReply::HttpReply(HttpRequestPtr request)
     : m_request(request),
       m_replyHeaders(nullptr),
+	  m_gateway(nullptr),
       m_status(Code::Ok),
       m_contentLength(0),
       m_gzipBusy(false)
@@ -30,6 +31,7 @@ namespace Http {
   {
     LOG_DEBUG("HttpReply::~HttpReply()");
     delete m_replyHeaders;
+	delete m_gateway;
   }
 
   void HttpReply::process()
@@ -76,9 +78,9 @@ namespace Http {
     const SiteConfig* site = m_request->matchingSite();
 
     if (site->m_backend.length() > 0) {
-      GatewayHandler handler(site, m_request);
-      handler.route(std::bind(&HttpReply::handleGatewayReply, shared_from_this(),
-                              std::placeholders::_1, std::placeholders::_2));
+	  m_gateway = new GatewayHandler(site, m_request, m_request->session()->params()->m_pool);
+      m_gateway->route(std::bind(&HttpReply::handleGatewayReply, shared_from_this(),
+			std::placeholders::_1, std::placeholders::_2));
       return ;
     }
 
@@ -96,12 +98,14 @@ namespace Http {
     }
   }
 
-  void HttpReply::handleGatewayReply(Code code, std::stringstream& stream)
+  void HttpReply::handleGatewayReply(Code code, std::stringstream* stream)
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_httpBuffer = std::make_shared<HttpBuffer>();
-    LOG_DEBUG("Received from gateway " << (int)code << " data : " << stream.str());
+    LOG_DEBUG("Received from gateway ");
     buildErrorResponse(code, false);
+	delete m_gateway;
+	m_gateway = nullptr;
   }
 
   void HttpReply::setFlag(Flag flag, bool value)

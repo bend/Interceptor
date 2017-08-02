@@ -14,8 +14,9 @@ public:
 
   virtual AbstractConnectorPtr takeConnection() = 0;
 
-  virtual void handleRequest(std::function<void(Http::Code, std::stringstream&)>
+  virtual void handleRequest(std::function<void(Http::Code, std::stringstream*)>
                              func) = 0;
+  virtual void reset() = 0;
 
 protected:
   HttpRequestPtr m_request;

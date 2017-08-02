@@ -363,7 +363,7 @@ namespace Http {
     return true;
   }
 
-  std::pair<const char*, size_t> HttpRequest::request()
+  Packet HttpRequest::request()
   {
     if (m_state.test(Dumping)) {
       return popRequest();
@@ -379,7 +379,7 @@ namespace Http {
     m_sig(); // notify listeners that we have more data
   }
 
-  std::pair<const char*, size_t> HttpRequest::popRequest()
+  Packet HttpRequest::popRequest()
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     auto p = m_queue.front();

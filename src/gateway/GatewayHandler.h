@@ -10,19 +10,21 @@
 
 class Params;
 class AbstractGateway;
+class BackendsPool;
 
 class GatewayHandler {
 public:
-  GatewayHandler(const SiteConfig* site, HttpRequestPtr request);
+  GatewayHandler(const SiteConfig* site, HttpRequestPtr request, BackendsPool* pool);
   ~GatewayHandler();
 
-  void route(std::function<void(Http::Code, std::stringstream&)>);
+  void route(std::function<void(Http::Code, std::stringstream*)> callback);
 
 protected:
   const SiteConfig*  m_site;
   HttpRequestPtr m_request;
+  BackendsPool* m_pool;
 
-  std::unique_ptr<AbstractGateway> m_gateway;
+  std::shared_ptr<AbstractGateway> m_gateway;
 
 };
 

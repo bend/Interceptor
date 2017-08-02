@@ -19,6 +19,7 @@ typedef std::shared_ptr<InboundConnection> InboundConnectionPtr;
 typedef std::shared_ptr<Http::HttpRequest> HttpRequestPtr;
 typedef std::shared_ptr<Http::HttpReply> HttpReplyPtr;
 typedef std::shared_ptr<Http::HttpBuffer> HttpBufferPtr;
+typedef std::pair<const char*, size_t> Packet;
 
 typedef std::string Host;
 

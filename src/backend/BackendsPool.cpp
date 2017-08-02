@@ -30,8 +30,8 @@ void BackendsPool::initConnection(BackendCPtr backend)
 AbstractConnectorPtr BackendsPool::takeConnection(const std::string&
     backendName)
 {
-  std::lock_guard<std::recursive_mutex> lock(m_mutex);
   LOG_DEBUG("BackendsPool::takeConnection()");
+  std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
   if (m_connections.count(backendName)) {
     auto& connections = m_connections.at(backendName);
@@ -50,8 +50,8 @@ AbstractConnectorPtr BackendsPool::takeConnection(const std::string&
 
 void BackendsPool::putConnection(AbstractConnectorPtr connection)
 {
-  std::lock_guard<std::recursive_mutex> lock(m_mutex);
   LOG_DEBUG("BackendsPool::putConnection()");
+  std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
   if (m_connections.count(connection->name()) == 0) {
     m_connections[connection->name()] = std::list<AbstractConnectorPtr>();

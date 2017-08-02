@@ -12,6 +12,8 @@
 
 #include <zlib.h>
 
+class GatewayHandler;
+
 namespace Http {
   class HttpHeaders;
 
@@ -44,7 +46,7 @@ namespace Http {
 
   private:
     void handleRetrievalRequest(Method method, const SiteConfig* site);
-    void handleGatewayReply(Code code, std::stringstream& stream);
+    void handleGatewayReply(Code code, std::stringstream*  stream);
 
     void post(const std::stringstream& stream);
     void buildErrorResponse(Code error, bool closeConnection = false);
@@ -83,6 +85,7 @@ namespace Http {
   private:
     HttpRequestPtr m_request;
     HttpHeaders* m_replyHeaders;
+	GatewayHandler *m_gateway;
     Code m_status;
 
     std::bitset<5> m_flags;
