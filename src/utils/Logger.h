@@ -44,6 +44,8 @@ static inline LogEntry trace(const std::string& type)
 
 #ifdef DUMP_NETWORK
 #define LOG_NETWORK(A, B) trace("net") << A << "\n" << B
+#else
+#define LOG_NETWORK(A, B)
 #endif // DUMP_NETWORK
 
 #else
