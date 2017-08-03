@@ -14,7 +14,8 @@ class BackendsPool;
 
 class GatewayHandler {
 public:
-  GatewayHandler(const SiteConfig* site, HttpRequestPtr request, BackendsPool* pool);
+  GatewayHandler(const SiteConfig* site, HttpRequestPtr request,
+                 BackendsPool* pool);
   ~GatewayHandler();
 
   void route(std::function<void(Http::Code, std::stringstream*)> callback);

@@ -62,8 +62,9 @@ namespace Http {
   Code convertToHttpCode(const boost::system::error_code& error)
   {
     switch (error.value()) {
-	  case boost::system::errc::success:
-		return Code::Ok;
+      case boost::system::errc::success:
+        return Code::Ok;
+
       case boost::system::errc::network_down:
       case boost::system::errc::broken_pipe:
       case boost::system::errc::network_unreachable:

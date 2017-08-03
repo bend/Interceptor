@@ -85,7 +85,7 @@ namespace Http {
   private:
     HttpRequestPtr m_request;
     HttpHeaders* m_replyHeaders;
-	GatewayHandler *m_gateway;
+    std::unique_ptr<GatewayHandler> m_gateway;
     Code m_status;
 
     std::bitset<5> m_flags;

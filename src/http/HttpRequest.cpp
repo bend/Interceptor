@@ -18,8 +18,8 @@ namespace Http {
     : m_session(session),
       m_method(Method::ERR),
       m_headers(nullptr),
-      m_host(""),
-      m_buffer(nullptr)
+      m_state(0x0),
+      m_host("")
   {
   }
 
@@ -61,7 +61,7 @@ namespace Http {
       LOG_DEBUG(m_request);
 
     } catch (std::exception e) {
-      LOG_ERROR("Exception");
+      LOG_ERROR("Exception" << e.what());
       return Code::InternalServerError;
     }
 

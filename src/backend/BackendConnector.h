@@ -28,16 +28,17 @@ private:
   void handleConnected(const boost::system::error_code& error);
   void handleResponseRead(const boost::system::error_code& error,
                           size_t bytesRead, std::function<void(Http::Code, std::stringstream&)> callback);
-  void handlePacketForwarded(const boost::system::error_code& error, std::function<void(Http::Code)> callback);
+  void handlePacketForwarded(const boost::system::error_code& error,
+                             std::function<void(Http::Code)> callback);
   void doPost(std::pair<Packet, std::function<void(Http::Code)>> data);
   void forwardNext();
   void doForward(Packet& packet, std::function<void(Http::Code)> callback);
 
 private:
   enum State {
-	CanWrite = 0x01,
-	Closing = 0x02,
-	Connected = 0x04
+    CanWrite = 0x01,
+    Closing = 0x02,
+    Connected = 0x04
   };
 
 private:

@@ -24,6 +24,12 @@ Interceptor::Interceptor(Params* params,
 
 Interceptor::~Interceptor()
 {
+  if (m_acceptor.is_open()) {
+    boost::system::error_code ec;
+    m_acceptor.cancel(ec);
+    m_acceptor.close(ec);
+  }
+
   delete m_params;
 }
 

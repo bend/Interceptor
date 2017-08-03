@@ -6,18 +6,19 @@
 #include "core/InterceptorSession.h"
 #include "common/Params.h"
 
-GatewayHandler::GatewayHandler(const SiteConfig* site, HttpRequestPtr request, BackendsPool* pool)
+GatewayHandler::GatewayHandler(const SiteConfig* site, HttpRequestPtr request,
+                               BackendsPool* pool)
   : m_site(site),
     m_request(request),
-	m_pool(pool)
+    m_pool(pool)
 {
   if (m_site->m_backend.length() > 0) {
     m_gateway = std::make_shared<BackendGateway>(m_request);
     AbstractConnectorPtr connector =
-      m_request->session()->params()->backendsPool()->takeConnection(
+      m_pool->takeConnection(
         m_site->m_backend);
     assert(connector);
-    m_gateway->setConnection(std::move(connector));
+    m_gateway->setConnection(connector);
   }
 }
 
@@ -25,8 +26,8 @@ GatewayHandler::~GatewayHandler()
 {
   LOG_DEBUG("GatewayHandler::~GatewayHandler()");
   m_gateway->reset();
-  m_request->session()->params()->m_pool->putConnection(
-	  m_gateway->takeConnection());
+  m_pool->putConnection(
+    m_gateway->takeConnection());
 }
 
 void GatewayHandler::route(std::function<void(Http::Code, std::stringstream*)>
