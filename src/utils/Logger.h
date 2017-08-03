@@ -50,6 +50,7 @@ static inline LogEntry trace(const std::string& type)
 
 #else
 #define LOG_DEBUG(A)
+#define LOG_NETWORK(A, B)
 #endif // DEBUG_LOGGING
 
 #endif //LOGGER_H__
