@@ -18,6 +18,15 @@ A fast Web server written in C++
 - Locations access restriction
 - Local cache 
 
+## TODO
+
+- POST PUT and DELETE requests
+- Act as a reverse proxy
+- FCGI connector
+- Basic Authentication support
+- SSL
+- ...
+
 ## Build & Install
 
 This program need libz, libboost, **c++14** compliant compiler
