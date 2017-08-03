@@ -10,7 +10,7 @@ option(CPACK_ENABLED OFF "Whether packaging with CPack is enabled (and the git v
 set(ENABLE_GZIP ON CACHE BOOL "ENABLE GZIP") # Configurable by user
 set(DEBUG_LOGGING OFF CACHE BOOL "DEBUG_LOGGING") # Configurable by user
 set(ENABLE_LOCAL_CACHE ON CACHE BOOL "ENABLE_LOCAL_CACHE") # Configurable by user
-set(DUMP_NETWORK OFF CACHE BOOL "ENABLE_LOCAL_CACHE") # Configurable by user
+set(DUMP_NETWORK OFF CACHE BOOL "DUMP_NETWORK") # Configurable by user
 
 include(./cmake/FindFam.cmake)
 
