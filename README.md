@@ -1,5 +1,5 @@
 # Interceptor
-[![Build Status](https://travis-ci.org/bend/interceptor.svg?branch=master)](https://travis-ci.org/bend/interceptor)
+[![Build Status](https://travis-ci.org/bend/interceptor.svg?branch=dev)](https://travis-ci.org/bend/interceptor)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3dec0d2ff6345fa8b11b1d44d3170c9)](https://www.codacy.com/app/bend/Interceptor?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bend/Interceptor&amp;utm_campaign=Badge_Grade)
 
 A fast Web server written in C++ 
