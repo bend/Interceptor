@@ -6,6 +6,7 @@
 #include "utils/FileBuffer.h"
 #include "common/Params.h"
 #include "cache/generic_cache.h"
+#include "vars.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
