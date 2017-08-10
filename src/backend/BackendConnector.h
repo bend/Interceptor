@@ -21,13 +21,14 @@ public:
                        std::function<void(Http::Code)> callback) override;
   virtual const std::string& name() const override;
   virtual void reset() override;
+  virtual void readReply(std::function<void(Http::Code, std::stringstream*)> callback) override;
 
 private:
   void handleResolved(const boost::system::error_code& error,
                       boost::asio::ip::tcp::resolver::iterator it);
   void handleConnected(const boost::system::error_code& error);
   void handleResponseRead(const boost::system::error_code& error,
-                          size_t bytesRead, std::function<void(Http::Code, std::stringstream&)> callback);
+                          size_t bytesRead, std::function<void(Http::Code, std::stringstream*)> callback);
   void handlePacketForwarded(const boost::system::error_code& error,
                              std::function<void(Http::Code)> callback);
   void doPost(std::pair<Packet, std::function<void(Http::Code)>> data);

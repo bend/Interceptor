@@ -4,6 +4,7 @@
 #include <http/Http.h>
 #include "common/Defs.h"
 #include <memory>
+#include <sstream>
 
 
 class AbstractConnector {
@@ -14,6 +15,7 @@ public:
                        std::function<void(Http::Code)> callback) = 0;
   virtual const std::string& name() const = 0;
   virtual void reset() = 0;
+  virtual void readReply(std::function<void(Http::Code, std::stringstream*)> callback) = 0;
 
 };
 

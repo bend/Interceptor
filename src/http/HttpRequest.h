@@ -47,6 +47,7 @@ namespace Http {
     Packet request();
     Packet popRequest();
     boost::signals2::signal<void()>& hasMoreData();
+	bool hasData();
 
   private:
     Code parse();

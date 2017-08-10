@@ -388,6 +388,11 @@ namespace Http {
     return p;
   }
 
+  bool HttpRequest::hasData() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	return m_queue.size() > 0;
+  }
+
   bool HttpRequest::received() const
   {
     return m_state.test(Received);

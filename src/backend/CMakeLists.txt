@@ -1,6 +1,7 @@
 set(libbackend_src
   BackendConnector.cpp
   BackendsPool.cpp
+  BackendReply.cpp
 	)
 
 INCLUDE_DIRECTORIES(

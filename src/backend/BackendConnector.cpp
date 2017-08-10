@@ -78,6 +78,17 @@ void BackendConnector::forward(Packet& packet,
                )));
 }
 
+void BackendConnector::readReply(std::function<void(Http::Code, std::stringstream*)> callback) {
+  LOG_DEBUG("BackendConnector::readReply()");
+  m_connection->asyncRead(m_response, sizeof(m_response), 
+	  m_strand.wrap(
+		std::bind(&BackendConnector::handleResponseRead, 
+		  shared_from_this(), 
+		  std::placeholders::_1,
+		  std::placeholders::_2, 
+		  callback)));
+}
+
 void BackendConnector::doPost(std::pair<Packet, std::function<void(Http::Code)>>
                               data)
 {
@@ -126,16 +137,15 @@ void BackendConnector::handlePacketForwarded(const boost::system::error_code&
 
 void BackendConnector::handleResponseRead(const boost::system::error_code&
     error, size_t bytesRead,
-    std::function<void(Http::Code, std::stringstream&)> callback)
+    std::function<void(Http::Code, std::stringstream*)> callback)
 {
   LOG_DEBUG("BackendConnector::handleResponseRead()");
 
   if (error) {
     LOG_DEBUG("BackendConnector::handleResponseRead() : error - " <<
               error.message());
-    std::stringstream stream;
     Http::Code code = Http::convertToHttpCode(error);
-    callback(code, stream);
+    callback(code, nullptr);
   } else {
 
   }
@@ -145,7 +155,6 @@ const std::string& BackendConnector::name() const
 {
   return m_backend->name;
 }
-
 
 void BackendConnector::reset()
 {

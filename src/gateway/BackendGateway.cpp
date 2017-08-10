@@ -61,10 +61,8 @@ void BackendGateway::forward(Packet packet)
       std::stringstream stream;
       m_callback(code, nullptr);
     } else {
-      if (request->completed())
-        ;
-
-      //m_connection->
+      if (request->received() && !request->hasData())
+	  m_connection->readReply(m_callback);
     }
 
   }, std::placeholders::_1, m_request));
