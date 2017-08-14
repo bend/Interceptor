@@ -1,6 +1,6 @@
 #include "Http.h"
 
-namespace Http {
+namespace Interceptor::Http {
 
   void stringValue(Code error, std::stringstream& stream)
   {

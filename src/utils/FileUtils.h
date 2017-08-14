@@ -6,7 +6,7 @@
 
 #include "http/Http.h"
 
-namespace FileUtils {
+namespace Interceptor::FileUtils {
 
   /**
    * Read the file content into a buffer

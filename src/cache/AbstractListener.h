@@ -3,12 +3,16 @@
 
 #include "Event.h"
 
-class AbstractListener {
-public:
-  virtual ~AbstractListener() = default;
+namespace Interceptor {
 
-  virtual void notify(Event& e) = 0;
+  class AbstractListener {
+  public:
+    virtual ~AbstractListener() = default;
 
-};
+    virtual void notify(Event& e) = 0;
+
+  };
+
+}
 
 #endif // ABSTRACT_LISTENER_H__

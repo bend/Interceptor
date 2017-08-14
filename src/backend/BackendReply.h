@@ -3,16 +3,20 @@
 
 #include <sstream>
 
-class BackendReply {
-  public:
-  BackendReply() = default;
-  ~BackendReply() = default;
+namespace Interceptor {
 
-  void appendData(const char* data, size_t size);
-  bool received() const;
+  class BackendReply {
+  public:
+    BackendReply() = default;
+    ~BackendReply() = default;
+
+    void appendData(const char* data, size_t size);
+    bool received() const;
 
   private:
-  std::stringstream* m_stream;
-};
+    std::stringstream* m_stream;
+  };
+
+}
 
 #endif

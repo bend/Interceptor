@@ -1,8 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0015 NEW)
 project(Interceptor)
 enable_testing()
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 option(CPACK_ENABLED OFF "Whether packaging with CPack is enabled (and the git version is retrieved")
@@ -30,7 +32,7 @@ endif(CPACK_ENABLED)
 
 option(Boost_USE_MULTITHREADED ON "Use multithreaded boost")
   
-find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options system regex signals)
+find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options system signals )
 
 if(ENABLE_GZIP)
   find_package(ZLIB REQUIRED)
@@ -72,7 +74,7 @@ if(ENABLE_GZIP)
   )
 endif(ENABLE_GZIP)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fext-numeric-literals -Wall -Werror=return-type")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fext-numeric-literals -Wall -Werror=return-type")
 
 subdirs(src)
 

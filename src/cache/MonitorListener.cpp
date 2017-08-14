@@ -2,14 +2,18 @@
 
 #include "CacheMonitor.h"
 
-MonitorListener::MonitorListener(CacheMonitor* cache)
-  : m_monitor(cache)
-{
-}
+namespace Interceptor {
 
-void MonitorListener::notify(Event& e)
-{
-  if (e.event == HandledEvent) {
-    m_monitor->monitorFile(e.path);
+  MonitorListener::MonitorListener(CacheMonitor* cache)
+    : m_monitor(cache)
+  {
   }
+
+  void MonitorListener::notify(Event& e)
+  {
+    if (e.event == HandledEvent) {
+      m_monitor->monitorFile(e.path);
+    }
+  }
+
 }

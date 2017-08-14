@@ -5,21 +5,25 @@
 
 #include "Event.h"
 
-class AbstractListener;
+namespace Interceptor {
 
-class Subject {
+  class AbstractListener;
 
-public:
-  Subject() = default;
-  ~Subject();
+  class Subject {
 
-  void addListener(AbstractListener* listener);
+  public:
+    Subject() = default;
+    ~Subject();
 
-  void notifyListeners(Event e);
+    void addListener(AbstractListener* listener);
 
-private:
-  std::list<AbstractListener*> m_listeners;
+    void notifyListeners(Event e);
 
-};
+  private:
+    std::list<AbstractListener*> m_listeners;
+
+  };
+
+}
 
 #endif // SUBJECT_H__

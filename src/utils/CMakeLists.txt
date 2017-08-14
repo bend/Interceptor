@@ -1,8 +1,7 @@
 set(libutils_src
   Logger.cpp
-  Server.cpp
+  ServerInfo.cpp
   FileUtils.cpp
-  FileBuffer.cpp
   StringUtils.cpp 
 )
 

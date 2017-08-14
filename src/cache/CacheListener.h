@@ -3,21 +3,25 @@
 
 #include "AbstractListener.h"
 
-class CacheHandler;
+namespace Interceptor {
 
-class CacheListener : public AbstractListener {
+  class CacheHandler;
 
-public:
-  static const int HandledEvent = 0x01;
+  class CacheListener : public AbstractListener {
 
-  CacheListener(CacheHandler* cache);
+  public:
+    static const int HandledEvent = 0x01;
 
-  virtual void notify(Event& e) override;
+    CacheListener(CacheHandler* cache);
 
-private:
-  CacheHandler* m_cacheHandler;
+    virtual void notify(Event& e) override;
+
+  private:
+    CacheHandler* m_cacheHandler;
 
 
-};
+  };
+
+}
 
 #endif // CACHE_LISTENER_H__

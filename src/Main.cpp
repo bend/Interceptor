@@ -1,11 +1,11 @@
 #include "Main.h"
 #include "common/Params.h"
-#include "core/Interceptor.h"
+#include "core/Server.h"
 #include "core/Config.h"
 
 #include "utils/Logger.h"
+#include "utils/ServerInfo.h"
 #include "cache/generic_cache.h"
-#include "utils/Server.h"
 #include "backend/BackendsPool.cpp"
 
 #include <boost/program_options.hpp>
@@ -16,175 +16,182 @@
 
 namespace po = boost::program_options;
 
-Main::Main()
-  : m_cacheHandler(nullptr),
+namespace Interceptor {
+
+  Main::Main()
+    : m_cacheHandler(nullptr),
 #ifdef ENABLE_LOCAL_CACHE
-    m_subject(nullptr),
-    m_monitor(nullptr),
+      m_subject(nullptr),
+      m_monitor(nullptr),
 #endif // ENABLE_LOCAL_CACHE
-    m_config(nullptr),
-    m_pool(nullptr),
-    m_nbThreads(0)
-{}
+      m_config(nullptr),
+      m_pool(nullptr),
+      m_nbThreads(0)
+  {}
 
 
-Main::~Main()
-{
-  delete m_config;
+  Main::~Main()
+  {
+    delete m_config;
 #ifdef ENABLE_LOCAL_CACHE
-  delete m_subject;
-  delete m_monitor;
+    delete m_subject;
+    delete m_monitor;
 #endif // ENABLE_LOCAL_CACHE
-  delete m_cacheHandler;
-  delete m_pool;
-}
-
-bool Main::init(int argc, char** argv)
-{
-  if (!parsePO(argc, argv)) {
-    return false;
+    delete m_cacheHandler;
+    delete m_pool;
   }
 
-  if (!initCache()) {
-    return false;
+  bool Main::init(int argc, char** argv)
+  {
+    if (!parsePO(argc, argv)) {
+      return false;
+    }
+
+    if (!initCache()) {
+      return false;
+    }
+
+    if (!initBackendsPool()) {
+      return false;
+    }
+
+    return true;
   }
 
-  if (!initBackendsPool()) {
-    return false;
+  bool Main::reinit()
+  {
+    LOG_DEBUG("Main::reinit()");
+
+    if (!initCache()) {
+      return false;
+    }
+
+    if (!initBackendsPool()) {
+      return false;
+    }
+
+    return true;
   }
 
-  return true;
-}
+  bool Main::parsePO(int argc, char** argv)
+  {
+    std::string config_file;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+    ("help", "produce help message")
+    ("version,v", "print version string")
+    ("config,c", po::value<std::string>(&config_file) , "input configuration file")
+    ("threads,t", po::value<uint16_t>(&m_nbThreads), "number of threads to use");
 
-bool Main::reinit()
-{
-  LOG_DEBUG("Main::reinit()");
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
 
-  if (!initCache()) {
-    return false;
+    if (vm.count("help")) {
+      std::cout << desc << std::endl;
+      return false;
+    }
+
+    if (vm.count("version")) {
+      std::cout << ServerInfo::name() << " " << ServerInfo::version() <<
+                " (build " << ServerInfo::build() << ")" <<
+                std::endl;
+      return false;
+    }
+
+    if (!vm.count("config")) {
+      std::cout << "missing configuration file " << std::endl;
+      return false;
+    }
+
+    m_config = new Config(config_file);
+
+    if (!vm.count("threads")) {
+      m_nbThreads = m_config->threads();
+    }
+
+    return true;
   }
 
-  if (!initBackendsPool()) {
-    return false;
-  }
-
-  return true;
-}
-
-bool Main::parsePO(int argc, char** argv)
-{
-  std::string config_file;
-  po::options_description desc("Allowed options");
-  desc.add_options()
-  ("help", "produce help message")
-  ("version,v", "print version string")
-  ("config,c", po::value<std::string>(&config_file) , "input configuration file")
-  ("threads,t", po::value<uint16_t>(&m_nbThreads), "number of threads to use");
-
-  po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
-
-  if (vm.count("help")) {
-    std::cout << desc << std::endl;
-    return false;
-  }
-
-  if (vm.count("version")) {
-    std::cout << Http::Server::getName() << " " << Http::Server::getVersion() <<
-              " (build " << Http::Server::getBuild() << ")" <<
-              std::endl;
-    return false;
-  }
-
-  if (!vm.count("config")) {
-    std::cout << "missing configuration file " << std::endl;
-    return false;
-  }
-
-  m_config = new Config(config_file);
-
-  if (!vm.count("threads")) {
-    m_nbThreads = m_config->threads();
-  }
-
-  return true;
-}
-
-bool Main::initCache()
-{
+  bool Main::initCache()
+  {
 #ifdef ENABLE_LOCAL_CACHE
-  m_subject = new Subject();
-  m_cacheHandler = new CacheHandler(m_config->maxCacheSize(), *m_subject);
-  m_monitor = new CacheMonitor(*m_subject);
-  CacheListener* cacheListener = new CacheListener(dynamic_cast<CacheHandler*>
-      (m_cacheHandler));
-  MonitorListener* monitorListener = new MonitorListener(m_monitor);
-  m_subject->addListener(cacheListener);
-  m_subject->addListener(monitorListener);
-  m_monitor->start();
+    m_subject = new Subject();
+    m_cacheHandler = new CacheHandler(m_config->maxCacheSize(), *m_subject);
+    m_monitor = new CacheMonitor(*m_subject);
+    CacheListener* cacheListener = new CacheListener(dynamic_cast<CacheHandler*>
+        (m_cacheHandler));
+    MonitorListener* monitorListener = new MonitorListener(m_monitor);
+    m_subject->addListener(cacheListener);
+    m_subject->addListener(monitorListener);
+    m_monitor->start();
 
 #else
-  m_cacheHandler = new BasicCacheHandler();
+    m_cacheHandler = new BasicCacheHandler();
 #endif //ENABLE_LOCAL_CACHE
-  return true;
-}
-
-bool Main::initBackendsPool()
-{
-  m_pool = new BackendsPool(m_ioService);
-
-  std::vector<BackendCPtr> backends;
-
-  for (auto& kv : m_config->backends()) {
-    backends.push_back(std::const_pointer_cast<const Backend>(kv.second));
+    return true;
   }
 
-  return m_pool->initPool(backends);
-}
+  bool Main::initBackendsPool()
+  {
+    m_pool = new BackendsPool(m_ioService);
 
-void Main::run()
-{
-  LOG_DEBUG("Main::run()");
+    std::vector<BackendCPtr> backends;
 
-  for (const auto& serverConfig : m_config->serversConfig()) {
-    Params* params = new Params(serverConfig, m_cacheHandler, m_pool);
-    std::shared_ptr<Interceptor> interceptor = std::make_shared<Interceptor>(params,
-        m_ioService);
-    interceptor->init();
+    for (auto& kv : m_config->backends()) {
+      backends.push_back(std::const_pointer_cast<const Backend>(kv.second));
+    }
+
+    return m_pool->initPool(backends);
   }
 
-  LOG_DEBUG("CWD is "  << boost::filesystem::current_path());
-  LOG_INFO("using " << m_nbThreads  << " threads");
-  std::vector<std::thread> threads;
+  void Main::run()
+  {
+    LOG_DEBUG("Main::run()");
 
-  for (unsigned i = 0; i < m_nbThreads; ++i) {
-    std::packaged_task<void()> task([ = ] {
-      m_ioService.run();
-    });
+    for (const auto& serverConfig : m_config->serversConfig()) {
+      ParamsPtr params = std::make_shared<Params>(serverConfig, m_cacheHandler,
+                         m_pool);
+      std::shared_ptr<Server> interceptor = std::make_shared<Server>(params,
+                                            m_ioService);
+      interceptor->init();
+    }
 
-    m_futures.push_back(task.get_future());
-    threads.push_back(std::thread(std::move(task)));
+    LOG_DEBUG("CWD is "  << boost::filesystem::current_path());
+    LOG_INFO("using " << m_nbThreads  << " threads");
+    std::vector<std::thread> threads;
+
+    for (unsigned i = 0; i < m_nbThreads; ++i) {
+      std::packaged_task<void()> task([ = ] {
+        m_ioService.run();
+      });
+
+      m_futures.push_back(task.get_future());
+      threads.push_back(std::thread(std::move(task)));
+    }
+
+    std::for_each(threads.begin(), threads.end(), std::mem_fn(&std::thread::join));
   }
 
-  std::for_each(threads.begin(), threads.end(), std::mem_fn(&std::thread::join));
+  void Main::stop()
+  {
+    LOG_DEBUG("Main::stop()");
+    m_ioService.stop();
+    m_futures.front().wait();
+    LOG_DEBUG("Stopped");
+  }
+
 }
 
-void Main::stop()
-{
-  LOG_DEBUG("Main::stop()");
-  m_ioService.stop();
-  m_futures.front().wait();
-  LOG_DEBUG("Stopped");
-}
-
-Main* mainHandler;
+std::unique_ptr<Interceptor::Main> mainHandler;
 
 void signalHandler(int signum)
 {
+  using namespace Interceptor;
+
   switch (signum) {
     case SIGINT:
-      LOG_INFO("Stopping Interceptor ...");
+      LOG_INFO("Stopping Server ...");
       mainHandler->stop();
       break;
 
@@ -195,22 +202,23 @@ void signalHandler(int signum)
   }
 }
 
+
 int main(int argc, char** argv)
 {
+
+  using namespace Interceptor;
   signal(SIGINT, signalHandler);
 
   signal(SIGHUP, signalHandler);
 
   try {
-    mainHandler = new Main();
+    mainHandler = std::make_unique<Main>();
 
     if (!mainHandler->init(argc, argv)) {
       return 1;
     }
 
     mainHandler->run();
-
-    delete mainHandler;
 
   } catch (ConfigException& e) {
     LOG_ERROR("Configuration error " << e.what());

@@ -4,19 +4,23 @@
 #include "AbstractCacheHandler.h"
 #include <string>
 
-class BasicCacheHandler : public AbstractCacheHandler {
-public:
-  BasicCacheHandler();
+namespace Interceptor {
 
-  virtual std::string eTag(const std::string& file) override;
+  class BasicCacheHandler : public AbstractCacheHandler {
+  public:
+    BasicCacheHandler();
 
-  virtual std::string lastModified(const std::string& file) override;
+    virtual std::string eTag(const std::string& file) override;
 
-  virtual bool size(const std::string& file, size_t& bytes) override;
+    virtual std::string lastModified(const std::string& file) override;
 
-  virtual Http::Code read(const std::string& file, std::stringstream& out,
-                          size_t& bytes) override;
+    virtual bool size(const std::string& file, size_t& bytes) override;
 
-};
+    virtual Http::Code read(const std::string& file, std::stringstream& out,
+                            size_t& bytes) override;
+
+  };
+
+}
 
 #endif // BASIC_CACHE_HANDLER_H__

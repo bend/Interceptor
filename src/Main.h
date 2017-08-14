@@ -6,42 +6,46 @@
 #include <boost/asio/io_service.hpp>
 #include "vars.h"
 
-class AbstractCacheHandler;
-class Config;
-class Subject;
-class CacheMonitor;
-class BackendsPool;
+namespace Interceptor {
 
-class Main {
-public:
-  Main();
-  ~Main();
-  bool init(int argc, char** argv);
-  bool reinit();
-  void run();
-  void stop();
+  class AbstractCacheHandler;
+  class Config;
+  class Subject;
+  class CacheMonitor;
+  class BackendsPool;
 
-public:
-  int _argc;
-  char** _argv;
+  class Main {
+  public:
+    Main();
+    ~Main();
+    bool init(int argc, char** argv);
+    bool reinit();
+    void run();
+    void stop();
 
-private:
+  public:
+    int _argc;
+    char** _argv;
 
-  bool parsePO(int argc, char** argv);
-  bool initCache();
-  bool initBackendsPool();
+  private:
 
-private:
-  boost::asio::io_service m_ioService;
-  AbstractCacheHandler* m_cacheHandler;
+    bool parsePO(int argc, char** argv);
+    bool initCache();
+    bool initBackendsPool();
+
+  private:
+    boost::asio::io_service m_ioService;
+    AbstractCacheHandler* m_cacheHandler;
 #ifdef ENABLE_LOCAL_CACHE
-  Subject* m_subject;
-  CacheMonitor* m_monitor;
+    Subject* m_subject;
+    CacheMonitor* m_monitor;
 #endif // ENABLE_LOCAL_CACHE
-  Config* m_config;
-  BackendsPool* m_pool;
-  uint16_t m_nbThreads;
-  std::vector<std::future<void>> m_futures;
-};
+    Config* m_config;
+    BackendsPool* m_pool;
+    uint16_t m_nbThreads;
+    std::vector<std::future<void>> m_futures;
+  };
+
+}
 
 #endif // MAIN_H__

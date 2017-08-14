@@ -1,7 +1,9 @@
 set(libcore_src
-  Interceptor.cpp
-  InterceptorSession.cpp
+  Server.cpp
+  Session.cpp
   Config.cpp
+  SessionTypeDetector.cpp
+  SessionConnection.cpp
 )
 
 INCLUDE_DIRECTORIES(

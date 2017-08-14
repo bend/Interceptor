@@ -5,7 +5,7 @@
 
 #include <boost/system/error_code.hpp>
 
-namespace Http {
+namespace Interceptor::Http {
   enum class Code : short {
     Ok								= 200,
     PartialContent					= 206,

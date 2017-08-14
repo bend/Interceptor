@@ -1,7 +1,11 @@
 #include "AbstractGateway.h"
 
-AbstractGateway::AbstractGateway(HttpRequestPtr request)
-  : m_request(request)
-{
+namespace Interceptor {
+
+  AbstractGateway::AbstractGateway(HttpRequestPtr request)
+    : m_request(request)
+  {
+
+  }
 
 }

@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-namespace StringUtils {
+namespace Interceptor::StringUtils {
 
   /**
    * @brief check if pattern is present in data

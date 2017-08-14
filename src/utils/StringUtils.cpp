@@ -1,7 +1,7 @@
 #include "StringUtils.h"
 
 
-namespace StringUtils {
+namespace Interceptor::StringUtils {
   bool containsString(const char* data, const std::string& pattern,
                       size_t s)
   {

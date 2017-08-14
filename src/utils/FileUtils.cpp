@@ -7,7 +7,7 @@
 #include <boost/filesystem.hpp>
 #include <sys/stat.h>
 
-namespace FileUtils {
+namespace Interceptor::FileUtils {
 
   Http::Code readFile(const std::string& filename, char** data,
                       size_t& pageLength)

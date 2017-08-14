@@ -10,29 +10,33 @@
 #include <mutex>
 #include <boost/asio/io_service.hpp>
 
-class BackendConnector;
+namespace Interceptor {
 
-class BackendsPool {
-public:
-  BackendsPool(boost::asio::io_service& ioService);
+  class BackendConnector;
 
-  bool initPool(std::vector<BackendCPtr>& backends);
+  class BackendsPool {
+  public:
+    BackendsPool(boost::asio::io_service& ioService);
 
-  AbstractConnectorPtr takeConnection(const std::string& backendName);
+    bool initPool(std::vector<BackendCPtr>& backends);
 
-  void putConnection(AbstractConnectorPtr connection);
+    AbstractConnectorPtr takeConnection(const std::string& backendName);
 
-private:
-  void initConnection(BackendCPtr backend);
+    void putConnection(AbstractConnectorPtr connection);
 
-private:
-  boost::asio::io_service& m_ioService;
-  typedef std::map<std::string, std::list<AbstractConnectorPtr>> ConnectionsMap;
-  ConnectionsMap m_connections;
-  std::map<std::string, BackendCPtr> m_backends;
-  std::recursive_mutex m_mutex;
+  private:
+    void initConnection(BackendCPtr backend);
 
-};
+  private:
+    boost::asio::io_service& m_ioService;
+    typedef std::map<std::string, std::list<AbstractConnectorPtr>> ConnectionsMap;
+    ConnectionsMap m_connections;
+    std::map<std::string, BackendCPtr> m_backends;
+    std::recursive_mutex m_mutex;
+
+  };
+
+}
 
 
 #endif // BACKENDS_POOL_H__

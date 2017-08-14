@@ -1,8 +1,9 @@
 set(libhttp_src
-  HttpHeaders.cpp
-  HttpRequest.cpp
-  HttpReply.cpp
+  Headers.cpp
+  Request.cpp
+  Reply.cpp
   Http.cpp
+  HTTP1XSessionHandler.cpp
 )
 
 INCLUDE_DIRECTORIES(
