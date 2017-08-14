@@ -37,7 +37,7 @@ namespace Interceptor {
     }
 
     FAMClose(m_fc);
-    m_fc = nullptr;
+    delete m_fc;
 
     delete m_runningThread;
   }
@@ -88,7 +88,7 @@ namespace Interceptor {
     fd_set readfds;
     std::string config;
 
-    m_fc = (FAMConnection*)malloc(sizeof(FAMConnection));
+    m_fc = new FAMConnection();
 
     /* Open fam connection */
     if ((FAMOpen(m_fc)) < 0) {
@@ -213,7 +213,7 @@ namespace Interceptor {
   bool CacheMonitor::doMonitorFile(const std::string& p)
   {
     LOG_DEBUG("CacheMonitor::doMonitorFile() - adding " << p);
-    FAMRequest* fr = (FAMRequest*)malloc(sizeof(FAMRequest));
+    FAMRequest* fr = new FAMRequest();
 
     if (FAMMonitorFile(m_fc, p.c_str(), fr, 0) >= 0) {
       m_requests[p] = fr;
@@ -225,7 +225,7 @@ namespace Interceptor {
 
   bool CacheMonitor::doMonitorDirectory(const std::string& p)
   {
-    FAMRequest* fr = (FAMRequest*)malloc(sizeof(FAMRequest));
+    FAMRequest* fr = new FAMRequest();
 
     if (FAMMonitorDirectory(m_fc, p.c_str(), fr, 0) >= 0) {
       m_requests[p] = fr;

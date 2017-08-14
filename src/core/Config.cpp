@@ -44,7 +44,7 @@ namespace Interceptor {
   void Config::parse()
   {
 
-    LOG_INFO("Reading configuration file " << m_path);
+    LOG_INFO("Config::parse() - Reading configuration file " << m_path);
 
     std::ifstream config(m_path);
 
