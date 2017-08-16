@@ -26,6 +26,9 @@ namespace Interceptor {
 
     virtual void asyncRead( void* data, size_t size,
                             std::function<void(boost::system::error_code, size_t)> callback) = 0;
+    
+	virtual void asyncReadSome( void* data, size_t size,
+                            std::function<void(boost::system::error_code, size_t)> callback) = 0;
 
     virtual void asyncWrite( const void* data, size_t size,
                              std::function<void(boost::system::error_code,
@@ -57,6 +60,9 @@ namespace Interceptor {
                               callback) override;
 
     virtual void asyncRead( void* data, size_t size,
+                            std::function<void(boost::system::error_code, size_t)> callback) override;
+	
+	virtual void asyncReadSome( void* data, size_t size,
                             std::function<void(boost::system::error_code, size_t)> callback) override;
 
     virtual boost::system::error_code write(const void* data, size_t size) override;

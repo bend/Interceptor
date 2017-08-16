@@ -44,6 +44,8 @@ namespace Interceptor {
     forward(data);
     m_signalCon = m_request->hasMoreData().connect(std::bind(
                     &BackendGateway::hasMoreData, shared_from_this()));
+
+	m_connection->readReply(m_callback);
   }
 
   void BackendGateway::hasMoreData()
@@ -60,12 +62,7 @@ namespace Interceptor {
       LOG_DEBUG("Gateway fw : " << (int) code );
 
       if (code != Http::Code::Ok) {
-        std::stringstream stream;
         m_callback(code, nullptr);
-      } else {
-        if (request->received() && !request->hasData()) {
-          m_connection->readReply(m_callback);
-        }
       }
 
     }, std::placeholders::_1, m_request));

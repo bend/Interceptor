@@ -85,13 +85,12 @@ namespace Interceptor {
     std::function<void(Http::Code, std::stringstream*)> callback)
   {
     LOG_DEBUG("BackendConnector::readReply()");
-    m_connection->asyncRead(m_response, sizeof(m_response),
-                            m_strand.wrap(
+    m_connection->asyncReadSome(m_response, sizeof(m_response),
                               std::bind(&BackendConnector::handleResponseRead,
                                         shared_from_this(),
                                         std::placeholders::_1,
                                         std::placeholders::_2,
-                                        callback)));
+                                        callback));
   }
 
   void BackendConnector::doPost(std::pair<Packet, std::function<void(Http::Code)>>
@@ -152,7 +151,10 @@ namespace Interceptor {
       Http::Code code = Http::convertToHttpCode(error);
       callback(code, nullptr);
     } else {
-
+	  std::stringstream* stream = new std::stringstream();
+	  stream->write(m_response, bytesRead);
+	  callback(Http::Code::Ok, stream);
+	  readReply(callback);
     }
   }
 

@@ -12,9 +12,9 @@ namespace Interceptor {
     : m_ioService(ioService),
       m_params(params),
       m_state(CanSend),
-      m_iostrand(ioService),
+      m_ostrand(ioService),
+      m_istrand(ioService),
       m_fsstrand(ioService),
-      m_riostrand(ioService),
       m_readTimer(ioService),
       m_writeTimer(ioService)
   {
@@ -31,7 +31,7 @@ namespace Interceptor {
                                           const boost::system::error_code&, size_t bytesTransferred)> callback)
   {
     startReadTimer();
-    m_connection->asyncReadSome(buffer, bytes, m_riostrand.wrap(
+    m_connection->asyncReadSome(buffer, bytes, m_istrand.wrap(
                                 std::bind([this, callback] (const boost::system::error_code & error,
     size_t bytesTransferred) {
       stopReadTimer();
@@ -47,7 +47,7 @@ namespace Interceptor {
     m_readTimer.expires_from_now(boost::posix_time::seconds(
                                    m_params->config()->m_clientTimeout));
     m_readTimer.async_wait
-    (m_iostrand.wrap
+    (m_ostrand.wrap
      (std::bind(&SessionConnection::handleTimeout,
                 shared_from_this(),
                 ReadTimer,
@@ -62,7 +62,7 @@ namespace Interceptor {
     m_writeTimer.expires_from_now(boost::posix_time::seconds(
                                     m_params->config()->m_serverTimeout));
     m_writeTimer.async_wait
-    (m_iostrand.wrap
+    (m_ostrand.wrap
      (std::bind(&SessionConnection::handleTimeout,
                 shared_from_this(),
                 WriteTimer,
@@ -91,7 +91,7 @@ namespace Interceptor {
       closeConnection();
     } else {
       m_ioService.post(
-        m_iostrand.wrap(
+        m_ostrand.wrap(
           std::bind(&SessionConnection::sendNext, shared_from_this(), buffer)));
     }
   }
@@ -123,7 +123,7 @@ namespace Interceptor {
         m_ioService.post(
           m_fsstrand.wrap(buffer->nextCall()));
 
-      m_connection->asyncWrite(buffer->m_buffers, m_iostrand.wrap
+      m_connection->asyncWrite(buffer->m_buffers, m_ostrand.wrap
                                (std::bind
                                 (&SessionConnection::handleTransmissionCompleted,
                                  shared_from_this(),
@@ -172,7 +172,7 @@ namespace Interceptor {
     LOG_DEBUG("SessionConnection::closeConnection()");
 
     m_ioService.post(
-      m_riostrand.wrap(
+      m_ostrand.wrap(
         std::bind(&SessionConnection::doCloseConnection, shared_from_this())));
   }
 

@@ -107,9 +107,16 @@ namespace Interceptor::Http {
   {
     LOG_DEBUG("Reply::handleGatewayReply()");
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_httpBuffer = std::make_shared<Buffer>();
-    LOG_DEBUG("Received from gateway ");
-    buildErrorResponse(code, false);
+
+	if(code != Code::Ok || !stream) {
+	  m_httpBuffer = std::make_shared<Buffer>();
+	  buildErrorResponse(code, true);
+	} else {
+	  LOG_DEBUG("GOT REPLY : " << stream->str());
+	  postBackendReply(*stream);
+	  delete stream;
+	}
+
   }
 
   void Reply::setFlag(Flag flag, bool value)
@@ -392,6 +399,23 @@ namespace Interceptor::Http {
     }
 
     m_httpBuffer.reset();
+  }
+
+  void Reply::postBackendReply(const std::stringstream& stream)
+  {
+
+	LOG_DEBUG("Reply::postBackendReply()");
+	m_httpBuffer = std::make_shared<Buffer>();
+	m_httpBuffer->m_buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
+    
+	auto connection = m_request->connection();
+    
+	if (connection) {
+      connection->postReply(m_httpBuffer);
+    }
+
+    m_httpBuffer.reset();
+	
   }
 
   bool Reply::chunkResponse(BufferPtr httpBuffer,
