@@ -24,4 +24,4 @@ env:
     - ENABLE_LOCAL_CACHE=on ENABLE_GZIP=off
     - ENABLE_LOCAL_CACHE=off ENABLE_GZIP=off
 
-script: sudo docker run -v $PWD:/code -t interceptor /bin/bash -c "cd /code; cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DDEBUG_LOGGING . && make && make install && make test"
+script: sudo docker run -v $PWD:/code -t interceptor /bin/bash -c "cd /code; cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DDEBUG_LOGGING . && make && make install && env CTEST_OUTPUT_ON_FAILURE=1 make test"
