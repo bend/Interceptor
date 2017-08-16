@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <future>
+#include <list>
 #include <boost/asio/io_service.hpp>
 #include "vars.h"
 
@@ -13,6 +14,7 @@ namespace Interceptor {
   class Subject;
   class CacheMonitor;
   class BackendsPool;
+  class Server;
 
   class Main {
   public:
@@ -44,6 +46,8 @@ namespace Interceptor {
     BackendsPool* m_pool;
     uint16_t m_nbThreads;
     std::vector<std::future<void>> m_futures;
+	typedef std::shared_ptr<Server> ServerPtr;
+	std::list<ServerPtr> m_servers;
   };
 
 }

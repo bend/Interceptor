@@ -170,6 +170,13 @@ namespace Interceptor {
   {
     LOG_DEBUG("SessionConnection::closeConnection()");
 
+    m_ioService.post(
+      m_iostrand.wrap(
+        std::bind(&SessionConnection::doCloseConnection, shared_from_this())));
+  }
+
+  void SessionConnection::doCloseConnection()
+  {
     if (m_state & Closing) {
       return;
     }
@@ -178,13 +185,6 @@ namespace Interceptor {
     stopReadTimer();
     stopWriteTimer();
     m_state &= ~CanSend;
-    m_ioService.post(
-      m_iostrand.wrap(
-        std::bind(&SessionConnection::doCloseConnection, shared_from_this())));
-  }
-
-  void SessionConnection::doCloseConnection()
-  {
     if (m_connection) {
       m_connection->disconnect();
     }

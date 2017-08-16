@@ -148,6 +148,7 @@ namespace Interceptor {
   void Main::run()
   {
     LOG_DEBUG("Main::run()");
+	
 
     for (const auto& serverConfig : m_config->serversConfig()) {
       ParamsPtr params = std::make_shared<Params>(serverConfig, m_cacheHandler,
@@ -155,6 +156,7 @@ namespace Interceptor {
       std::shared_ptr<Server> interceptor = std::make_shared<Server>(params,
                                             m_ioService);
       interceptor->init();
+	  m_servers.push_back(interceptor);
     }
 
     LOG_DEBUG("CWD is "  << boost::filesystem::current_path());
@@ -176,6 +178,7 @@ namespace Interceptor {
   void Main::stop()
   {
     LOG_DEBUG("Main::stop()");
+	m_servers.clear();
     m_ioService.stop();
     m_futures.front().wait();
     LOG_DEBUG("Stopped");
