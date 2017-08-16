@@ -63,6 +63,7 @@ namespace Interceptor {
 
     boost::asio::strand m_iostrand;
     boost::asio::strand m_fsstrand;
+	boost::asio::strand m_riostrand;
 
     // Timers
     boost::asio::deadline_timer m_readTimer;

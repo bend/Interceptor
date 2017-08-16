@@ -57,8 +57,8 @@ namespace Interceptor {
     try {
       LOG_DEBUG( "TcpInboundConnection::disconnect() - closing connection with " << ip());
       boost::system::error_code ec;
-      m_spSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
       m_spSocket.cancel();
+      m_spSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
       m_spSocket.close();
     } catch (std::exception& e) {
     }

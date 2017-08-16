@@ -14,6 +14,7 @@ namespace Interceptor {
       m_state(CanSend),
       m_iostrand(ioService),
       m_fsstrand(ioService),
+      m_riostrand(ioService),
       m_readTimer(ioService),
       m_writeTimer(ioService)
   {
@@ -30,12 +31,12 @@ namespace Interceptor {
                                           const boost::system::error_code&, size_t bytesTransferred)> callback)
   {
     startReadTimer();
-    m_connection->asyncReadSome(buffer, bytes,
+    m_connection->asyncReadSome(buffer, bytes, m_riostrand.wrap(
                                 std::bind([this, callback] (const boost::system::error_code & error,
     size_t bytesTransferred) {
       stopReadTimer();
       callback(error, bytesTransferred);
-    }, std::placeholders::_1, std::placeholders::_2));
+    }, std::placeholders::_1, std::placeholders::_2)));
   }
 
   void SessionConnection::startReadTimer()
@@ -171,7 +172,7 @@ namespace Interceptor {
     LOG_DEBUG("SessionConnection::closeConnection()");
 
     m_ioService.post(
-      m_iostrand.wrap(
+      m_riostrand.wrap(
         std::bind(&SessionConnection::doCloseConnection, shared_from_this())));
   }
 
