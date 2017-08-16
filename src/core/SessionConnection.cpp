@@ -177,8 +177,9 @@ namespace Interceptor {
 
   void SessionConnection::doCloseConnection()
   {
+	LOG_DEBUG("SessionConnection::doCloseConnection()");
     if (m_state & Closing) {
-	  LOG_DEBUG("SessionConnection::closeConnection() - already closing");
+	  LOG_DEBUG("SessionConnection::doCloseConnection() - already closing");
       return;
     }
 
