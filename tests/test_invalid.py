@@ -67,4 +67,5 @@ class TestInvalidHttpServer(unittest.TestCase):
         Utils.tearDownClass(self.proc)
 
 if __name__ == '__main__':
+    print "Enable Gzip = " + os.environ["ENABLE_GZIP"]
     unittest.main()

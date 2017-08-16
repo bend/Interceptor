@@ -69,4 +69,5 @@ class TestChargeHttpServer(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    print "Enable Gzip = " + os.environ["ENABLE_GZIP"]
     unittest.main()
