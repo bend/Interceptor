@@ -39,9 +39,10 @@ class TestChargeHttpServer(unittest.TestCase):
                         r = Utils.read_file("site1/index.html")
                         self.outer.assertEqual(data, r)
                     conn.close()
-            except:
-                print "Exception raised"
+            except Exception, e:
+                print "Exception raised " + str(e)
                 self.outer.assertTrue(False)
+                sys.exit(-1)
     
 
     def test1(self):
