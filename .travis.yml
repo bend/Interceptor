@@ -12,7 +12,7 @@ compiler:
 
 before_install:
   - docker build -t interceptor .
-  - docker run -v ./:/code -t interceptor -c "cd /code; cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DDEBUG_LOGGING . && make && sudo make install && make test"
+  - docker run -v .:/code -t interceptor -c "cd /code; cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DDEBUG_LOGGING . && make && sudo make install && make test"
 env: 
   matrix:
     - ENABLE_GZIP=on

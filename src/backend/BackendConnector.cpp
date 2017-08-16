@@ -12,6 +12,7 @@ namespace Interceptor {
       m_strand(ioService),
       m_state(0)
   {
+	std::memset(m_response, 0, sizeof(m_response));
     m_connection = std::make_shared<OutboundTcpConnection>(m_ioService,
                    m_backend->host, std::to_string(m_backend->port));
   }

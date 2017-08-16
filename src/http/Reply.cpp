@@ -86,7 +86,7 @@ namespace Interceptor::Http {
           ptr->handleGatewayReply(code, stream);
         }
       }, std::placeholders::_1, std::placeholders::_2));
-      return ;
+      return;
     }
 
     switch (m_request->method()) {
@@ -352,8 +352,9 @@ namespace Interceptor::Http {
     if (!(m_httpBuffer->flags() & Buffer::InvalidRequest)) {
       std::vector<boost::asio::const_buffer> buffers;
 
-      if (!getFlag(HeadersSent))
+      if (!getFlag(HeadersSent)) {
         m_httpBuffer->m_buffers.push_back({}); // emtpy place for headers
+	  }
 
       buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
 

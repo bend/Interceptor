@@ -60,7 +60,7 @@ namespace Interceptor::Http {
 
       LOG_DEBUG(m_request);
 
-    } catch (std::exception e) {
+    } catch (std::exception &e) {
       LOG_ERROR("Exception" << e.what());
       return Code::InternalServerError;
     }

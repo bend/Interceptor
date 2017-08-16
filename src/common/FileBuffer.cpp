@@ -13,10 +13,10 @@ namespace Interceptor {
 
   FileBuffer::FileBuffer()
     : m_size(0),
-      m_headersReceived(false)
+	  m_tmpname("/tmp/interceptor_tmp_XXXXXX"),
+      m_headersReceived(false),
+	  m_headersLength(0)
   {
-    //  m_tmpfile = std::tmpfile();
-    m_tmpname = "/tmp/interceptor_tmp_XXXXXX";
     m_tmpfile = mkstemp(&m_tmpname[0]);
 
     if (!m_tmpfile) {
