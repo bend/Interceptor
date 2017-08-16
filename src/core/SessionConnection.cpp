@@ -172,7 +172,7 @@ namespace Interceptor {
     LOG_DEBUG("SessionConnection::closeConnection()");
 
     m_ioService.post(
-      m_ostrand.wrap(
+      m_istrand.wrap(
         std::bind(&SessionConnection::doCloseConnection, shared_from_this())));
   }
 
