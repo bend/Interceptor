@@ -2,7 +2,6 @@
 #define LOGGER_H__
 
 #include "vars.h"
-
 #include <boost/lexical_cast.hpp>
 
 namespace Interceptor {
@@ -26,8 +25,8 @@ namespace Interceptor {
     }
 
   private:
-    mutable std::string preamble_;
-    mutable std::stringstream ss_;
+    mutable std::string m_preamble;
+    mutable std::stringstream m_ss;
   };
 
   static inline LogEntry trace(const std::string& type)

@@ -51,7 +51,8 @@ namespace Interceptor {
     std::shared_ptr<OutboundConnection> m_connection;
     char m_response[4096];
     std::deque<std::pair<Packet, std::function<void(Http::Code)>>> m_outbox;
-    boost::asio::strand m_strand;
+    boost::asio::strand m_ostrand;
+    boost::asio::strand m_istrand;
     int m_state;
   };
 

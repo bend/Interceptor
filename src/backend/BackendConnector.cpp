@@ -9,7 +9,8 @@ namespace Interceptor {
                                      boost::asio::io_service& ioService)
     : m_backend(backend),
       m_ioService(ioService),
-      m_strand(ioService),
+      m_ostrand(ioService),
+	  m_istrand(ioService),
       m_state(0)
   {
 	std::memset(m_response, 0, sizeof(m_response));
@@ -26,7 +27,7 @@ namespace Interceptor {
   bool BackendConnector::connect()
   {
     LOG_DEBUG("BackendConnector::connect()");
-    m_connection->asyncResolve(m_strand.wrap(
+    m_connection->asyncResolve(m_ostrand.wrap(
                                  std::bind(&BackendConnector::handleResolved,
                                            shared_from_this(),
                                            std::placeholders::_1,
@@ -42,7 +43,7 @@ namespace Interceptor {
       LOG_INFO("BackendConnector::handleResolved() - Resolved");
       m_connection->setEndpoint(it);
       m_connection->asyncConnect(
-        m_strand.wrap(
+        m_ostrand.wrap(
           std::bind(&BackendConnector::handleConnected,
                     shared_from_this(),
                     std::placeholders::_1)));
@@ -74,7 +75,7 @@ namespace Interceptor {
   {
     LOG_DEBUG("BackendConnector::forward()");
     m_ioService.post(
-      m_strand.wrap(
+      m_ostrand.wrap(
         std::bind(&BackendConnector::doPost,
                   shared_from_this(),
                   std::make_pair(packet, callback)
@@ -86,11 +87,12 @@ namespace Interceptor {
   {
     LOG_DEBUG("BackendConnector::readReply()");
     m_connection->asyncReadSome(m_response, sizeof(m_response),
+							m_istrand.wrap(
                               std::bind(&BackendConnector::handleResponseRead,
                                         shared_from_this(),
                                         std::placeholders::_1,
                                         std::placeholders::_2,
-                                        callback));
+                                        callback)));
   }
 
   void BackendConnector::doPost(std::pair<Packet, std::function<void(Http::Code)>>
@@ -122,7 +124,7 @@ namespace Interceptor {
     m_state &= ~CanWrite;
     m_connection->asyncWrite(std::get<const char*>(packet),
                              std::get<size_t>(packet),
-                             m_strand.wrap(
+                             m_ostrand.wrap(
                                std::bind(&BackendConnector::handlePacketForwarded, shared_from_this(),
                                          std::placeholders::_1, callback)));
   }

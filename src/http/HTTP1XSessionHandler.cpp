@@ -18,7 +18,7 @@ namespace Interceptor::Http {
     LOG_DEBUG("HTTP1XSessionHandler::~HTTP1XSessionHandler()");
   }
 
-  void HTTP1XSessionHandler::transferSession(char* data, size_t bytes)
+  void HTTP1XSessionHandler::transferSession(const char* data, size_t bytes)
   {
     LOG_DEBUG("HTTP1XSessionHandler::transferSession()");
     processData(data, bytes);

@@ -51,7 +51,7 @@ namespace Interceptor {
       void handleGatewayReply(Code code, std::stringstream*  stream);
 
       void post(const std::stringstream& stream);
-	  void postBackendReply(const std::stringstream& stream);
+      void postBackendReply(const std::stringstream& stream);
       void buildErrorResponse(Code error, bool closeConnection = false);
 
       bool chunkResponse(BufferPtr httpBuffer,

@@ -62,7 +62,7 @@ namespace Interceptor {
     std::mutex m_buffersMutex;
 
     boost::asio::strand m_ostrand;
-	boost::asio::strand m_istrand;
+    boost::asio::strand m_istrand;
     boost::asio::strand m_fsstrand;
 
     // Timers

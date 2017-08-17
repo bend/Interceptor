@@ -11,7 +11,7 @@ namespace Interceptor {
     AbstractSessionHandler(AbstractSessionHandler&) = delete;
     ~AbstractSessionHandler() = default;
 
-    virtual void transferSession(char* data, size_t bytes) = 0;
+    virtual void transferSession(const char* data, size_t bytes) = 0;
 
   protected:
     SessionConnectionPtr m_connection;

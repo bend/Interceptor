@@ -13,73 +13,73 @@ namespace Interceptor {
        boost::posix_time::to_simple_string(
          boost::posix_time::microsec_clock::local_time()
        ) << ']' << '[' << std::this_thread::get_id() << "] " << type << ' ';
-    preamble_ = ss.str();
+    m_preamble = ss.str();
   }
 
   LogEntry::LogEntry(const LogEntry& o)
-    : preamble_(o.preamble_)
+    : m_preamble(o.m_preamble)
   {
-    if (preamble_.empty()) {
+    if (m_preamble.empty()) {
       return;
     }
 
-    ss_ << o.ss_.str();
-    o.preamble_ = "";
-    o.ss_.clear();
+    m_ss << o.m_ss.str();
+    o.m_preamble = "";
+    o.m_ss.clear();
   }
 
   LogEntry::~LogEntry()
   {
-    if (preamble_.empty()) {
+    if (m_preamble.empty()) {
       return;
     }
 
-    std::string s = ss_.str();
+    std::string s = m_ss.str();
 
     if (!s.empty()) {
       std::stringstream ss;
-      ss << preamble_ << s << "\n";
+      ss << m_preamble << s << "\n";
       std::cerr << ss.str() << std::flush;
     }
   }
 
   LogEntry& LogEntry::operator <<(const char* s)
   {
-    if (preamble_.empty()) {
+    if (m_preamble.empty()) {
       return *this;
     }
 
-    ss_ << s;
+    m_ss << s;
     return *this;
   }
 
   LogEntry& LogEntry::operator <<(const std::string& s)
   {
-    if (preamble_.empty()) {
+    if (m_preamble.empty()) {
       return *this;
     }
 
-    ss_ << s;
+    m_ss << s;
     return *this;
   }
 
   LogEntry& LogEntry::operator <<(int i)
   {
-    if (preamble_.empty()) {
+    if (m_preamble.empty()) {
       return *this;
     }
 
-    ss_ << i;
+    m_ss << i;
     return *this;
   }
 
   LogEntry& LogEntry::operator <<(double d)
   {
-    if (preamble_.empty()) {
+    if (m_preamble.empty()) {
       return *this;
     }
 
-    ss_ << d;
+    m_ss << d;
     return *this;
   }
 

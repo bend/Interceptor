@@ -17,7 +17,7 @@ namespace Interceptor::Http {
     HTTP1XSessionHandler(SessionConnectionPtr connection);
     ~HTTP1XSessionHandler();
 
-    virtual void transferSession(char* data, size_t bytes) override;
+    virtual void transferSession(const char* data, size_t bytes) override;
 
   private:
     void processData(const char* data, size_t bytes);

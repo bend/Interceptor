@@ -46,8 +46,8 @@ namespace Interceptor {
     BackendsPool* m_pool;
     uint16_t m_nbThreads;
     std::vector<std::future<void>> m_futures;
-	typedef std::shared_ptr<Server> ServerPtr;
-	std::list<ServerPtr> m_servers;
+    typedef std::shared_ptr<Server> ServerPtr;
+    std::list<ServerPtr> m_servers;
   };
 
 }

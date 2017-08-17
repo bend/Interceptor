@@ -42,7 +42,6 @@ class TestChargeHttpServer(unittest.TestCase):
             except Exception, e:
                 print "Exception raised " + str(e)
                 self.outer.assertTrue(False)
-                sys.exit(-1)
     
 
     def test1(self):
