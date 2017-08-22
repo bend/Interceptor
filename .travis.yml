@@ -11,7 +11,12 @@ compiler:
 - gcc 
 
 before_install:
+  - pip install --user codecov
   - sudo docker build -t interceptor .
+
+after_success:
+  - codecov
+
 env: 
   matrix:
     - ENABLE_GZIP=on
