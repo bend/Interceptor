@@ -113,7 +113,11 @@ namespace Interceptor::Http {
 	  buildErrorResponse(code, true);
 	} else {
 	  LOG_DEBUG("GOT REPLY : " << stream->str());
-	  postBackendReply(*stream);
+	  if(checkBackendReply(*stream)) {
+		postBackendReply(*stream);
+	  } else {
+		buildErrorResponse(Code::InternalServerError, true);
+	  }
 	  delete stream;
 	}
 
@@ -399,6 +403,11 @@ namespace Interceptor::Http {
     }
 
     m_httpBuffer.reset();
+  }
+
+bool Reply::checkBackendReply(const std::stringstream& stream) const
+  {
+	return true;
   }
 
   void Reply::postBackendReply(const std::stringstream& stream)

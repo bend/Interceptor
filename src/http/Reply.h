@@ -50,6 +50,7 @@ namespace Interceptor {
       void handleRetrievalRequest(Method method, const SiteConfig* site);
       void handleGatewayReply(Code code, std::stringstream*  stream);
 
+      bool checkBackendReply(const std::stringstream& stream) const;
       void post(const std::stringstream& stream);
       void postBackendReply(const std::stringstream& stream);
       void buildErrorResponse(Code error, bool closeConnection = false);

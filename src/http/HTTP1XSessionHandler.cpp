@@ -10,7 +10,6 @@ namespace Interceptor::Http {
   HTTP1XSessionHandler::HTTP1XSessionHandler(SessionConnectionPtr connection) :
     AbstractSessionHandler(connection)
   {
-
   }
 
   HTTP1XSessionHandler::~HTTP1XSessionHandler()
