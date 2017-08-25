@@ -1,6 +1,8 @@
 #include "BackendGateway.h"
 #include "utils/Logger.h"
 
+#include "common/Packet.h"
+
 namespace Interceptor {
 
   BackendGateway::BackendGateway(HttpRequestPtr request)
@@ -40,12 +42,12 @@ namespace Interceptor {
   {
     LOG_DEBUG("BackendGateway::handleRequest");
     m_callback = callback;
+    m_connection->setReplyCallback(m_callback);
     auto data = m_request->request();
     forward(data);
     m_signalCon = m_request->hasMoreData().connect(std::bind(
                     &BackendGateway::hasMoreData, shared_from_this()));
 
-	m_connection->readReply(m_callback);
   }
 
   void BackendGateway::hasMoreData()
@@ -55,8 +57,9 @@ namespace Interceptor {
     forward(data);
   }
 
-  void BackendGateway::forward(Packet packet)
+  void BackendGateway::forward(Packet* packet)
   {
+    LOG_DEBUG("BackendGateway::forward()");
     m_connection->forward(packet,
     std::bind([ = ]( Http::Code code, HttpRequestPtr request) {
       LOG_DEBUG("Gateway fw : " << (int) code );

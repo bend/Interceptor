@@ -1,5 +1,8 @@
 #include "ServerInfo.h"
 
+#include <sstream>
+#include <iomanip>
+
 namespace Interceptor::ServerInfo {
 
   std::string commonName()
@@ -39,6 +42,15 @@ namespace Interceptor::ServerInfo {
   std::string build()
   {
     return INTERCEPTOR_GIT_COMMIT_ID;
+  }
+
+  std::string currentDate()
+  {
+    std::time_t t = std::time(nullptr);
+    std::stringstream sstr;
+    sstr << std::put_time(std::gmtime(&t), "%a, %d %b %Y %T %Z");
+    return sstr.str();
+
   }
 
 }

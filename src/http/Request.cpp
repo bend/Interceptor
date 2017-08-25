@@ -5,6 +5,7 @@
 #include "utils/Logger.h"
 #include "common/FileBuffer.h"
 #include "common/Params.h"
+#include "common/Packet.h"
 #include "cache/generic_cache.h"
 #include "vars.h"
 
@@ -58,9 +59,9 @@ namespace Interceptor::Http {
         pushRequest(data, length);
       }
 
-      LOG_DEBUG(m_request);
+      LOG_NETWORK("Request: ", m_request);
 
-    } catch (std::exception &e) {
+    } catch (std::exception& e) {
       LOG_ERROR("Exception" << e.what());
       return Code::InternalServerError;
     }
@@ -116,7 +117,13 @@ namespace Interceptor::Http {
 
   std::string Request::queryString() const
   {
-    return m_request;
+    size_t pos = m_request.find("\r\n");
+
+    if ( pos == std::string::npos) {
+      return "";
+    }
+
+    return m_request.substr(0, pos);
   }
 
   void Request::setCompleted(bool completed)
@@ -268,7 +275,7 @@ namespace Interceptor::Http {
       return code;
     }
 
-    m_request = get;
+    //m_request = get;
 
     // parse host
     const std::string* host = m_headers->getHeader("Host");
@@ -368,23 +375,27 @@ namespace Interceptor::Http {
     return true;
   }
 
-  Packet Request::request()
+  Packet* Request::request()
   {
     if (m_state.test(Dumping)) {
       return popRequest();
     }
 
-    return std::make_pair(m_request.data(), m_request.length());
+    char* cp = new char[m_request.length()]();
+    std::strncpy(cp, m_request.c_str(), m_request.length());
+    return new Packet(cp, m_request.length());
   }
 
   void Request::pushRequest(const char* data, size_t length)
   {
+    char* cp = new char[length]();
+    std::strncpy(cp, data, length);
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_queue.push(std::make_pair(data, length));
+    m_queue.push(new Packet(cp, length));
     m_sig(); // notify listeners that we have more data
   }
 
-  Packet Request::popRequest()
+  Packet* Request::popRequest()
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     auto p = m_queue.front();

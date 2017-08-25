@@ -44,19 +44,20 @@ namespace Interceptor {
 
     switch (detectSessionType(m_buffer, bytesTransferred)) {
       case HTTP1X:
-		handleHTTP1XSession(m_buffer, bytesTransferred);
+        handleHTTP1XSession(m_buffer, bytesTransferred);
         break;
 
       default:
-        LOG_ERROR("SessionTypeDetector::handleFirstPacketRead() - Unknown packet type");
+        LOG_ERROR("SessionTypeDetector::handleFirstPacketRead() - Unknown packet type : "
+                  << bytesTransferred << " [" << std::string(m_buffer, bytesTransferred) << "]");
         m_connection->closeConnection();
     }
   }
 
   void SessionTypeDetector::handleHTTP1XSession(const char* data, size_t len)
   {
-        m_sessionHandler = std::make_shared<Http::HTTP1XSessionHandler>(m_connection);
-		m_sessionHandler->transferSession(data, len);
+    m_sessionHandler = std::make_shared<Http::HTTP1XSessionHandler>(m_connection);
+    m_sessionHandler->transferSession(data, len);
   }
 
   SessionTypeDetector::SessionType SessionTypeDetector::detectSessionType(

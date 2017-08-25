@@ -32,7 +32,7 @@ namespace Interceptor {
   {
     startReadTimer();
     m_connection->asyncReadSome(buffer, bytes, m_istrand.wrap(
-                                std::bind([this, callback] (const boost::system::error_code & error,
+                                  std::bind([this, callback] (const boost::system::error_code & error,
     size_t bytesTransferred) {
       stopReadTimer();
       callback(error, bytesTransferred);
@@ -123,6 +123,15 @@ namespace Interceptor {
         m_ioService.post(
           m_fsstrand.wrap(buffer->nextCall()));
 
+#ifdef DUMP_NETWORK
+
+      for (auto& b : buffer->m_buffers) {
+        LOG_NETWORK("SessionConnection::SendReplyBuffer() - Buffer: ",
+                    std::string(boost::asio::buffer_cast<const char*>(b),
+                                boost::asio::buffer_size(b)));
+      }
+
+#endif  // DUMP_NETWORK
       m_connection->asyncWrite(buffer->m_buffers, m_ostrand.wrap
                                (std::bind
                                 (&SessionConnection::handleTransmissionCompleted,
@@ -178,9 +187,10 @@ namespace Interceptor {
 
   void SessionConnection::doCloseConnection()
   {
-	LOG_DEBUG("SessionConnection::doCloseConnection()");
+    LOG_DEBUG("SessionConnection::doCloseConnection()");
+
     if (m_state & Closing) {
-	  LOG_DEBUG("SessionConnection::doCloseConnection() - already closing");
+      LOG_DEBUG("SessionConnection::doCloseConnection() - already closing");
       return;
     }
 
@@ -188,6 +198,7 @@ namespace Interceptor {
     stopReadTimer();
     stopWriteTimer();
     m_state &= ~CanSend;
+
     if (m_connection) {
       m_connection->disconnect();
     }

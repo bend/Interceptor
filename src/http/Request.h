@@ -15,6 +15,7 @@
 namespace Interceptor {
   class AbstractCacheHandler;
   class FileBuffer;
+  struct Packet;
 
   namespace Http {
 
@@ -45,8 +46,8 @@ namespace Interceptor {
       void setCompleted(bool completed);
       bool hasMatchingSite() const;
       const SiteConfig* matchingSite() const;
-      Packet request();
-      Packet popRequest();
+      Packet* request();
+      Packet* popRequest();
       boost::signals2::signal<void()>& hasMoreData();
       bool hasData();
 
@@ -80,7 +81,7 @@ namespace Interceptor {
       std::unique_ptr<FileBuffer> m_buffer;
       std::chrono::high_resolution_clock::time_point m_startTs;
       std::chrono::high_resolution_clock::time_point m_endTs;
-      std::queue<std::pair<const char*, size_t>> m_queue;
+      std::queue<Packet*> m_queue;
       std::mutex m_mutex;
       boost::signals2::signal<void()> m_sig;
 

@@ -7,6 +7,7 @@ import subprocess
 import time
 
 HTTP_URL = "localhost:7000"
+BACKEND_URL= "localhost:7003"
 IP_HOST = "localhost"
 IP_PORT = 7000
 

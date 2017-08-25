@@ -5,6 +5,8 @@
 
 namespace Interceptor {
 
+  struct Packet;
+
   class BackendGateway : public AbstractGateway,
     public std::enable_shared_from_this<BackendGateway> {
   public:
@@ -22,7 +24,7 @@ namespace Interceptor {
     virtual void reset() override;
 
   private:
-    void forward(Packet packet);
+    void forward(Packet* packet);
     void hasMoreData();
 
   private:

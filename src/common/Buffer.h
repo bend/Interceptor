@@ -41,8 +41,8 @@ namespace Interceptor {
     std::vector<boost::asio::const_buffer> m_buffers;
 
   private:
-    std::vector<std::string> m_bufs;
-    std::vector<char*> m_bufs2;
+    std::list<std::string> m_bufs;
+    std::list<char*> m_bufs2;
     int m_flags;
     std::function<bool()> m_nextCall;
 

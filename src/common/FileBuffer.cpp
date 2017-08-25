@@ -13,9 +13,9 @@ namespace Interceptor {
 
   FileBuffer::FileBuffer()
     : m_size(0),
-	  m_tmpname("/tmp/interceptor_tmp_XXXXXX"),
+      m_tmpname("/tmp/interceptor_tmp_XXXXXX"),
       m_headersReceived(false),
-	  m_headersLength(0)
+      m_headersLength(0)
   {
     m_tmpfile = mkstemp(&m_tmpname[0]);
 

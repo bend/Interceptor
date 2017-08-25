@@ -40,9 +40,9 @@ namespace Interceptor {
                boost::asio::transfer_at_least(size),
                callback);
   }
-  
+
   void OutboundTcpConnection::asyncReadSome( void* b, size_t size,
-                                         std::function<void(boost::system::error_code, size_t)> callback)
+      std::function<void(boost::system::error_code, size_t)> callback)
   {
     async_read(*m_spSocket,
                boost::asio::buffer(b, size),

@@ -27,7 +27,6 @@ namespace Interceptor {
   typedef std::shared_ptr<Buffer> BufferPtr;
   typedef std::shared_ptr<Params> ParamsPtr;
   typedef std::unique_ptr<Http::Headers> HttpHeaderUPtr;
-  typedef std::pair<const char*, size_t> Packet;
 
   typedef std::string Host;
 

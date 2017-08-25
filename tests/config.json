@@ -4,8 +4,8 @@
 	"client-timeout" : 200,
 	"nb-threads": 5,
 	"max-cache-size" : 1000000,
-	"max-in-mem-request-size" : 0,
-	"max-request-size": 0,
+	"max-in-mem-request-size" : 200000,
+	"max-request-size": 2000000,
 	
 	"error-pages" : [
 		{ "404" : "error/404.html" }, 
@@ -86,6 +86,23 @@
 		  "backend" : "backend_test"
 		}
 	  ]
+	},
+	{ 
+	  "listen-host": "0.0.0.0",
+	  "listen-port": 7004,
+
+	  "sites": [
+		{
+		  "gzip": "all",
+		  "try-files" : [
+			"index.php",
+			"index.html"
+		  ],
+		  "host": "localhost",
+		  "docroot": "site2/",
+		  "backend" : "backend_test2"
+		}
+	  ]
 	}
   ],
 
@@ -93,6 +110,10 @@
 	{ "name" : "backend_test",
 	  "host": "127.0.0.1",
 	  "port" : 7000
+	},
+	{ "name" : "backend_test2",
+	  "host": "127.0.0.1",
+	  "port" : 7005
 	}
   ]
 }

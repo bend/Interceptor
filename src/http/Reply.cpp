@@ -79,11 +79,14 @@ namespace Interceptor::Http {
       m_gateway = std::make_unique<GatewayHandler>(site, m_request,
                   m_request->params()->m_pool);
       std::weak_ptr<Reply> wp {shared_from_this()};
+      m_request->setCompleted(true);
       m_gateway->route(std::bind([wp] (Http::Code code, std::stringstream * stream) {
         auto ptr = wp.lock();
 
         if (ptr) {
           ptr->handleGatewayReply(code, stream);
+        } else if (stream) {
+          LOG_ERROR("Reply::process() : Reply is already destructed, cannot send");
         }
       }, std::placeholders::_1, std::placeholders::_2));
       return;
@@ -108,18 +111,20 @@ namespace Interceptor::Http {
     LOG_DEBUG("Reply::handleGatewayReply()");
     std::lock_guard<std::mutex> lock(m_mutex);
 
-	if(code != Code::Ok || !stream) {
-	  m_httpBuffer = std::make_shared<Buffer>();
-	  buildErrorResponse(code, true);
-	} else {
-	  LOG_DEBUG("GOT REPLY : " << stream->str());
-	  if(checkBackendReply(*stream)) {
-		postBackendReply(*stream);
-	  } else {
-		buildErrorResponse(Code::InternalServerError, true);
-	  }
-	  delete stream;
-	}
+    if (code != Code::Ok || !stream) {
+      m_httpBuffer = std::make_shared<Buffer>();
+      buildErrorResponse(code, true);
+    } else {
+      LOG_NETWORK("Reply::handleGatewayReply() - got reply: ", stream->str());
+
+      if (checkBackendReply(*stream)) {
+        postBackendReply(*stream);
+      } else {
+        buildErrorResponse(Code::InternalServerError, true);
+      }
+
+      delete stream;
+    }
 
   }
 
@@ -355,17 +360,15 @@ namespace Interceptor::Http {
   void Reply::post(const std::stringstream& stream)
   {
     LOG_DEBUG("Reply::post()");
-#ifdef DUMP_NETWORK
-    LOG_DEBUG("Reply: " << "\n" << stream.str());
-#endif //DUMP_NETWORK
+    LOG_NETWORK("Posting Stream:", stream.str());
     std::vector<boost::asio::const_buffer> buffers;
 
     if (!(m_httpBuffer->flags() & Buffer::InvalidRequest)) {
       std::vector<boost::asio::const_buffer> buffers;
 
       if (!getFlag(HeadersSent)) {
-        m_httpBuffer->m_buffers.push_back({}); // emtpy place for headers
-	  }
+        m_httpBuffer->m_buffers.push_back({}); //empty slot for headers
+      }
 
       buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
 
@@ -405,26 +408,26 @@ namespace Interceptor::Http {
     m_httpBuffer.reset();
   }
 
-bool Reply::checkBackendReply(const std::stringstream& stream) const
+  bool Reply::checkBackendReply(const std::stringstream& stream) const
   {
-	return true;
+    return true;
   }
 
   void Reply::postBackendReply(const std::stringstream& stream)
   {
 
-	LOG_DEBUG("Reply::postBackendReply()");
-	m_httpBuffer = std::make_shared<Buffer>();
-	m_httpBuffer->m_buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
-    
-	auto connection = m_request->connection();
-    
-	if (connection) {
+    LOG_DEBUG("Reply::postBackendReply()");
+    m_httpBuffer = std::make_shared<Buffer>();
+    m_httpBuffer->m_buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
+
+    auto connection = m_request->connection();
+
+    if (connection) {
       connection->postReply(m_httpBuffer);
     }
 
     m_httpBuffer.reset();
-	
+
   }
 
   bool Reply::chunkResponse(BufferPtr httpBuffer,

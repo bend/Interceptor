@@ -27,8 +27,9 @@ namespace Interceptor {
   {
     LOG_DEBUG("GatewayHandler::~GatewayHandler()");
     m_gateway->reset();
-    m_pool->putConnection(
-      m_gateway->takeConnection());
+    auto conn = m_gateway->takeConnection();
+    conn->reset();
+    conn.reset();
   }
 
   void GatewayHandler::route(std::function<void(Http::Code, std::stringstream*)>

@@ -2,6 +2,7 @@
 
 #include "socket/OutboundConnection.h"
 #include "utils/Logger.h"
+#include "common/Packet.h"
 
 namespace Interceptor {
 
@@ -10,10 +11,10 @@ namespace Interceptor {
     : m_backend(backend),
       m_ioService(ioService),
       m_ostrand(ioService),
-	  m_istrand(ioService),
+      m_istrand(ioService),
       m_state(0)
   {
-	std::memset(m_response, 0, sizeof(m_response));
+    std::memset(m_response, 0, sizeof(m_response));
     m_connection = std::make_shared<OutboundTcpConnection>(m_ioService,
                    m_backend->host, std::to_string(m_backend->port));
   }
@@ -70,15 +71,17 @@ namespace Interceptor {
     forwardNext(); // we always call forward to flush queue
   }
 
-  void BackendConnector::forward(Packet& packet,
+  void BackendConnector::forward(Packet* packet,
                                  std::function<void(Http::Code)> callback)
   {
+    assert(m_callback);
     LOG_DEBUG("BackendConnector::forward()");
+    auto pair = std::make_pair(packet, callback);
     m_ioService.post(
       m_ostrand.wrap(
         std::bind(&BackendConnector::doPost,
                   shared_from_this(),
-                  std::make_pair(packet, callback)
+                  pair
                  )));
   }
 
@@ -86,17 +89,28 @@ namespace Interceptor {
     std::function<void(Http::Code, std::stringstream*)> callback)
   {
     LOG_DEBUG("BackendConnector::readReply()");
+    assert(m_callback);
+    m_state |= Reading;
     m_connection->asyncReadSome(m_response, sizeof(m_response),
-							m_istrand.wrap(
-                              std::bind(&BackendConnector::handleResponseRead,
-                                        shared_from_this(),
-                                        std::placeholders::_1,
-                                        std::placeholders::_2,
-                                        callback)));
+                                m_istrand.wrap(
+                                  std::bind(&BackendConnector::handleResponseRead,
+                                            shared_from_this(),
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            m_callback)));
   }
 
-  void BackendConnector::doPost(std::pair<Packet, std::function<void(Http::Code)>>
-                                data)
+  void BackendConnector::setReplyCallback(
+    std::function<void(Http::Code, std::stringstream*)> callback)
+  {
+    LOG_DEBUG("BackendConnector::setReplyCallback()");
+    assert(callback);
+    m_callback = callback;
+  }
+
+  void BackendConnector::doPost(
+    std::pair<Packet*, std::function<void(Http::Code)>>
+    data)
   {
     LOG_DEBUG("BackendConnector::doPost()");
     m_outbox.push_back(data);
@@ -110,35 +124,44 @@ namespace Interceptor {
     if ((m_state & CanWrite) && m_outbox.size() > 0) {
       auto p = m_outbox.front();
       m_outbox.pop_front();
-      LOG_DEBUG("BackendConnector::forwardNext(), forwarding");
       doForward(std::get<0>(p), std::get<1>(p));
     } else if (m_outbox.size() > 0) {
       LOG_DEBUG("BackendConnector::forwardNext(), postponing");
     }
   }
 
-  void BackendConnector::doForward(Packet& packet,
+  void BackendConnector::doForward(Packet* packet,
                                    std::function<void(Http::Code)> callback)
   {
     LOG_DEBUG("BackendConnector::doForward()");
     m_state &= ~CanWrite;
-    m_connection->asyncWrite(std::get<const char*>(packet),
-                             std::get<size_t>(packet),
+    m_state |= Writing;
+    m_connection->asyncWrite(packet->m_data,
+                             packet->m_size,
                              m_ostrand.wrap(
-                               std::bind(&BackendConnector::handlePacketForwarded, shared_from_this(),
-                                         std::placeholders::_1, callback)));
+                               std::bind(&BackendConnector::handlePacketForwarded,
+                                         shared_from_this(),
+                                         std::placeholders::_1,
+                                         packet,
+                                         callback)));
   }
 
   void BackendConnector::handlePacketForwarded(const boost::system::error_code&
-      error,
+      error, Packet* packet,
       std::function<void(Http::Code)> callback)
   {
     LOG_DEBUG("BackendConnector::handlePacketForwarded()");
     m_state |= CanWrite;
+    m_state &= ~Writing;
     Http::Code code = Http::convertToHttpCode(error);
     LOG_DEBUG("Return code : " << (int) code << " " << error.message());
+    delete packet;
     callback(code);
     forwardNext();
+
+    if (!(m_state & Reading)) {
+      readReply(m_callback);
+    }
   }
 
   void BackendConnector::handleResponseRead(const boost::system::error_code&
@@ -146,17 +169,33 @@ namespace Interceptor {
       std::function<void(Http::Code, std::stringstream*)> callback)
   {
     LOG_DEBUG("BackendConnector::handleResponseRead()");
+    m_state &= ~Reading;
+
+    assert(m_callback);
 
     if (error) {
+      if (error == boost::asio::error::eof
+          || error == boost::asio::error::connection_reset) {
+        LOG_DEBUG("BackendConnector::handleResponseRead() - connection closed by peer");
+        return;
+      }
+
       LOG_DEBUG("BackendConnector::handleResponseRead() : error - " <<
                 error.message());
       Http::Code code = Http::convertToHttpCode(error);
-      callback(code, nullptr);
+      m_ioService.post(
+        m_istrand.wrap(
+          std::bind(m_callback, code, nullptr)));
     } else {
-	  std::stringstream* stream = new std::stringstream();
-	  stream->write(m_response, bytesRead);
-	  callback(Http::Code::Ok, stream);
-	  readReply(callback);
+      std::stringstream* stream = new std::stringstream();
+      stream->write(m_response, bytesRead);
+      LOG_NETWORK("BackendConnector::handleResponseRead() - got : ",  stream->str() );
+
+      m_ioService.post(
+        m_istrand.wrap(
+          std::bind(m_callback, Http::Code::Ok, stream)));
+
+      readReply(m_callback);
     }
   }
 

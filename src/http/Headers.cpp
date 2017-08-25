@@ -63,6 +63,7 @@ namespace Interceptor::Http {
 
   void Headers::addGeneralHeaders()
   {
+    addHeader("Date", ServerInfo::currentDate());
     addHeader("Server", ServerInfo::commonName());
     addHeader("Accept-Ranges", "bytes");
   }
