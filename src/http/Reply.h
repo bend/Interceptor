@@ -102,6 +102,7 @@ namespace Interceptor {
       BufferPtr m_httpBuffer;
 
       std::mutex m_mutex;
+	  boost::asio::strand m_strand;
     };
 
   }

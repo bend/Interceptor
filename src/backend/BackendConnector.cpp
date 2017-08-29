@@ -10,8 +10,9 @@ namespace Interceptor {
                                      boost::asio::io_service& ioService)
     : m_backend(backend),
       m_ioService(ioService),
-      m_ostrand(ioService),
-      m_istrand(ioService),
+      m_writestrand(ioService),
+      m_readstrand(ioService),
+	  m_callbackstrand(ioService),
       m_state(0)
   {
     std::memset(m_response, 0, sizeof(m_response));
@@ -28,7 +29,7 @@ namespace Interceptor {
   bool BackendConnector::connect()
   {
     LOG_DEBUG("BackendConnector::connect()");
-    m_connection->asyncResolve(m_ostrand.wrap(
+    m_connection->asyncResolve(m_writestrand.wrap(
                                  std::bind(&BackendConnector::handleResolved,
                                            shared_from_this(),
                                            std::placeholders::_1,
@@ -44,7 +45,7 @@ namespace Interceptor {
       LOG_INFO("BackendConnector::handleResolved() - Resolved");
       m_connection->setEndpoint(it);
       m_connection->asyncConnect(
-        m_ostrand.wrap(
+        m_writestrand.wrap(
           std::bind(&BackendConnector::handleConnected,
                     shared_from_this(),
                     std::placeholders::_1)));
@@ -78,7 +79,7 @@ namespace Interceptor {
     LOG_DEBUG("BackendConnector::forward()");
     auto pair = std::make_pair(packet, callback);
     m_ioService.post(
-      m_ostrand.wrap(
+      m_writestrand.wrap(
         std::bind(&BackendConnector::doPost,
                   shared_from_this(),
                   pair
@@ -92,7 +93,7 @@ namespace Interceptor {
     assert(m_callback);
     m_state |= Reading;
     m_connection->asyncReadSome(m_response, sizeof(m_response),
-                                m_istrand.wrap(
+                                m_readstrand.wrap(
                                   std::bind(&BackendConnector::handleResponseRead,
                                             shared_from_this(),
                                             std::placeholders::_1,
@@ -138,7 +139,7 @@ namespace Interceptor {
     m_state |= Writing;
     m_connection->asyncWrite(packet->m_data,
                              packet->m_size,
-                             m_ostrand.wrap(
+                             m_writestrand.wrap(
                                std::bind(&BackendConnector::handlePacketForwarded,
                                          shared_from_this(),
                                          std::placeholders::_1,
@@ -183,17 +184,15 @@ namespace Interceptor {
       LOG_DEBUG("BackendConnector::handleResponseRead() : error - " <<
                 error.message());
       Http::Code code = Http::convertToHttpCode(error);
-      m_ioService.post(
-        m_istrand.wrap(
-          std::bind(m_callback, code, nullptr)));
+          m_callback(code, nullptr);
     } else {
       std::stringstream* stream = new std::stringstream();
       stream->write(m_response, bytesRead);
       LOG_NETWORK("BackendConnector::handleResponseRead() - got : ",  stream->str() );
 
-      m_ioService.post(
-        m_istrand.wrap(
-          std::bind(m_callback, Http::Code::Ok, stream)));
+	  dumpToFile("out.txt", stream->str());
+
+	  m_callbackstrand.post(std::bind(m_callback, Http::Code::Ok, stream));
 
       readReply(m_callback);
     }

@@ -3,6 +3,7 @@
 
 #include "vars.h"
 #include <boost/lexical_cast.hpp>
+#include <fstream>
 
 namespace Interceptor {
 
@@ -32,6 +33,12 @@ namespace Interceptor {
   static inline LogEntry trace(const std::string& type)
   {
     return LogEntry(type);
+  }
+
+  static inline void dumpToFile(const std::string& file, const std::string& data)
+  {
+	std::ofstream out(file.c_str(), std::ios::app);
+	out << data;
   }
 
 }

@@ -90,9 +90,15 @@ namespace Interceptor {
     if (buffer->flags() & Buffer::InvalidRequest) {
       closeConnection();
     } else {
+	  for(auto& b : buffer->m_buffers) {
+		dumpToFile("out3.txt", 
+                    std::string(boost::asio::buffer_cast<const char*>(b),
+                                boost::asio::buffer_size(b)));
+	  }
       m_ioService.post(
         m_ostrand.wrap(
-          std::bind(&SessionConnection::sendNext, shared_from_this(), buffer)));
+          std::bind(&SessionConnection::sendNext, 
+					shared_from_this(), buffer)));
     }
   }
 
@@ -132,6 +138,7 @@ namespace Interceptor {
       }
 
 #endif  // DUMP_NETWORK
+
       m_connection->asyncWrite(buffer->m_buffers, m_ostrand.wrap
                                (std::bind
                                 (&SessionConnection::handleTransmissionCompleted,
@@ -232,6 +239,11 @@ namespace Interceptor {
   boost::asio::ip::tcp::socket& SessionConnection::socket() const
   {
     return m_connection->socket();
+  }
+
+  boost::asio::io_service& SessionConnection::ioService() const
+  {
+	return m_ioService;
   }
 
 
