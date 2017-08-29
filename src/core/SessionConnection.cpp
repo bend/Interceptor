@@ -90,15 +90,10 @@ namespace Interceptor {
     if (buffer->flags() & Buffer::InvalidRequest) {
       closeConnection();
     } else {
-	  for(auto& b : buffer->m_buffers) {
-		dumpToFile("out3.txt", 
-                    std::string(boost::asio::buffer_cast<const char*>(b),
-                                boost::asio::buffer_size(b)));
-	  }
-      m_ioService.post(
-        m_ostrand.wrap(
-          std::bind(&SessionConnection::sendNext, 
-					shared_from_this(), buffer)));
+      // post directly to the strand and not to the ioService to keep ordering
+      m_ostrand.post(
+        std::bind(&SessionConnection::sendNext,
+                  shared_from_this(), buffer));
     }
   }
 
@@ -243,7 +238,7 @@ namespace Interceptor {
 
   boost::asio::io_service& SessionConnection::ioService() const
   {
-	return m_ioService;
+    return m_ioService;
   }
 
 

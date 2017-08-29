@@ -61,7 +61,7 @@ namespace Interceptor {
     std::deque<std::pair<Packet*, std::function<void(Http::Code)>>> m_outbox;
     boost::asio::strand m_writestrand;
     boost::asio::strand m_readstrand;
-	boost::asio::strand m_callbackstrand;
+    boost::asio::strand m_callbackstrand;
     int m_state;
     std::function<void(Http::Code, std::stringstream*)> m_callback;
   };

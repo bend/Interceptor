@@ -23,7 +23,7 @@ namespace Interceptor {
                        callback);
     void postReply(BufferPtr buffer);
 
-	boost::asio::io_service& ioService() const;
+    boost::asio::io_service& ioService() const;
 
   private:
     enum State : uint8_t  {

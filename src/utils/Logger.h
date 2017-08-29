@@ -37,8 +37,8 @@ namespace Interceptor {
 
   static inline void dumpToFile(const std::string& file, const std::string& data)
   {
-	std::ofstream out(file.c_str(), std::ios::app);
-	out << data;
+    std::ofstream out(file.c_str(), std::ios::app);
+    out << data;
   }
 
 }

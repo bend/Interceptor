@@ -23,8 +23,8 @@ namespace Interceptor::Http {
       m_gateway(nullptr),
       m_status(Code::Ok),
       m_contentLength(0),
-	  m_gzipBusy(false),
-	  m_strand(request->connection()->ioService())
+      m_gzipBusy(false),
+      m_strand(request->connection()->ioService())
   {
   }
 
@@ -110,7 +110,6 @@ namespace Interceptor::Http {
   void Reply::handleGatewayReply(Code code, std::stringstream* stream)
   {
     LOG_DEBUG("Reply::handleGatewayReply()");
-	m_strand.post(std::bind([=]() {
 
     if (code != Code::Ok || !stream) {
       m_httpBuffer = std::make_shared<Buffer>();
@@ -119,15 +118,13 @@ namespace Interceptor::Http {
       LOG_NETWORK("Reply::handleGatewayReply() - got reply: ", stream->str());
 
       if (checkBackendReply(*stream)) {
-		postBackendReply(*stream);
+        postBackendReply(*stream);
       } else {
         buildErrorResponse(Code::InternalServerError, true);
       }
 
       delete stream;
     }
-	}));
-
   }
 
   void Reply::setFlag(Flag flag, bool value)
@@ -423,25 +420,9 @@ namespace Interceptor::Http {
 
     auto connection = m_request->connection();
 
-	dumpToFile("out2.txt", stream.str());
-
-	  for(auto& b : buffer->m_buffers) {
-		dumpToFile("out2_1.txt", 
-                    std::string(boost::asio::buffer_cast<const char*>(b),
-                                boost::asio::buffer_size(b)));
-	  }
-  
     if (connection) {
-//	  connection->postReply(buffer);
-		  m_strand.post(std::bind(&SessionConnection::postReply, connection,buffer));
+      connection->postReply(buffer);
     }
-	  
-	for(auto& b : buffer->m_buffers) {
-		dumpToFile("out2_2.txt", 
-                    std::string(boost::asio::buffer_cast<const char*>(b),
-                                boost::asio::buffer_size(b)));
-	  }
-
 
   }
 

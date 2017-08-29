@@ -12,7 +12,7 @@ namespace Interceptor {
       m_ioService(ioService),
       m_writestrand(ioService),
       m_readstrand(ioService),
-	  m_callbackstrand(ioService),
+      m_callbackstrand(ioService),
       m_state(0)
   {
     std::memset(m_response, 0, sizeof(m_response));
@@ -184,15 +184,15 @@ namespace Interceptor {
       LOG_DEBUG("BackendConnector::handleResponseRead() : error - " <<
                 error.message());
       Http::Code code = Http::convertToHttpCode(error);
-          m_callback(code, nullptr);
+      m_callback(code, nullptr);
     } else {
       std::stringstream* stream = new std::stringstream();
       stream->write(m_response, bytesRead);
       LOG_NETWORK("BackendConnector::handleResponseRead() - got : ",  stream->str() );
 
-	  dumpToFile("out.txt", stream->str());
+      dumpToFile("out.txt", stream->str());
 
-	  m_callbackstrand.post(std::bind(m_callback, Http::Code::Ok, stream));
+      m_callbackstrand.post(std::bind(m_callback, Http::Code::Ok, stream));
 
       readReply(m_callback);
     }
