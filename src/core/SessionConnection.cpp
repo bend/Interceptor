@@ -120,9 +120,9 @@ namespace Interceptor {
       startWriteTimer();
       m_state &= ~CanSend;
 
-      if (buffer->flags() & Buffer::HasMore)
-        m_ioService.post(
-          m_fsstrand.wrap(buffer->nextCall()));
+      if (buffer->flags() & Buffer::HasMore) {
+        m_fsstrand.post(buffer->nextCall());
+      }
 
 #ifdef DUMP_NETWORK
 
@@ -182,9 +182,8 @@ namespace Interceptor {
   {
     LOG_DEBUG("SessionConnection::closeConnection()");
 
-    m_ioService.post(
-      m_istrand.wrap(
-        std::bind(&SessionConnection::doCloseConnection, shared_from_this())));
+    m_istrand.post(
+      std::bind(&SessionConnection::doCloseConnection, shared_from_this()));
   }
 
   void SessionConnection::doCloseConnection()

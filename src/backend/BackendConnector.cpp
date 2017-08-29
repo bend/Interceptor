@@ -78,12 +78,11 @@ namespace Interceptor {
     assert(m_callback);
     LOG_DEBUG("BackendConnector::forward()");
     auto pair = std::make_pair(packet, callback);
-    m_ioService.post(
-      m_writestrand.wrap(
-        std::bind(&BackendConnector::doPost,
-                  shared_from_this(),
-                  pair
-                 )));
+    m_writestrand.post(
+      std::bind(&BackendConnector::doPost,
+                shared_from_this(),
+                pair
+               ));
   }
 
   void BackendConnector::readReply(

@@ -23,8 +23,7 @@ namespace Interceptor::Http {
       m_gateway(nullptr),
       m_status(Code::Ok),
       m_contentLength(0),
-      m_gzipBusy(false),
-      m_strand(request->connection()->ioService())
+      m_gzipBusy(false)
   {
   }
 
