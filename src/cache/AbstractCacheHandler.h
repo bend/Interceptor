@@ -4,26 +4,30 @@
 #include <string>
 #include "http/Http.h"
 
-class AbstractCacheHandler {
+namespace Interceptor {
 
-public:
-  AbstractCacheHandler(size_t maxCacheSize)
-    : m_maxCacheSize(maxCacheSize) {};
+  class AbstractCacheHandler {
 
-  virtual ~AbstractCacheHandler() = default;
+  public:
+    AbstractCacheHandler(size_t maxCacheSize)
+      : m_maxCacheSize(maxCacheSize) {};
 
-  virtual std::string eTag(const std::string& file) = 0;
+    virtual ~AbstractCacheHandler() = default;
 
-  virtual std::string lastModified(const std::string& file) = 0;
+    virtual std::string eTag(const std::string& file) = 0;
 
-  virtual bool size(const std::string& file, size_t& bytes) = 0;
+    virtual std::string lastModified(const std::string& file) = 0;
 
-  virtual Http::Code read(const std::string& file, std::stringstream& out,
-                          size_t& bytes) = 0;
+    virtual bool size(const std::string& file, size_t& bytes) = 0;
 
-protected:
-  size_t m_maxCacheSize;
+    virtual Http::Code read(const std::string& file, std::stringstream& out,
+                            size_t& bytes) = 0;
 
-};
+  protected:
+    size_t m_maxCacheSize;
+
+  };
+
+}
 
 #endif // ABSTRACT_CACHE_HANDLER_H__

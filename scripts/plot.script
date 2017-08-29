@@ -1,0 +1,15 @@
+set terminal dumb
+
+set ylabel "%MEM"
+
+set ytics nomirror in
+
+set yrange [0:*]
+
+#plot "/tmp/mem.log" using 3 with lines axes x1y1 title "VSZ", 
+plot "/tmp/mem.log"	 using 2 with lines axes x1y1 title "%MEM"
+
+set ylabel "VSZ"
+plot "/tmp/mem.log" using 3 with lines axes x1y1 title "VSZ"
+
+

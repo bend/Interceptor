@@ -7,6 +7,9 @@ import subprocess
 import time
 
 HTTP_URL = "localhost:7000"
+BACKEND_URL= "localhost:7003"
+IP_HOST = "localhost"
+IP_PORT = 7000
 
 class Utils(object):
     
@@ -37,4 +40,4 @@ class Utils(object):
     @staticmethod
     def tearDownClass(proc):
         print "cleaning environment..."
-        proc.kill()
+        proc.terminate()

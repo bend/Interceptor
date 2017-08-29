@@ -3,10 +3,14 @@
 
 #include <string>
 
-struct Event {
-  int event;
-  std::string path;
+namespace Interceptor {
 
-};
+  struct Event {
+    int event;
+    std::string path;
+
+  };
+
+}
 
 #endif // EVENT_H__

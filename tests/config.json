@@ -4,6 +4,8 @@
 	"client-timeout" : 200,
 	"nb-threads": 5,
 	"max-cache-size" : 1000000,
+	"max-in-mem-request-size" : 200000,
+	"max-request-size": 2000000,
 	
 	"error-pages" : [
 		{ "404" : "error/404.html" }, 
@@ -15,7 +17,7 @@
 
   "servers": [
 	{ 
-	  "listen-host": "0.0.0.0",
+	  "listen-host": "127.0.0.1",
 	  "listen-port": 7000,
 	  "server-timeout": 25,
 	  "client-timeout": 25,
@@ -35,8 +37,19 @@
 		  ],
 
 		  "locations" : [
-			{ "forbidden" : 403 }
+			{ 
+			  "forbidden" : 403
+			}, 
+			{
+			  "REGEX" : {
+				"name": "php",
+				"host": "localhost",
+				"port": 5000
+			  }
+			}
 		  ]
+
+
 
 		}
 	  ]
@@ -56,6 +69,51 @@
 		  "docroot": "site2/"
 		}
 	  ]
+	},
+	{ 
+	  "listen-host": "0.0.0.0",
+	  "listen-port": 7003,
+
+	  "sites": [
+		{
+		  "gzip": "all",
+		  "try-files" : [
+			"index.php",
+			"index.html"
+		  ],
+		  "host": "localhost",
+		  "docroot": "site2/",
+		  "backend" : "backend_test"
+		}
+	  ]
+	},
+	{ 
+	  "listen-host": "0.0.0.0",
+	  "listen-port": 7004,
+
+	  "sites": [
+		{
+		  "gzip": "all",
+		  "try-files" : [
+			"index.php",
+			"index.html"
+		  ],
+		  "host": "localhost",
+		  "docroot": "site2/",
+		  "backend" : "backend_test2"
+		}
+	  ]
+	}
+  ],
+
+  "backends" : [
+	{ "name" : "backend_test",
+	  "host": "127.0.0.1",
+	  "port" : 7000
+	},
+	{ "name" : "backend_test2",
+	  "host": "127.0.0.1",
+	  "port" : 7005
 	}
   ]
 }

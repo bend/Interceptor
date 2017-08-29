@@ -1,21 +1,4 @@
 set(src
-  core/Interceptor.cpp
-  core/InterceptorSession.cpp
-  core/Config.cpp
-
-  socket/InboundConnection.cpp
-
-  http/HttpHeaders.cpp
-  http/HttpRequest.cpp
-  http/HttpReply.cpp
-  http/Http.cpp
-
-  #  OutboundConnection.cpp
-
-  utils/Logger.cpp
-  utils/Server.cpp
-  utils/FileUtils.cpp
-  
   Main.cpp
 )
 
@@ -23,11 +6,25 @@ INCLUDE_DIRECTORIES(
   "."
 )
 
+subdirs(core)
+subdirs(http)
 subdirs(cache)
+subdirs(backend)
+subdirs(gateway)
+subdirs(utils)
+subdirs(socket)
+subdirs(common)
 
 set(LIBS
-  ${LIBS}
+  interceptor_core
+  interceptor_http
   interceptor_cache
+  interceptor_backend
+  interceptor_gateway
+  interceptor_socket
+  interceptor_common
+  interceptor_utils
+  ${LIBS}
 )
 
 if(ENABLE_LOCAL_CACHE)

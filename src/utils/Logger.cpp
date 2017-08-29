@@ -1,83 +1,86 @@
 #include "Logger.h"
 
 #include <iostream>
+#include <thread>
 
-#include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-LogEntry::LogEntry(const std::string& type)
-{
-  std::stringstream ss;
-  ss << '[' <<
-     boost::posix_time::to_simple_string(
-       boost::posix_time::microsec_clock::local_time()
-     ) << ']' << '[' << boost::this_thread::get_id() << "] " << type << ' ';
-  preamble_ = ss.str();
-}
-
-LogEntry::LogEntry(const LogEntry& o)
-  : preamble_(o.preamble_)
-{
-  if (preamble_.empty()) {
-    return;
-  }
-
-  ss_ << o.ss_.str();
-  o.preamble_ = "";
-  o.ss_.clear();
-}
-
-LogEntry::~LogEntry()
-{
-  if (preamble_.empty()) {
-    return;
-  }
-
-  std::string s = ss_.str();
-
-  if (!s.empty()) {
+namespace Interceptor {
+  LogEntry::LogEntry(const std::string& type)
+  {
     std::stringstream ss;
-    ss << preamble_ << s << "\n";
-    std::cerr << ss.str() << std::flush;
+    ss << '[' <<
+       boost::posix_time::to_simple_string(
+         boost::posix_time::microsec_clock::local_time()
+       ) << ']' << '[' << std::this_thread::get_id() << "] " << type << ' ';
+    m_preamble = ss.str();
   }
-}
 
-LogEntry& LogEntry::operator <<(const char* s)
-{
-  if (preamble_.empty()) {
+  LogEntry::LogEntry(const LogEntry& o)
+    : m_preamble(o.m_preamble)
+  {
+    if (m_preamble.empty()) {
+      return;
+    }
+
+    m_ss << o.m_ss.str();
+    o.m_preamble = "";
+    o.m_ss.clear();
+  }
+
+  LogEntry::~LogEntry()
+  {
+    if (m_preamble.empty()) {
+      return;
+    }
+
+    std::string s = m_ss.str();
+
+    if (!s.empty()) {
+      std::stringstream ss;
+      ss << m_preamble << s << "\n";
+      std::cerr << ss.str() << std::flush;
+    }
+  }
+
+  LogEntry& LogEntry::operator <<(const char* s)
+  {
+    if (m_preamble.empty()) {
+      return *this;
+    }
+
+    m_ss << s;
     return *this;
   }
 
-  ss_ << s;
-  return *this;
-}
+  LogEntry& LogEntry::operator <<(const std::string& s)
+  {
+    if (m_preamble.empty()) {
+      return *this;
+    }
 
-LogEntry& LogEntry::operator <<(const std::string& s)
-{
-  if (preamble_.empty()) {
+    m_ss << s;
     return *this;
   }
 
-  ss_ << s;
-  return *this;
-}
+  LogEntry& LogEntry::operator <<(int i)
+  {
+    if (m_preamble.empty()) {
+      return *this;
+    }
 
-LogEntry& LogEntry::operator <<(int i)
-{
-  if (preamble_.empty()) {
+    m_ss << i;
     return *this;
   }
 
-  ss_ << i;
-  return *this;
-}
+  LogEntry& LogEntry::operator <<(double d)
+  {
+    if (m_preamble.empty()) {
+      return *this;
+    }
 
-LogEntry& LogEntry::operator <<(double d)
-{
-  if (preamble_.empty()) {
+    m_ss << d;
     return *this;
   }
 
-  ss_ << d;
-  return *this;
 }

@@ -3,17 +3,21 @@
 
 #include <sstream>
 
-namespace Http {
+#include <boost/system/error_code.hpp>
+
+namespace Interceptor::Http {
   enum class Code : short {
     Ok								= 200,
     PartialContent					= 206,
     BadRequest						= 400,
-	Forbidden						= 403,
+    Forbidden						= 403,
     NotFound						= 404,
+    RequestEntityTooLarge			= 413,
     RequestRangeNotSatisfiable		= 416,
     UnprocessableEntity				= 422,
     InternalServerError				= 500,
     NotImplemented					= 501,
+    ServiceUnavailable				= 503,
     HttpVersionNotSupported			= 505
   };
 
@@ -31,6 +35,8 @@ namespace Http {
   };
 
   void stringValue(Code error, std::stringstream& stream);
+
+  Code convertToHttpCode(const boost::system::error_code& error);
 
 }
 

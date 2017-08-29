@@ -1,36 +1,46 @@
 #ifndef LOGGER_H__
 #define LOGGER_H__
 
-#include <boost/lexical_cast.hpp>
-
 #include "vars.h"
+#include <boost/lexical_cast.hpp>
+#include <fstream>
 
-class LogEntry {
-public:
-  LogEntry(const std::string& type);
-  LogEntry(const LogEntry& o);
+namespace Interceptor {
 
-  ~LogEntry();
+  class LogEntry {
+  public:
+    LogEntry(const std::string& type);
+    LogEntry(const LogEntry& o);
 
-  LogEntry& operator<< (const char*);
-  LogEntry& operator<< (const std::string&);
-  LogEntry& operator<< (int);
-  LogEntry& operator<< (double);
+    ~LogEntry();
 
-  template <typename T>
-  LogEntry& operator<< (T t)
+    LogEntry& operator<< (const char*);
+    LogEntry& operator<< (const std::string&);
+    LogEntry& operator<< (int);
+    LogEntry& operator<< (double);
+
+    template <typename T>
+    LogEntry& operator<< (T t)
+    {
+      return (*this) << boost::lexical_cast<std::string>(t);
+    }
+
+  private:
+    mutable std::string m_preamble;
+    mutable std::stringstream m_ss;
+  };
+
+  static inline LogEntry trace(const std::string& type)
   {
-    return (*this) << boost::lexical_cast<std::string>(t);
+    return LogEntry(type);
   }
 
-private:
-  mutable std::string preamble_;
-  mutable std::stringstream ss_;
-};
+  static inline void dumpToFile(const std::string& file, const std::string& data)
+  {
+    std::ofstream out(file.c_str(), std::ios::app);
+    out << data;
+  }
 
-static inline LogEntry trace(const std::string& type)
-{
-  return LogEntry(type);
 }
 
 
@@ -39,9 +49,18 @@ static inline LogEntry trace(const std::string& type)
 #define LOG_ERROR(A)  trace("err ") << A
 
 #ifdef DEBUG_LOGGING
-#define LOG_DEBUG(A) trace("dbg ") << A
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define LOG_DEBUG(A) trace("dbg ") << __FILENAME__ << ":" << __LINE__ << " - " << A
+
+#ifdef DUMP_NETWORK
+#define LOG_NETWORK(A, B) trace("net") << __FILENAME__ << ":" << __LINE__ <<" - " << A << "\n" << B
+#else
+#define LOG_NETWORK(A, B)
+#endif // DUMP_NETWORK
+
 #else
 #define LOG_DEBUG(A)
+#define LOG_NETWORK(A, B)
 #endif // DEBUG_LOGGING
 
 #endif //LOGGER_H__

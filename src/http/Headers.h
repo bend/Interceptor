@@ -6,12 +6,12 @@
 #include <string>
 #include <unordered_map>
 
-namespace Http {
-  class HttpHeaders {
+namespace Interceptor::Http {
+  class Headers {
   public:
-    HttpHeaders() = default;
-    HttpHeaders(const std::string& headers);
-    ~HttpHeaders();
+    Headers() = default;
+    Headers(const std::string& headers);
+    ~Headers();
 
     void addHeader(const std::string& key, const std::string& value);
     void addHeader(const std::string& key, int i);
@@ -19,7 +19,7 @@ namespace Http {
 
     void addGeneralHeaders();
     void serialize(std::stringstream& response) const;
-    void fillFrom(const HttpHeaders* headers);
+    void fillFrom(const Headers* headers);
     Code parse();
 
   private:

@@ -117,6 +117,17 @@ class TestValidHttpServer(unittest.TestCase):
         res = conn.getresponse()
         self.assertEqual(res.status, 206)
         conn.close()
+    
+    def test7_3(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        headers = { "Range" : "bytes=95-100" }
+        conn.request("GET", "/lorem.html", None, headers)
+        res = conn.getresponse()
+        self.assertEqual(res.status, 206)
+        fdata = Utils.read_file("site1/lorem.html")
+        chunk = fdata[95:101]
+        self.assertEqual(res.read(), chunk)
+        conn.close()
 
     def test7(self):
         conn = httplib.HTTPConnection(HTTP_URL)
@@ -135,9 +146,9 @@ class TestValidHttpServer(unittest.TestCase):
         self.assertEqual(fdata, data + data2)
         conn.close()
 
-    def test8(self):
+    def test8_1(self):
         conn = httplib.HTTPConnection(HTTP_URL)
-        conn.request("DELETE", "/lorem.html", None, headers)
+        conn.request("DELETE", "/lorem.html")
         res = conn.getresponse()
         self.assertEqual(res.status, 501)
         conn.close()
@@ -170,6 +181,9 @@ class TestValidHttpServer(unittest.TestCase):
         lastmodifed2 = response.getheader("Last-Modified")
         self.assertNotEqual(lastmodifed, lastmodifed2)
 
+    def test_lastest(self):
+        self.assertEqual(self.proc.poll(), None)
+
 
     @classmethod
     def setUpClass(self):
@@ -180,5 +194,6 @@ class TestValidHttpServer(unittest.TestCase):
         Utils.tearDownClass(self.proc)
 
 if __name__ == '__main__':
+    print "Enable Gzip = " + os.environ["ENABLE_GZIP"]
     unittest.main()
 

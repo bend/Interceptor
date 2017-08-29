@@ -1,24 +1,24 @@
-#include "HttpHeaders.h"
+#include "Headers.h"
 
 #include "utils/Logger.h"
-#include "utils/Server.h"
+#include "utils/ServerInfo.h"
 
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 
-namespace Http {
+namespace Interceptor::Http {
 
-  HttpHeaders::HttpHeaders(const std::string& headers)
+  Headers::Headers(const std::string& headers)
     : m_request(headers)
   {}
 
-  HttpHeaders::~HttpHeaders()
+  Headers::~Headers()
   {
-    LOG_DEBUG("HttpHeaders::~HttpHeaders()");
+    LOG_DEBUG("Headers::~Headers()");
   }
 
 
-  Code HttpHeaders::parse()
+  Code Headers::parse()
   {
     const std::string headers = m_request;
     typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -29,7 +29,7 @@ namespace Http {
       size_t pos = header.find_first_of(":");
 
       if (pos == std::string::npos) {
-        LOG_ERROR("HttpHeaders missing separator.. aborting for " << header);
+        LOG_ERROR("Headers missing separator.. aborting for " << header);
         return Code::UnprocessableEntity;
       }
 
@@ -42,7 +42,7 @@ namespace Http {
     return Code::Ok;
   }
 
-  const std::string* HttpHeaders::getHeader(const std::string& key) const
+  const std::string* Headers::getHeader(const std::string& key) const
   {
     if (m_headers.count(key) > 0) {
       return &m_headers.at(key);
@@ -51,23 +51,24 @@ namespace Http {
     return nullptr;
   }
 
-  void HttpHeaders::addHeader(const std::string& key, const std::string& value)
+  void Headers::addHeader(const std::string& key, const std::string& value)
   {
     m_headers[key] = value;
   }
 
-  void HttpHeaders::addHeader(const std::string& key, int i)
+  void Headers::addHeader(const std::string& key, int i)
   {
     addHeader(key, std::to_string(i));
   }
 
-  void HttpHeaders::addGeneralHeaders()
+  void Headers::addGeneralHeaders()
   {
-    addHeader("Server", Server::getCommonName());
+    addHeader("Date", ServerInfo::currentDate());
+    addHeader("Server", ServerInfo::commonName());
     addHeader("Accept-Ranges", "bytes");
   }
 
-  void HttpHeaders::serialize(std::stringstream& response) const
+  void Headers::serialize(std::stringstream& response) const
   {
     for (const auto& kv : m_headers) {
       response << kv.first << ": " << kv.second << "\r\n";
@@ -76,7 +77,7 @@ namespace Http {
     response << "\r\n";
   }
 
-  void HttpHeaders::fillFrom(const HttpHeaders* headers)
+  void Headers::fillFrom(const Headers* headers)
   {
     if (headers->getHeader("X-Forwarded-For")) {
       addHeader("X-Forwarded-For", *headers->getHeader("X-Forwarded-For"));

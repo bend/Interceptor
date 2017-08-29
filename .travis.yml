@@ -4,18 +4,15 @@ os:
 - linux
 dist: trusty
 sudo: required
+services:
+  - docker
 
 compiler: 
 - gcc 
 
 before_install:
-- sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test 
-- sudo apt-get -qq update
-- sudo apt-get install -y libboost-all-dev zlib1g-dev
-- sudo apt-get install -y gcc-5 g++-5
-- sudo apt-get install -y libgamin-dev
-- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1
-- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 1
+  - pip install --user codecov
+  - sudo docker build -t interceptor .
 
 env: 
   matrix:
@@ -29,4 +26,4 @@ env:
     - ENABLE_LOCAL_CACHE=on ENABLE_GZIP=off
     - ENABLE_LOCAL_CACHE=off ENABLE_GZIP=off
 
-script: cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DEBUG_LOGGING . && make && sudo make install &&  ctest --verbose
+script: sudo docker run -v $PWD:/code -t interceptor /bin/bash -c "export ENABLE_GZIP=$ENABLE_GZIP; export DEBUG_LOGGING=$DEBUG_LOGGING; export ENABLE_LOCAL_CACHE=$ENABLE_LOCAL_CACHE; cd /code; cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DEBUG_LOGGING . && make && make install && env CTEST_OUTPUT_ON_FAILURE=1 make test"

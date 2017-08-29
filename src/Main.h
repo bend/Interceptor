@@ -2,33 +2,54 @@
 #define MAIN_H__
 
 #include <memory>
+#include <future>
+#include <list>
+#include <boost/asio/io_service.hpp>
 #include "vars.h"
 
-class AbstractCacheHandler;
-class Config;
-class Subject;
-class CacheMonitor;
+namespace Interceptor {
 
-class Main {
-public:
-  Main();
-  ~Main();
-  bool init(int argc, char** argv);
-  void run();
+  class AbstractCacheHandler;
+  class Config;
+  class Subject;
+  class CacheMonitor;
+  class BackendsPool;
+  class Server;
 
-private:
+  class Main {
+  public:
+    Main();
+    ~Main();
+    bool init(int argc, char** argv);
+    bool reinit();
+    void run();
+    void stop();
 
-  bool parsePO(int argc, char** argv);
-  bool initCache();
+  public:
+    int _argc;
+    char** _argv;
 
-private:
-  AbstractCacheHandler* m_cacheHandler;
+  private:
+
+    bool parsePO(int argc, char** argv);
+    bool initCache();
+    bool initBackendsPool();
+
+  private:
+    boost::asio::io_service m_ioService;
+    AbstractCacheHandler* m_cacheHandler;
 #ifdef ENABLE_LOCAL_CACHE
-  Subject* m_subject;
-  CacheMonitor* m_monitor;
+    Subject* m_subject;
+    CacheMonitor* m_monitor;
 #endif // ENABLE_LOCAL_CACHE
-  Config* m_config;
-  uint16_t m_nbThreads;
-};
+    Config* m_config;
+    BackendsPool* m_pool;
+    uint16_t m_nbThreads;
+    std::vector<std::future<void>> m_futures;
+    typedef std::shared_ptr<Server> ServerPtr;
+    std::list<ServerPtr> m_servers;
+  };
+
+}
 
 #endif // MAIN_H__

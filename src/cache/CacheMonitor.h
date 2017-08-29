@@ -9,47 +9,52 @@
 #include <iostream>
 #include <thread>
 
-class CacheMonitor {
 
-public:
+namespace Interceptor {
 
-  CacheMonitor(Subject& subject);
+  class CacheMonitor {
 
-  ~CacheMonitor();
+  public:
 
-  std::thread& start();
+    CacheMonitor(Subject& subject);
 
-  void monitorFile(const std::string& p);
+    ~CacheMonitor();
 
-  void monitorDirectory(const std::string& p);
+    std::thread& start();
 
-  void cancelMonitor(const std::string& p);
+    void monitorFile(const std::string& p);
 
-private:
+    void monitorDirectory(const std::string& p);
 
-  bool startCallBack();
+    void cancelMonitor(const std::string& p);
 
-  bool doMonitorDirectory(const std::string& p);
+  private:
 
-  bool doMonitorFile(const std::string& p);
+    bool startCallBack();
 
-  bool doCancelMonitor(const std::string& p);
+    bool doMonitorDirectory(const std::string& p);
 
-  const char* eventName(const int& code);
+    bool doMonitorFile(const std::string& p);
 
-  bool signal(const std::string& filename, const int& code);
+    bool doCancelMonitor(const std::string& p);
 
-private:
-  std::vector<std::string> m_files;
-  std::vector<std::string> m_directories;
-  std::vector<std::string> m_cancel;
-  std::map<std::string, FAMRequest*> m_requests;
-  std::thread* m_runningThread;
-  bool m_monitoring;
+    const char* eventName(const int& code);
 
-  FAMConnection* m_fc;
-  Subject& m_subject;
-};
+    bool signal(const std::string& filename, const int& code);
+
+  private:
+    std::vector<std::string> m_files;
+    std::vector<std::string> m_directories;
+    std::vector<std::string> m_cancel;
+    std::map<std::string, FAMRequest*> m_requests;
+    std::thread* m_runningThread;
+    bool m_monitoring;
+
+    FAMConnection* m_fc;
+    Subject& m_subject;
+  };
+
+}
 
 #endif
 

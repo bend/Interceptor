@@ -47,6 +47,15 @@ class TestInvalidHttpServer(unittest.TestCase):
         res = conn.getresponse()
         self.assertEqual(res.status, 403)
         conn.close()
+
+    def test6(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        conn.request("GET", "/forbidden/index.html")
+        conn.close();
+
+    def test_lastest(self):
+        self.assertEqual(self.proc.poll(), None)
+
     
 
     @classmethod
@@ -58,4 +67,5 @@ class TestInvalidHttpServer(unittest.TestCase):
         Utils.tearDownClass(self.proc)
 
 if __name__ == '__main__':
+    print "Enable Gzip = " + os.environ["ENABLE_GZIP"]
     unittest.main()

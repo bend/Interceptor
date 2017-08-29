@@ -4,13 +4,13 @@
 	"client-timeout" : 200,
 	"nb-threads": 5,
 	"max-cache-size" : 100,
+	"max-request-size": 4,
+	"max-in-mem-request-size" : 2,
 	
 	"error-pages" : [
 		{ "404" : "/home/ben/projects/interceptor/config/404.html" }, 
 		{ "400" : "/home/ben/projects/interceptor/config/400.html" }
 	]
-
-
   },
 
   "servers": [
@@ -34,9 +34,9 @@
 			  "files": ".php"
 		  },
 
-		  "location" : {
-			{"\/css" : 403}
-		  },
+		  "locations" : [
+			{"css" : 403}
+		  ],
 
 		  "error-pages" : [
 			{ "404" : "404.html" },
@@ -78,15 +78,13 @@
 		}
 	  ]
 	}
-
-
   ],
 
   "backends": [
 	{
 	  "name" : "backend-test",
 	  "host" : "localhost",
-	  "port": 24300
+	  "port": 8002
 	}
 
   ]

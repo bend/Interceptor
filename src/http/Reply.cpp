@@ -1,46 +1,48 @@
-#include "HttpReply.h"
+#include "Reply.h"
 
-#include "core/InterceptorSession.h"
-#include "HttpRequest.h"
-#include "HttpHeaders.h"
-#include "HttpBuffer.h"
+#include "Request.h"
+#include "Headers.h"
 #include "utils/FileUtils.h"
 #include "utils/Logger.h"
 #include "cache/generic_cache.h"
+#include "common/Params.h"
+#include "common/Buffer.h"
+#include "gateway/GatewayHandler.h"
+#include "core/SessionConnection.h"
 
-#include <boost/bind.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <algorithm>
 #include <regex>
+#include <functional>
 
-namespace Http {
+namespace Interceptor::Http {
 
-  HttpReply::HttpReply(HttpRequestPtr request)
+  Reply::Reply(HttpRequestPtr request)
     : m_request(request),
       m_replyHeaders(nullptr),
+      m_gateway(nullptr),
       m_status(Code::Ok),
       m_contentLength(0),
       m_gzipBusy(false)
   {
   }
 
-  HttpReply::~HttpReply()
+  Reply::~Reply()
   {
-    LOG_DEBUG("HttpReply::~HttpReply()");
-    delete m_replyHeaders;
+    LOG_DEBUG("Reply::~Reply()");
   }
 
-  void HttpReply::process()
+  void Reply::process()
   {
-    LOG_DEBUG("HttpReply::process()");
+    LOG_DEBUG("Reply::process()");
     std::stringstream stream;
-    m_httpBuffer = std::make_shared<HttpBuffer>();
+    m_httpBuffer = std::make_shared<Buffer>();
 
     if (m_replyHeaders) {
-      delete m_replyHeaders;
+      m_replyHeaders.reset();
     }
 
-    m_replyHeaders = new HttpHeaders();
+    m_replyHeaders = std::make_unique<Headers>();
     m_replyHeaders->addGeneralHeaders();
 
     if ( !m_request->headersReceived() ) {
@@ -53,7 +55,7 @@ namespace Http {
 
     if (status != Code::Ok) {
       if (m_request->m_headers) {
-        m_replyHeaders->fillFrom(m_request->m_headers);
+        m_replyHeaders->fillFrom(m_request->m_headers.get());
       }
 
       buildErrorResponse(status, true);
@@ -66,10 +68,34 @@ namespace Http {
     setFlag(Flag::GzipEncoding, m_request->supportsCompression());
 #endif // ENABLE_GZIP
 
+    if (!m_request->hasMatchingSite()) {
+      buildErrorResponse(Code::NotFound, true);
+      return;
+    }
+
+    const SiteConfig* site = m_request->matchingSite();
+
+    if (site->m_backend.length() > 0) {
+      m_gateway = std::make_unique<GatewayHandler>(site, m_request,
+                  m_request->params()->m_pool);
+      std::weak_ptr<Reply> wp {shared_from_this()};
+      m_request->setCompleted(true);
+      m_gateway->route(std::bind([wp] (Http::Code code, std::stringstream * stream) {
+        auto ptr = wp.lock();
+
+        if (ptr) {
+          ptr->handleGatewayReply(code, stream);
+        } else if (stream) {
+          LOG_ERROR("Reply::process() : Reply is already destructed, cannot send");
+        }
+      }, std::placeholders::_1, std::placeholders::_2));
+      return;
+    }
+
     switch (m_request->method()) {
       case Method::GET:
       case Method::HEAD:
-        handleRetrievalRequest(m_request->method());
+        handleRetrievalRequest(m_request->method(), site);
         break;
 
       case Method::POST:
@@ -80,48 +106,84 @@ namespace Http {
     }
   }
 
-  void HttpReply::setFlag(Flag flag, bool value)
+  void Reply::handleGatewayReply(Code code, std::stringstream* stream)
+  {
+    LOG_DEBUG("Reply::handleGatewayReply()");
+
+    if (code != Code::Ok || !stream) {
+      m_httpBuffer = std::make_shared<Buffer>();
+      buildErrorResponse(code, true);
+    } else {
+      LOG_NETWORK("Reply::handleGatewayReply() - got reply: ", stream->str());
+
+      if (checkBackendReply(*stream)) {
+        postBackendReply(*stream);
+      } else {
+        buildErrorResponse(Code::InternalServerError, true);
+      }
+
+      delete stream;
+    }
+  }
+
+  void Reply::setFlag(Flag flag, bool value)
   {
     m_flags.set(flag, value);
   }
 
-  bool HttpReply::getFlag(Flag flag) const
+  bool Reply::getFlag(Flag flag) const
   {
     return m_flags.test(flag);
   }
 
-  void HttpReply::handleRetrievalRequest(Method method)
+  void Reply::declineRequest(Code error)
   {
-    LOG_DEBUG("HttpReply::handleRetrievalRequest()");
+    Code ret;
+    LOG_DEBUG("Reply::declineRequest()");
+    m_httpBuffer = std::make_shared<Buffer>();
+    m_replyHeaders = std::make_unique<Headers>();
 
-    if (!m_request->hasMatchingSite()) {
-      buildErrorResponse(Code::NotFound, true);
-      return;
+    if (m_request->headersReceived())  {
+      if (!m_request->parsed()) {
+        ret = m_request->parse();
+
+        if (ret != Code::Ok) {
+          error = ret;
+        }
+      }
+    } else {
+      m_httpBuffer->m_flags |= Buffer::State::InvalidRequest;
     }
 
-    const SiteConfig* site = m_request->matchingSite();
+    buildErrorResponse(error, true);
+  }
 
-	Code ret;
-	if( (ret = hasSpecialLocationCode(site)) != Code::Ok) {
-		buildErrorResponse(ret, true);
-		return;
-	}
+  void Reply::handleRetrievalRequest(Method method, const SiteConfig* site)
+  {
+    LOG_DEBUG("Reply::handleRetrievalRequest()");
+
+    Code ret;
+
+    if ( (ret = hasSpecialLocationCode(site)) != Code::Ok) {
+      buildErrorResponse(ret, true);
+      return;
+    }
 
     requestFileContents(method, site);
   }
 
-  bool HttpReply::requestFileContents(Method method, const SiteConfig* site)
+  bool Reply::requestFileContents(Method method, const SiteConfig* site)
   {
     std::stringstream stream;
-    LOG_DEBUG("HttpReply::requestFileContents()");
+    LOG_DEBUG("Reply::requestFileContents()");
     std::string page;
     bool found = false;
     size_t bytes = 0;
 
     if ( m_request->index() == ""
          || m_request->index() == "/"
-		 || m_request->index().at(m_request->index().length() - 1) == '/'
-		 ) {
+         || m_request->index().at(m_request->index().length() - 1) == '/'
+       ) {
       // This request does not contain a filename, we will use a page from try-file
       std::vector<std::string> tryFiles = site->m_tryFiles;
 
@@ -192,8 +254,8 @@ namespace Http {
     return true;
   }
 
-  Code HttpReply::requestFileContents(const std::string& page,
-                                      std::stringstream& stream, size_t bytes)
+  Code Reply::requestFileContents(const std::string& page,
+                                  std::stringstream& stream, size_t bytes)
   {
     Code ret = m_request->cacheHandler()->read(page, stream, bytes);
 
@@ -207,10 +269,10 @@ namespace Http {
     return ret;
   }
 
-  Code HttpReply::requestPartialFileContents(const std::string& page,
-      std::stringstream& stream, size_t& bytes)
+  Code Reply::requestPartialFileContents(const std::string& page,
+                                         std::stringstream& stream, size_t& bytes)
   {
-    LOG_DEBUG("HttpReply::requestPartialFileContents()");
+    LOG_DEBUG("Reply::requestPartialFileContents()");
     std::tuple<int64_t, int64_t> range;
     Code ret;
 
@@ -222,7 +284,6 @@ namespace Http {
     int64_t to = std::get<1>(range);
     size_t total = 0;
     ret = FileUtils::calculateBounds(page, from, to);
-
 
     if (ret != Code::Ok) {
       return ret;
@@ -259,19 +320,19 @@ namespace Http {
     return ret;
   }
 
-  bool HttpReply::requestLargeFileContents(const std::string& page, size_t from,
-      size_t limit,
-      size_t totalBytes)
+  bool Reply::requestLargeFileContents(const std::string& page, size_t from,
+                                       size_t limit,
+                                       size_t totalBytes)
   {
-    LOG_DEBUG("HttpReply::requestLargeFileContents()");
-    boost::mutex::scoped_lock lock(
-      m_mutex); //needed to be sure that previous call is completed
+    LOG_DEBUG("Reply::requestLargeFileContents()");
+    //needed to be sure that previous call is completed
+    std::lock_guard<std::mutex> lock(m_mutex);
     size_t bytes;
     size_t to = std::min(limit, std::min((size_t) from + MAX_CHUNK_SIZE,
                                          totalBytes - 1));
     setFlag(LargeFileRequest, true);
 
-    m_httpBuffer = std::make_shared<HttpBuffer>();
+    m_httpBuffer = std::make_shared<Buffer>();
     std::stringstream stream;
 
     if (FileUtils::readFile(page, from, to, stream, bytes) == Code::Ok) {
@@ -281,9 +342,9 @@ namespace Http {
         return true;
       } else {
         from = to + 1;
-        m_httpBuffer->m_nextCall = std::bind(&HttpReply::requestLargeFileContents,
+        m_httpBuffer->m_nextCall = std::bind(&Reply::requestLargeFileContents,
                                              shared_from_this(), page, from , limit, totalBytes);
-        m_httpBuffer->m_flags |= HttpBuffer::HasMore;
+        m_httpBuffer->m_flags |= Buffer::HasMore;
         post(stream);
       }
 
@@ -294,58 +355,80 @@ namespace Http {
     return true;
   }
 
-  void HttpReply::post(const std::stringstream& stream)
+  void Reply::post(const std::stringstream& stream)
   {
-    LOG_DEBUG("HttpReply::post()");
-#ifdef DUMP_NETWORK
-	LOG_DEBUG("Reply: " << "\n" << stream.str());
-#endif //DUMP_NETWORK
+    LOG_DEBUG("Reply::post()");
+    LOG_NETWORK("Posting Stream:", stream.str());
     std::vector<boost::asio::const_buffer> buffers;
 
-    if (!getFlag(HeadersSent))
-      m_httpBuffer->m_buffers.push_back({}); // emtpy place for headers
+    if (!(m_httpBuffer->flags() & Buffer::InvalidRequest)) {
+      std::vector<boost::asio::const_buffer> buffers;
 
-    buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
+      if (!getFlag(HeadersSent)) {
+        m_httpBuffer->m_buffers.push_back({}); //empty slot for headers
+      }
+
+      buffers.push_back(buf(m_httpBuffer, std::string(stream.str())));
 
 #ifdef ENABLE_GZIP
 
-    if (canEncodeResponse()) {
-      encodeResponse(m_httpBuffer, buffers);
-    }
+      if (canEncodeResponse()) {
+        encodeResponse(m_httpBuffer, buffers);
+      }
 
 #endif // ENABLE_GZIP
 
-    // We chunk only in the case that no header has been sent or if it's the last frame
-    if (canChunkResponse()) {
-      chunkResponse(m_httpBuffer, buffers);
+      // We chunk only in the case that no header has been sent or if it's the last frame
+      if (canChunkResponse()) {
+        chunkResponse(m_httpBuffer, buffers);
+      }
+
+      if (!getFlag(HeadersSent)) {
+        buildHeaders(m_httpBuffer);
+        LOG_INFO(m_request->queryString() << " " << (int) m_status);
+        setFlag(HeadersSent, true);
+      }
+
+      m_httpBuffer->m_buffers.insert(m_httpBuffer->m_buffers.end(), buffers.begin(),
+                                     buffers.end());
+
+      if (getFlag(Closing)) {
+        m_httpBuffer->m_flags |= Buffer::Closing;
+      }
     }
 
-    if (!getFlag(HeadersSent)) {
-      buildHeaders(m_httpBuffer);
-      LOG_INFO(m_request->queryString() << " " << (int) m_status);
-      setFlag(HeadersSent, true);
-    }
+    auto connection = m_request->connection();
 
-    m_httpBuffer->m_buffers.insert(m_httpBuffer->m_buffers.end(), buffers.begin(),
-                                   buffers.end());
-
-    if (getFlag(Closing)) {
-      m_httpBuffer->m_flags |= HttpBuffer::Closing;
-    }
-
-    auto session = m_request->session();
-
-    if (session) {
-      session->postReply(m_httpBuffer);
+    if (connection) {
+      connection->postReply(m_httpBuffer);
     }
 
     m_httpBuffer.reset();
   }
 
-  bool HttpReply::chunkResponse(HttpBufferPtr httpBuffer,
-                                std::vector<boost::asio::const_buffer>& buffers)
+  bool Reply::checkBackendReply(const std::stringstream& stream) const
   {
-    LOG_DEBUG("HttpReply::chunkResponse()");
+    return true;
+  }
+
+  void Reply::postBackendReply(const std::stringstream& stream)
+  {
+    LOG_DEBUG("Reply::postBackendReply()");
+    auto buffer = std::make_shared<Buffer>();
+    buffer->m_buffers.push_back(buf(buffer, std::string(stream.str())));
+
+    auto connection = m_request->connection();
+
+    if (connection) {
+      connection->postReply(buffer);
+    }
+
+  }
+
+  bool Reply::chunkResponse(BufferPtr httpBuffer,
+                            std::vector<boost::asio::const_buffer>& buffers)
+  {
+    LOG_DEBUG("Reply::chunkResponse()");
     size_t size = 0;
 
     // We cannot take the total Content Length here because the gzip compression changed that
@@ -378,10 +461,10 @@ namespace Http {
   }
 
 #ifdef ENABLE_GZIP
-  bool HttpReply::encodeResponse(HttpBufferPtr httpBuffer,
-                                 std::vector<boost::asio::const_buffer>& buffers)
+  bool Reply::encodeResponse(BufferPtr httpBuffer,
+                             std::vector<boost::asio::const_buffer>& buffers)
   {
-    LOG_DEBUG("HttpReply::encodeResponse()");
+    LOG_DEBUG("Reply::encodeResponse()");
     std::vector<boost::asio::const_buffer> result;
 
     if (!m_gzipBusy) {
@@ -396,10 +479,10 @@ namespace Http {
       m_gzip.next_in = (unsigned char*) boost::asio::detail::buffer_cast_helper(
                          buffer);
 
-      unsigned char out[16 * 1024];
+      char out[16 * 1024];
 
       do {
-        m_gzip.next_out = out;
+        m_gzip.next_out = (unsigned char*)out;
         m_gzip.avail_out = sizeof(out);
 
         int res = 0;
@@ -432,9 +515,9 @@ namespace Http {
   }
 #endif // ENABLE_GZIP
 
-  void HttpReply::buildHeaders(HttpBufferPtr httpBuffer)
+  void Reply::buildHeaders(BufferPtr httpBuffer)
   {
-    LOG_DEBUG("HttpReply::buildHeaders()");
+    LOG_DEBUG("Reply::buildHeaders()");
     std::stringstream stream;
     stream << "HTTP/" << m_request->httpVersion() << " ";
     stringValue(m_status, stream);
@@ -461,16 +544,16 @@ namespace Http {
     httpBuffer->m_buffers[0] = buf(httpBuffer, std::string(resp));
   }
 
-  void HttpReply::buildErrorResponse(Code error, bool closeConnection)
+  void Reply::buildErrorResponse(Code error, bool closeConnection)
   {
-    LOG_DEBUG("HttpReply::buildErrorResponse()");
+    LOG_DEBUG("Reply::buildErrorResponse()");
     std::stringstream stream;
     bool found = false;
     size_t bytes = 0;
 
     const ErrorPageMap& map = m_request->hasMatchingSite() ?
                               m_request->matchingSite()->m_errorPages :
-                              m_request->session()->config()->m_errorPages;
+                              m_request->params()->config()->m_errorPages;
 
     if (map.count(std::to_string((int)error)) > 0 ) {
       std::string url = map.at(std::to_string((int)error));
@@ -498,9 +581,9 @@ namespace Http {
 
   }
 #ifdef ENABLE_GZIP
-  void HttpReply::initGzip()
+  void Reply::initGzip()
   {
-    LOG_DEBUG("HttpReply::initGzip()");
+    LOG_DEBUG("Reply::initGzip()");
     m_gzip.zalloc = Z_NULL;
     m_gzip.zfree = Z_NULL;
     m_gzip.opaque = Z_NULL;
@@ -515,21 +598,21 @@ namespace Http {
   }
 #endif // ENABLE_GZIP
 
-  boost::asio::const_buffer HttpReply::buf(HttpBufferPtr buffer,
-      const std::string& s)
+  boost::asio::const_buffer Reply::buf(BufferPtr buffer,
+                                       const std::string& s)
   {
     buffer->m_bufs.push_back(s);
     return boost::asio::buffer(buffer->m_bufs.back());
   }
 
-  boost::asio::const_buffer HttpReply::buf(HttpBufferPtr buffer, char* buf,
-      size_t s)
+  boost::asio::const_buffer Reply::buf(BufferPtr buffer, char* buf,
+                                       size_t s)
   {
     buffer->m_bufs2.push_back(buf);
     return boost::asio::buffer(buffer->m_bufs2.back(), s);
   }
 
-  void HttpReply::setMimeType(const std::string& filename)
+  void Reply::setMimeType(const std::string& filename)
   {
     m_replyHeaders->addHeader("Content-Type", FileUtils::mimeType(filename));
 
@@ -559,14 +642,14 @@ namespace Http {
 
   }
 
-  bool HttpReply::canChunkResponse() const
+  bool Reply::canChunkResponse() const
   {
     return getFlag(Flag::ChunkedEncoding)
            && m_request->method() != Method::HEAD
            && m_status != Code::PartialContent;
   }
 
-  bool HttpReply::canEncodeResponse() const
+  bool Reply::canEncodeResponse() const
   {
 #ifdef ENABLE_GZIP
     return getFlag(Flag::GzipEncoding) && m_request->method() != Method::HEAD
@@ -576,15 +659,18 @@ namespace Http {
 #endif // ENABLE_GZIP
   }
 
-  Code HttpReply::hasSpecialLocationCode(const SiteConfig* site) const
+  Code Reply::hasSpecialLocationCode(const SiteConfig* site) const
   {
-	std::string idx = m_request->index();
-	for(const auto& kv : site->m_locations) 
-	{
-	  std::regex reg(kv.first, std::regex_constants::ECMAScript);
-	  if(std::regex_search(idx, reg) > 0)
-		  return (Code)kv.second;
-	}
-	return Code::Ok;
+    std::string idx = m_request->index();
+
+    for (const auto& kv : site->m_locations) {
+      std::regex reg(kv.first, std::regex_constants::ECMAScript);
+
+      if (std::regex_search(idx, reg) > 0) {
+        return (Code)kv.second;
+      }
+    }
+
+    return Code::Ok;
   }
 }

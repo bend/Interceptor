@@ -3,23 +3,24 @@
 
 #include "utils/Logger.h"
 
-namespace Http {
+namespace Interceptor {
 
-  class HttpBuffer {
+  class Buffer {
   public:
     enum State {
       Closing = 0x01,
-      HasMore = 0x02
+      HasMore = 0x02,
+      InvalidRequest = 0x04
     };
 
-    HttpBuffer()
+    Buffer()
       : m_flags(0)
     {}
 
 
-    ~HttpBuffer()
+    ~Buffer()
     {
-      LOG_DEBUG("HttpBuffer::~HttpBuffer()");
+      LOG_DEBUG("Http::Buffer::~Buffer()");
 
       for (auto& b : m_bufs2) {
         delete [] b;
@@ -40,11 +41,12 @@ namespace Http {
     std::vector<boost::asio::const_buffer> m_buffers;
 
   private:
-    std::vector<std::string> m_bufs;
-    std::vector<char*> m_bufs2;
-    friend class HttpReply;
+    std::list<std::string> m_bufs;
+    std::list<char*> m_bufs2;
     int m_flags;
     std::function<bool()> m_nextCall;
+
+    friend class Http::Reply;
 
   };
 
