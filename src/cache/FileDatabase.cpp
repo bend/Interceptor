@@ -9,6 +9,13 @@ namespace Interceptor {
       m_size(0)
   {}
 
+  FileDatabase::~FileDatabase()
+  {
+    for (auto& b : m_dataMap) {
+      delete[] b.second.first;
+    }
+  }
+
   bool compare_bufferhit(const std::shared_ptr<FileDatabase::BufferHit> b1,
                          const std::shared_ptr<FileDatabase::BufferHit> b2)
   {

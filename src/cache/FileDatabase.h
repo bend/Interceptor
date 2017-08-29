@@ -14,6 +14,7 @@ namespace Interceptor {
     typedef std::pair<const char*, size_t> Buffer;
     typedef std::pair<std::string, int64_t> BufferHit;
     FileDatabase(size_t maxSize);
+    ~FileDatabase();
 
     virtual void purge(const std::string& path) override;
     virtual size_t size() const override;

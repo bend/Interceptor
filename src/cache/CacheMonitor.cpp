@@ -71,7 +71,7 @@ namespace Interceptor {
   std::thread& CacheMonitor::start()
   {
     if (m_monitoring) {
-      throw new std::runtime_error("monitoring already active");
+      throw std::runtime_error("monitoring already active");
     }
 
     m_monitoring = true;
@@ -93,12 +93,16 @@ namespace Interceptor {
     /* Open fam connection */
     if ((FAMOpen(m_fc)) < 0) {
       LOG_ERROR("CacheMonitor::startCallBack() : Fam open failed");
+      delete m_fc;
+      m_fc = nullptr;
       return false;
     }
 
     /* Request monitoring for each program argument */
     for (auto& p : m_files) {
       if (!doMonitorFile(p)) {
+        delete m_fc;
+        m_fc = nullptr;
         return false;
       }
     }
@@ -107,6 +111,8 @@ namespace Interceptor {
 
     for (auto& p : m_directories) {
       if (!doMonitorDirectory(p)) {
+        delete m_fc;
+        m_fc = nullptr;
         return false;
       }
     }
@@ -141,6 +147,8 @@ namespace Interceptor {
 
       for (auto& p : m_files) {
         if (!doMonitorFile(p)) {
+          delete m_fc;
+          m_fc = nullptr;
           return false;
         }
       }
@@ -218,6 +226,8 @@ namespace Interceptor {
     if (FAMMonitorFile(m_fc, p.c_str(), fr, 0) >= 0) {
       m_requests[p] = fr;
       return true;
+    } else {
+      delete fr;
     }
 
     return false;
@@ -230,6 +240,8 @@ namespace Interceptor {
     if (FAMMonitorDirectory(m_fc, p.c_str(), fr, 0) >= 0) {
       m_requests[p] = fr;
       return true;
+    } else {
+      delete fr;
     }
 
     return false;
