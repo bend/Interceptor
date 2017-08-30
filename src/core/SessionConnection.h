@@ -62,8 +62,7 @@ namespace Interceptor {
     std::deque<BufferPtr> m_buffers;
     std::mutex m_buffersMutex;
 
-    boost::asio::strand m_ostrand;
-    boost::asio::strand m_istrand;
+    boost::asio::strand m_iostrand;
     boost::asio::strand m_fsstrand;
 
     // Timers
