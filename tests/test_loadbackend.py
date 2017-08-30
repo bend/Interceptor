@@ -6,7 +6,7 @@ from my_utils import *
 import threading
 
 NB_THREADS = 100
-NB_REPEAT_PER_THREAD = 100
+NB_REPEAT_PER_THREAD = 50
 
 class TestChargeHttpServer(unittest.TestCase):
 
