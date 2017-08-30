@@ -42,7 +42,7 @@ namespace Interceptor::Http {
     } else {
       if (error != boost::asio::error::eof
           && error != boost::asio::error::connection_reset) {
-        if (m_connection) {
+        if (m_connection && m_connection->ip().length() > 0) {
           LOG_ERROR("Error reading request from " << m_connection->ip());
         }
       }

@@ -153,7 +153,6 @@ namespace Interceptor {
     stopWriteTimer();
 
     if (!error)  {
-      LOG_DEBUG("Response sent ");
       m_state |= CanSend;
 
       {
