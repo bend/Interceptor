@@ -321,23 +321,6 @@ namespace Interceptor::Http {
     return true;
   }
 
-  bool CommonReply::canChunkResponse() const
-  {
-    return getFlag(Flag::ChunkedEncoding)
-           && m_request->method() != Method::HEAD
-           && m_status != Code::PartialContent;
-  }
-
-  bool CommonReply::canEncodeResponse() const
-  {
-#ifdef ENABLE_GZIP
-    return getFlag(Flag::GzipEncoding) && m_request->method() != Method::HEAD
-           && m_status != Code::PartialContent;
-#else
-    return false;
-#endif // ENABLE_GZIP
-  }
-
 
   void CommonReply::initGzip()
   {
@@ -355,6 +338,24 @@ namespace Interceptor::Http {
     assert(r == Z_OK);
   }
 #endif // ENABLE_GZIP
+  
+  bool CommonReply::canChunkResponse() const
+  {
+    return getFlag(Flag::ChunkedEncoding)
+           && m_request->method() != Method::HEAD
+           && m_status != Code::PartialContent;
+  }
+
+  bool CommonReply::canEncodeResponse() const
+  {
+#ifdef ENABLE_GZIP
+    return getFlag(Flag::GzipEncoding) && m_request->method() != Method::HEAD
+           && m_status != Code::PartialContent;
+#else
+    return false;
+#endif // ENABLE_GZIP
+  }
+
 
   void CommonReply::buildHeaders(BufferPtr httpBuffer)
   {
