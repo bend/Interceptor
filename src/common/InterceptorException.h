@@ -8,7 +8,7 @@ namespace Interceptor {
 
   class InterceptorException : public std::exception {
   public:
-    InterceptorException(std::string s)
+    InterceptorException(const std::string& s)
       : m_what(s) {}
 
     virtual ~InterceptorException() noexcept {}

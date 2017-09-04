@@ -23,6 +23,7 @@ namespace Interceptor {
   SessionConnection::~SessionConnection()
   {
     LOG_DEBUG("SessionConnection::~SessionConnection()");
+
   }
 
   void SessionConnection::asyncReadSome(char* buffer, size_t bytes,
@@ -111,6 +112,7 @@ namespace Interceptor {
     }
   }
 
+
   void SessionConnection::sendReply(BufferPtr buffer)
   {
     LOG_DEBUG("SessionConnection::sendReply()");
@@ -120,7 +122,10 @@ namespace Interceptor {
       m_state &= ~CanSend;
 
       if (buffer->flags() & Buffer::HasMore) {
-        m_fsstrand.post(buffer->nextCall());
+        m_fsstrand.post(std::bind([ = ]() {
+          BufferPtr b = buffer->nextCall()();
+          sendNext(b);
+        }));
       }
 
 #ifdef DUMP_NETWORK
@@ -201,6 +206,7 @@ namespace Interceptor {
     if (m_connection) {
       m_connection->disconnect();
     }
+
   }
 
   void SessionConnection::handleTimeout(TimerType timerType,

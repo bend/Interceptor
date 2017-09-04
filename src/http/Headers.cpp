@@ -5,6 +5,8 @@
 
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
+#include "cache/generic_cache.h"
+#include "utils/FileUtils.h"
 
 namespace Interceptor::Http {
 
@@ -86,6 +88,25 @@ namespace Interceptor::Http {
     if (headers->getHeader("Connection")) {
       addHeader("Connection", *headers->getHeader("Connection"));
     }
+  }
+
+  void Headers::setHeadersFor(const std::string filename,
+                              AbstractCacheHandler* cache)
+  {
+    addHeader("Content-Type", FileUtils::mimeType(filename));
+
+    std::string eTag = cache->eTag(filename);
+
+    if (eTag.length() > 0) {
+      addHeader("ETag", eTag);
+    }
+
+    std::string lm = cache->lastModified(filename);
+
+    if (lm.length() > 0) {
+      addHeader("Last-Modified", lm);
+    }
+
   }
 
 }

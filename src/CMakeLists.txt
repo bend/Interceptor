@@ -17,9 +17,9 @@ subdirs(common)
 
 set(LIBS
   interceptor_core
-  interceptor_http
   interceptor_cache
   interceptor_backend
+  interceptor_http
   interceptor_gateway
   interceptor_socket
   interceptor_common

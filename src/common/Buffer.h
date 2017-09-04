@@ -3,6 +3,11 @@
 
 #include "utils/Logger.h"
 
+#include <list>
+#include <memory>
+
+#include <boost/asio/buffer.hpp>
+
 namespace Interceptor {
 
   class Buffer {
@@ -13,41 +18,26 @@ namespace Interceptor {
       InvalidRequest = 0x04
     };
 
-    Buffer()
-      : m_flags(0)
-    {}
+    Buffer();
 
+    ~Buffer();
 
-    ~Buffer()
-    {
-      LOG_DEBUG("Http::Buffer::~Buffer()");
+    int flags() const;
 
-      for (auto& b : m_bufs2) {
-        delete [] b;
-      }
-    }
+    std::function<std::shared_ptr<Buffer>()> nextCall() const;
 
-    int flags() const
-    {
-      return m_flags;
-    }
+    boost::asio::const_buffer buf(const std::string& s);
+    boost::asio::const_buffer buf(char* buf, size_t s);
 
-    auto nextCall() const
-    {
-      return m_nextCall;
-    }
 
   public:
     std::vector<boost::asio::const_buffer> m_buffers;
+    int m_flags;
+    std::function<std::shared_ptr<Buffer>()> m_nextCall;
 
   private:
     std::list<std::string> m_bufs;
     std::list<char*> m_bufs2;
-    int m_flags;
-    std::function<bool()> m_nextCall;
-
-    friend class Http::Reply;
-
   };
 
 }

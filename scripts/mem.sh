@@ -20,7 +20,7 @@
 rm /tmp/mem.log
 
 while true;do
-  ps -C $1 -o pid=,%mem=,vsz= >> /tmp/mem.log
+  ps  $1 -o pid=,%mem=,vsz= >> /tmp/mem.log
   sleep 1
 done
 
