@@ -127,9 +127,7 @@ namespace Interceptor::Http {
           error = ret;
         }
       }
-    } else {
-      //     m_httpBuffer->m_flags |= Buffer::State::InvalidRequest;
-    }
+    } 
 
     buildErrorResponse(error, true);
   }

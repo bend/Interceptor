@@ -46,7 +46,7 @@ namespace Interceptor::Http {
         return Code::RequestEntityTooLarge;
       }
 
-      if ((/*mirs > 0*&& */m_request.length() > mirs) || m_state.test(Dumping)) {
+      if ((mirs > 0 && m_request.length() > mirs) || m_state.test(Dumping)) {
         if (!m_state.test(Dumping)) {
           dumpToFile(m_request.c_str(),
                      m_request.length());
