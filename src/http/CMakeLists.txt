@@ -8,6 +8,7 @@ set(libhttp_src
   ErrorReply.cpp
   Http.cpp
   HTTP1XSessionHandler.cpp
+  Encoder.cpp
 )
 
 INCLUDE_DIRECTORIES(

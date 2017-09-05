@@ -1,5 +1,6 @@
 #include "GetReply.h"
 
+#include "Encoder.h"
 #include "HttpException.h"
 #include "utils/Logger.h"
 #include "utils/FileUtils.h"
@@ -58,9 +59,7 @@ namespace Interceptor::Http {
         setHeadersFor(page);
         m_contentLength = bytes;
 
-        if (!requestLargeFileContents(page, stream, 0, bytes, bytes)) {
-          throw HttpException(Code::InternalServerError, true);
-        }
+        requestLargeFileContents(page, stream, 0, bytes, bytes);
 
       } else {
         CommonReply::requestFileContents(page, stream, bytes);
@@ -88,14 +87,16 @@ namespace Interceptor::Http {
 #ifdef ENABLE_GZIP
 
       if (canEncodeResponse()) {
-        encodeResponse(m_httpBuffer, buffers);
+        m_encoder->encode(m_httpBuffer, buffers, m_request->completed(),
+                          m_contentLength);
       }
 
 #endif // ENABLE_GZIP
 
       // We chunk only in the case that no header has been sent or if it's the last frame
       if (canChunkResponse()) {
-        chunkResponse(m_httpBuffer, buffers);
+        m_encoder->chunk(m_httpBuffer, buffers, m_request->completed()
+                         || !getFlag(LargeFileRequest));
       }
 
       if (!getFlag(HeadersSent)) {

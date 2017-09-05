@@ -3,7 +3,7 @@
 #include "HttpException.h"
 
 #include "Request.h"
-#include "Headers.h"
+
 #include "utils/Logger.h"
 #include "utils/FileUtils.h"
 #include "common/Buffer.h"
@@ -17,8 +17,8 @@ namespace Interceptor::Http {
     : m_request(request),
       m_replyHeaders(std::make_unique<Headers>()),
       m_httpBuffer(std::make_shared<Buffer>()),
+      m_encoder(std::make_unique<Encoder>()),
       m_config(config),
-      m_gzipBusy(false),
       m_status(Code::Ok)
   {
   }
@@ -58,7 +58,6 @@ namespace Interceptor::Http {
       setHeadersFor(page);
       m_request->setCompleted(true);
       m_contentLength = bytes;
-      //post(stream);
     } else {
       throw HttpException(ret, false);
     }
@@ -100,9 +99,7 @@ namespace Interceptor::Http {
     if (to - from > MAX_CHUNK_SIZE) {
       // File is too big to be sent at once, we will send it in multiple times to
       // avoid consuming to much memory
-      if (!requestLargeFileContents(page, stream, from, to, total)) {
-        throw HttpException(Code::InternalServerError, true);
-      }
+      requestLargeFileContents(page, stream, from, to, total);
     } else {
       ret = FileUtils::readFile(page,	from, to , stream,
                                 bytes); //TODO take it from cache
@@ -120,15 +117,14 @@ namespace Interceptor::Http {
   {
     std::stringstream stream;
 
-    if (requestLargeFileContents(page, stream, from, limit, bytes)) {
-      serialize(stream);
-    }
+    requestLargeFileContents(page, stream, from, limit, bytes);
+    serialize(stream);
 
     return m_httpBuffer;
   }
 
 
-  bool CommonReply::requestLargeFileContents(const std::string& page,
+  void CommonReply::requestLargeFileContents(const std::string& page,
       std::stringstream& stream, size_t from,
       size_t limit,
       size_t totalBytes)
@@ -143,7 +139,9 @@ namespace Interceptor::Http {
 
     m_httpBuffer = std::make_shared<Buffer>();
 
-    if (FileUtils::readFile(page, from, to, stream, bytes) == Code::Ok) {
+    Code ret;
+
+    if ((ret = FileUtils::readFile(page, from, to, stream, bytes)) == Code::Ok) {
       if (to == limit - 1) {
         m_request->setCompleted(true);
       } else {
@@ -154,10 +152,8 @@ namespace Interceptor::Http {
       }
 
     } else {
-      return false;
+      throw HttpException(ret, true);
     }
-
-    return true;
   }
 
 
@@ -231,114 +227,6 @@ namespace Interceptor::Http {
 
   }
 
-  bool CommonReply::chunkResponse(BufferPtr httpBuffer,
-                                  std::vector<boost::asio::const_buffer>& buffers)
-  {
-    LOG_DEBUG("CommonReply::chunkResponse()");
-    size_t size = 0;
-
-    // We cannot take the total Content Length here because the gzip compression changed that
-    // Length, so we need to recalculate it
-    for (auto& buffer : buffers) {
-      size += boost::asio::buffer_size(buffer);
-    }
-
-    std::stringstream stream;
-    stream << std::hex << size << "\r\n";
-
-    char* header = new char[stream.str().length()]();
-    memcpy(header, stream.str().data(), stream.str().length());
-
-    buffers.insert(buffers.begin(), m_httpBuffer->buf(header,
-                   stream.str().length()));
-
-    stream.str("\r\n");
-    char* crlf = new char[stream.str().length()]();
-    memcpy(crlf, stream.str().data(), stream.str().length());
-    buffers.push_back(m_httpBuffer->buf(crlf, stream.str().length()));
-
-    if (!getFlag(LargeFileRequest) || m_request->completed()) {
-      stream.str("0\r\n\r\n");
-      char* footer = new char[stream.str().length()]();
-      memcpy(footer, stream.str().data(), stream.str().length());
-      buffers.push_back(m_httpBuffer->buf(footer, stream.str().length()));
-    }
-
-    return true;
-  }
-
-#ifdef ENABLE_GZIP
-  bool CommonReply::encodeResponse(BufferPtr httpBuffer,
-                                   std::vector<boost::asio::const_buffer>& buffers)
-  {
-    LOG_DEBUG("CommonReply::encodeResponse()");
-    std::vector<boost::asio::const_buffer> result;
-
-    if (!m_gzipBusy) {
-      initGzip();
-    }
-
-    unsigned int i = 0;
-
-    for (auto& buffer : buffers) {
-
-      m_gzip.avail_in = boost::asio::buffer_size(buffer);
-      m_gzip.next_in = (unsigned char*) boost::asio::detail::buffer_cast_helper(
-                         buffer);
-
-      char out[16 * 1024];
-
-      do {
-        m_gzip.next_out = (unsigned char*)out;
-        m_gzip.avail_out = sizeof(out);
-
-        int res = 0;
-        res = deflate(&m_gzip,
-                      (i == buffers.size() - 1 && m_request->completed()) ?
-                      Z_FINISH : Z_NO_FLUSH);
-        assert(res != Z_STREAM_ERROR);
-
-        unsigned have = sizeof(out) - m_gzip.avail_out;
-        m_contentLength += have;
-
-        if (have) {
-          result.push_back(httpBuffer->buf(std::string((char*)out, have)));
-        }
-      } while (m_gzip.avail_out == 0);
-
-      ++i;
-
-    }
-
-    if (m_request->completed()) {
-      deflateEnd(&m_gzip);
-      m_gzipBusy = false;
-    }
-
-    buffers.clear();
-    buffers.insert(buffers.begin(), result.begin(), result.end());
-
-    return true;
-  }
-
-
-  void CommonReply::initGzip()
-  {
-    LOG_DEBUG("CommonReply::initGzip()");
-    m_gzip.zalloc = Z_NULL;
-    m_gzip.zfree = Z_NULL;
-    m_gzip.opaque = Z_NULL;
-    m_gzip.next_in = Z_NULL;
-    int r = 0;
-
-    r = deflateInit2(&m_gzip, Z_DEFAULT_COMPRESSION,
-                     Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY);
-
-    m_gzipBusy = true;
-    assert(r == Z_OK);
-  }
-#endif // ENABLE_GZIP
-  
   bool CommonReply::canChunkResponse() const
   {
     return getFlag(Flag::ChunkedEncoding)
