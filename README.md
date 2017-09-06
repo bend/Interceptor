@@ -29,7 +29,7 @@ A fast Web server written in C++
 
 ## Build & Install
 
-This program need libz, libboost, **c++14** compliant compiler
+This program need **libz**, **libboost**, **libgamin**, **c++17** compliant compiler
 
 ### Compilation Flags 
   
