@@ -30,23 +30,31 @@ namespace Interceptor::Http {
     LOG_DEBUG("Request::~Request()");
   }
 
+  bool Request::requestSizeIsAccepted() const {
+	uint64_t mrs =
+        params()->config()->m_globalConfig->maxRequestSize();
+
+	return mrs > 0 && ( m_request.length() <= mrs || (m_state.test(Dumping) && m_buffer->size() <= mrs));
+  }
+  
+  bool Request::requestSizeFitsInMemory() const 
+  {
+      uint64_t mirs =
+        params()->config()->m_globalConfig->maxInMemRequestSize();
+	  return mirs > 0 && (m_request.length() <= mirs && !m_state.test(Dumping));
+  }
+
   Code Request::appendData(const char* data, size_t length)
   {
     try {
       LOG_DEBUG("Request::appendData()");
       m_request.append(std::string(data, data + length));
 
-      uint64_t mrs =
-        params()->config()->m_globalConfig->maxRequestSize();
-      uint64_t mirs =
-        params()->config()->m_globalConfig->maxInMemRequestSize();
-
-      if (mrs > 0  && ( m_request.length() > mrs
-                        || (m_state.test(Dumping) && m_buffer->size() > mrs))) {
+      if (!requestSizeIsAccepted()) {
         return Code::RequestEntityTooLarge;
       }
 
-      if ((mirs > 0 && m_request.length() > mirs) || m_state.test(Dumping)) {
+      if (!requestSizeFitsInMemory()) {
         if (!m_state.test(Dumping)) {
           dumpToFile(m_request.c_str(),
                      m_request.length());
@@ -239,7 +247,6 @@ namespace Interceptor::Http {
       return Code::HttpVersionNotSupported;
     }
 
-
     switch (m_method) {
       case Method::GET: {
           size_t st = getParts[1].find("?");
@@ -274,8 +281,6 @@ namespace Interceptor::Http {
     if (code != Code::Ok) {
       return code;
     }
-
-    //m_request = get;
 
     // parse host
     const std::string* host = m_headers->getHeader("Host");
