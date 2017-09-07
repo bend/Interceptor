@@ -188,11 +188,7 @@ namespace Interceptor {
       std::stringstream* stream = new std::stringstream();
       stream->write(m_response, bytesRead);
       LOG_NETWORK("BackendConnector::handleResponseRead() - got : ",  stream->str() );
-
-      dumpToFile("out.txt", stream->str());
-
       m_callbackstrand.post(std::bind(m_callback, Http::Code::Ok, stream));
-
       readReply(m_callback);
     }
   }

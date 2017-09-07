@@ -63,6 +63,7 @@ namespace Interceptor::Http {
 
     bool canChunkResponse() const;
     bool canEncodeResponse() const;
+	bool shouldCloseConnection() const ;
 
   protected:
     HttpRequestPtr m_request;

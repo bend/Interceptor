@@ -244,6 +244,10 @@ namespace Interceptor::Http {
 #endif // ENABLE_GZIP
   }
 
+  bool CommonReply::shouldCloseConnection() const 
+  {
+	return m_request->closeConnection() || getFlag(Closing);
+  }
 
   void CommonReply::buildHeaders(BufferPtr httpBuffer)
   {
@@ -263,7 +267,7 @@ namespace Interceptor::Http {
       m_replyHeaders->addHeader("Content-Encoding", "gzip");
     }
 
-    if (getFlag(Flag::Closing)) {
+    if (shouldCloseConnection()) {
       m_replyHeaders->addHeader("Connection", "close");
       httpBuffer->m_flags |= Buffer::Closing;
     } else {

@@ -160,6 +160,12 @@ namespace Interceptor::Http {
     return pr && pr->find("bytes=") != std::string::npos;
   }
 
+  bool Request::closeConnection() const
+  {
+	const std::string* connection =  m_headers->getHeader("Connection");
+	return connection && *connection != "keep-alive";
+  }
+
   Code Request::getRangeRequest(std::tuple<int64_t, int64_t>& tuple) const
   {
     const std::string* pr = m_headers->getHeader("Range");

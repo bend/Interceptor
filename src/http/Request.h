@@ -43,7 +43,8 @@ namespace Interceptor {
       bool headersReceived() const;
       bool received() const;
       bool completed() const;
-      void setCompleted(bool completed);
+	  bool closeConnection() const;
+	  void setCompleted(bool completed);
       bool hasMatchingSite() const;
       const SiteConfig* matchingSite() const;
       Packet* request();

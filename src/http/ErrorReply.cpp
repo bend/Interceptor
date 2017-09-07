@@ -32,9 +32,13 @@ namespace Interceptor::Http {
     }
 
     if (!found) {
-      stream << "<html> <body><h1>";
+      stream << "<html>";
+	  stream << "	<body>";
+	  stream << "		<h1>";
       stringValue(m_status, stream);
-      stream << " </h1></body></html>";
+      stream << "		</h1>";
+	  stream << "	</body>";
+	  stream <<	">/html>";
       m_contentLength = stream.str().length();
     }
 
