@@ -30,18 +30,20 @@ namespace Interceptor::Http {
     LOG_DEBUG("Request::~Request()");
   }
 
-  bool Request::requestSizeIsAccepted() const {
-	uint64_t mrs =
-        params()->config()->m_globalConfig->maxRequestSize();
-
-	return mrs > 0 && ( m_request.length() <= mrs || (m_state.test(Dumping) && m_buffer->size() <= mrs));
-  }
-  
-  bool Request::requestSizeFitsInMemory() const 
+  bool Request::requestSizeIsAccepted() const
   {
-      uint64_t mirs =
-        params()->config()->m_globalConfig->maxInMemRequestSize();
-	  return mirs > 0 && (m_request.length() <= mirs && !m_state.test(Dumping));
+    uint64_t mrs =
+      params()->config()->m_globalConfig->maxRequestSize();
+
+    return mrs > 0 && ( m_request.length() <= mrs || (m_state.test(Dumping)
+                        && m_buffer->size() <= mrs));
+  }
+
+  bool Request::requestSizeFitsInMemory() const
+  {
+    uint64_t mirs =
+      params()->config()->m_globalConfig->maxInMemRequestSize();
+    return mirs > 0 && (m_request.length() <= mirs && !m_state.test(Dumping));
   }
 
   Code Request::appendData(const char* data, size_t length)
@@ -162,8 +164,12 @@ namespace Interceptor::Http {
 
   bool Request::closeConnection() const
   {
-	const std::string* connection =  m_headers->getHeader("Connection");
-	return connection && *connection != "keep-alive";
+    if (!m_headers) {
+      return false;
+    }
+
+    const std::string* connection =  m_headers->getHeader("Connection");
+    return connection && *connection != "keep-alive";
   }
 
   Code Request::getRangeRequest(std::tuple<int64_t, int64_t>& tuple) const

@@ -43,8 +43,8 @@ namespace Interceptor {
       bool headersReceived() const;
       bool received() const;
       bool completed() const;
-	  bool closeConnection() const;
-	  void setCompleted(bool completed);
+      bool closeConnection() const;
+      void setCompleted(bool completed);
       bool hasMatchingSite() const;
       const SiteConfig* matchingSite() const;
       Packet* request();
@@ -59,11 +59,11 @@ namespace Interceptor {
       bool parseParameters(const std::string& parameters);
       bool parseHttpVersion(const std::string& version);
       bool dumpToFile(const char* data, size_t length);
-	  bool requestSizeIsAccepted() const;
-	  bool requestSizeFitsInMemory() const;
+      bool requestSizeIsAccepted() const;
+      bool requestSizeFitsInMemory() const;
       std::string headersData();
       void pushRequest(const char* data, size_t length);
-  
+
 
     private:
       enum State {

@@ -244,9 +244,9 @@ namespace Interceptor::Http {
 #endif // ENABLE_GZIP
   }
 
-  bool CommonReply::shouldCloseConnection() const 
+  bool CommonReply::shouldCloseConnection() const
   {
-	return m_request->closeConnection() || getFlag(Closing);
+    return m_request->closeConnection() || getFlag(Closing);
   }
 
   void CommonReply::buildHeaders(BufferPtr httpBuffer)

@@ -127,7 +127,7 @@ namespace Interceptor::Http {
           error = ret;
         }
       }
-    } 
+    }
 
     buildErrorResponse(error, true);
   }
