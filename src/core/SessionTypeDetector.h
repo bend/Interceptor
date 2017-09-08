@@ -17,7 +17,7 @@ namespace Interceptor {
 
   private:
     enum SessionType {
-      HTTP1X,
+      HTTP11,
       Other
     };
 
@@ -25,7 +25,7 @@ namespace Interceptor {
     void readFirstPacketToIdentify();
     void handleFirstPacketRead(const boost::system::error_code& error,
                                size_t bytesTransferred);
-    void handleHTTP1XSession(const char* data, size_t len);
+    void handleHTTP11Session(const char* data, size_t len);
     static SessionType detectSessionType(const char* data, size_t len);
 
   private:

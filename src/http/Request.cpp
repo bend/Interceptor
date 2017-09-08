@@ -297,7 +297,7 @@ namespace Interceptor::Http {
     // parse host
     const std::string* host = m_headers->getHeader("Host");
 
-    if (!host ) {
+    if (!host) {
       LOG_ERROR("Missing Host" );
       return Code::BadRequest;
     }
@@ -321,7 +321,7 @@ namespace Interceptor::Http {
 
     m_httpVersion = version.substr(idx + http.length());
 
-    if (m_httpVersion == "1.0" || m_httpVersion == "1.1") {
+    if (m_httpVersion == "1.1") {
       return true;
     }
 

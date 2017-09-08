@@ -1,7 +1,7 @@
 #include "SessionTypeDetector.h"
 
 #include "SessionConnection.cpp"
-#include "http/HTTP1XSessionHandler.h"
+#include "http/HTTP11SessionHandler.h"
 #include "common/AbstractSessionHandler.h"
 
 namespace Interceptor {
@@ -43,8 +43,8 @@ namespace Interceptor {
     }
 
     switch (detectSessionType(m_buffer, bytesTransferred)) {
-      case HTTP1X:
-        handleHTTP1XSession(m_buffer, bytesTransferred);
+      case HTTP11:
+        handleHTTP11Session(m_buffer, bytesTransferred);
         break;
 
       default:
@@ -54,9 +54,9 @@ namespace Interceptor {
     }
   }
 
-  void SessionTypeDetector::handleHTTP1XSession(const char* data, size_t len)
+  void SessionTypeDetector::handleHTTP11Session(const char* data, size_t len)
   {
-    m_sessionHandler = std::make_shared<Http::HTTP1XSessionHandler>(m_connection);
+    m_sessionHandler = std::make_shared<Http::HTTP11SessionHandler>(m_connection);
     m_sessionHandler->transferSession(data, len);
   }
 
@@ -66,8 +66,8 @@ namespace Interceptor {
     LOG_DEBUG("SessionTypeDetector::detectSessionType()");
     std::string str(data, len);
 
-    if (str.find("HTTP/1") != std::string::npos) {
-      return HTTP1X;
+    if (str.find("HTTP/1.1") != std::string::npos) {
+      return HTTP11;
     } else {
       return Other;
     }

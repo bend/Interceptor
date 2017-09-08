@@ -1,5 +1,5 @@
-#ifndef HTTP1X_SESSION_HANDLER_H__
-#define HTTP1XSessionHandler_H__
+#ifndef HTTP11_SESSION_HANDLER_H__
+#define HTTP11SessionHandler_H__
 
 #include "common/AbstractSessionHandler.h"
 
@@ -10,12 +10,12 @@
 namespace Interceptor::Http {
 
 
-  class HTTP1XSessionHandler : public AbstractSessionHandler,
-    public std::enable_shared_from_this<HTTP1XSessionHandler> {
+  class HTTP11SessionHandler : public AbstractSessionHandler,
+    public std::enable_shared_from_this<HTTP11SessionHandler> {
 
   public:
-    HTTP1XSessionHandler(SessionConnectionPtr connection);
-    ~HTTP1XSessionHandler();
+    HTTP11SessionHandler(SessionConnectionPtr connection);
+    ~HTTP11SessionHandler();
 
     virtual void transferSession(const char* data, size_t bytes) override;
 
@@ -24,6 +24,7 @@ namespace Interceptor::Http {
     void read();
     void handleHttpRequestRead(const boost::system::error_code& error,
                                size_t bytesTransferred);
+    void send101Continue();
 
   private:
 
@@ -36,4 +37,4 @@ namespace Interceptor::Http {
 
 }
 
-#endif // HTTP1X_SESSION_HANDLER_H__
+#endif // HTTP11_SESSION_HANDLER_H__

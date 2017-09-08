@@ -7,7 +7,7 @@ set(libhttp_src
   HeadReply.cpp
   ErrorReply.cpp
   Http.cpp
-  HTTP1XSessionHandler.cpp
+  HTTP11SessionHandler.cpp
   Encoder.cpp
 )
 

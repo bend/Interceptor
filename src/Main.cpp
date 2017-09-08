@@ -218,7 +218,7 @@ int main(int argc, char** argv)
     mainHandler = std::make_unique<Main>();
 
     if (!mainHandler->init(argc, argv)) {
-      return 1;
+      return EXIT_FAILURE;
     }
 
     mainHandler->run();
@@ -229,5 +229,5 @@ int main(int argc, char** argv)
     LOG_ERROR("Exception raised " << e.what());
   }
 
-
+  return EXIT_SUCCESS;
 }

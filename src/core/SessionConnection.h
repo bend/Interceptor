@@ -17,13 +17,13 @@ namespace Interceptor {
     boost::asio::ip::tcp::socket& socket() const;
     const std::string ip() const;
     ParamsPtr params() const;
+    boost::asio::io_service& ioService() const;
+
     void closeConnection();
+    void postReply(BufferPtr buffer);
     void asyncReadSome(char* buffer, size_t size,
                        std::function<void(const boost::system::error_code&, size_t bytesTransferred)>
                        callback);
-    void postReply(BufferPtr buffer);
-
-    boost::asio::io_service& ioService() const;
 
   private:
     enum State : uint8_t  {

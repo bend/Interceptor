@@ -252,6 +252,7 @@ namespace Interceptor {
     }
 
     std::string dr = m_cwd + "/" + docroot;
+    boost::replace_all(dr, "///", "/");
     boost::replace_all(dr, "//", "/");
     boost::replace_all(dr, "/./", "/");
     return dr;
