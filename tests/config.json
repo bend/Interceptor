@@ -41,7 +41,7 @@
 			  "forbidden" : 403
 			}, 
 			{
-			  "REGEX" : {
+			  "index.html" : {
 				"type": "connector", 
 				"name": "php"
 			  }
@@ -113,9 +113,9 @@
 	}
   ],
 
-  "	connectors" : [
+  "connectors" : [
 	{ "name": "php",
-	  "type": "fastcgi",
+	  "type": "fcgi",
 	  "host": "localhost",
 	  "port" : 1234
 	},

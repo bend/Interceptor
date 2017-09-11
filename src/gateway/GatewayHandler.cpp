@@ -7,20 +7,19 @@
 
 namespace Interceptor {
 
-  GatewayHandler::GatewayHandler(const SiteConfig* site, HttpRequestPtr request,
+  GatewayHandler::GatewayHandler(const std::string& backendName,
+                                 HttpRequestPtr request,
                                  BackendsPool* pool)
-    : m_site(site),
-      m_request(request),
-      m_pool(pool)
+    :
+    m_request(request),
+    m_pool(pool)
   {
-    if (m_site->m_backend.length() > 0) {
-      m_gateway = std::make_shared<BackendGateway>(m_request);
-      AbstractConnectorPtr connector =
-        m_pool->takeConnection(
-          m_site->m_backend);
-      assert(connector);
-      m_gateway->setConnection(connector);
-    }
+    m_gateway = std::make_shared<BackendGateway>(m_request);
+    AbstractConnectorPtr connector =
+      m_pool->takeConnection(
+        backendName);
+    assert(connector);
+    m_gateway->setConnection(connector);
   }
 
   GatewayHandler::~GatewayHandler()

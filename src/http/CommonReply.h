@@ -32,6 +32,14 @@ namespace Interceptor::Http {
 
     bool getFlag(Flag flag) const;
 
+    static std::string requestedPath(HttpRequestPtr request,
+                                     const SiteConfig* config);
+
+    static bool isRequestingRoot(HttpRequestPtr request);
+
+    static std::string getRootFile(HttpRequestPtr request,
+                                   const SiteConfig* config);
+
   protected:
     CommonReply(HttpRequestPtr request, const SiteConfig* config);
 
@@ -49,11 +57,8 @@ namespace Interceptor::Http {
                                   size_t totalBytes);
     void requestFileContents(const std::string& page,
                              std::stringstream& stream, size_t bytes);
-    bool isRequestingRoot() const;
 
     std::string requestedPath() const;
-
-    std::string getRootFile() const;
 
     void setHeadersFor(const std::string& filename);
 

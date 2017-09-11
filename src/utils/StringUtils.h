@@ -29,6 +29,8 @@ namespace Interceptor::StringUtils {
   int64_t findString(const char* data, const std::string& pattern,
                      size_t s);
 
+  bool regexMatch(const std::string& regex, const std::string& pattern);
+
 };
 
 #endif // STRING_UTILS_H__
