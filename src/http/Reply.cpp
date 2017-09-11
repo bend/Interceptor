@@ -12,6 +12,8 @@
 #include "ErrorReply.h"
 #include "HttpException.h"
 
+#include "utils/StringUtils.h"
+
 #include <algorithm>
 #include <functional>
 
@@ -53,23 +55,44 @@ namespace Interceptor::Http {
 
     const SiteConfig* site = m_request->matchingSite();
 
-    if (site->m_backend.length() > 0) {
-      m_gateway = std::make_unique<GatewayHandler>(site, m_request,
-                  m_request->params()->m_pool);
-      std::weak_ptr<Reply> wp {shared_from_this()};
-      m_request->setCompleted(true);
-      m_gateway->route(std::bind([wp] (Http::Code code, std::stringstream * stream) {
-        auto ptr = wp.lock();
+    if (hasGateway(site)) {
+      handleGatewayRequest(site);
+    } else {
+      handleHttpMethod(site);
 
-        if (ptr) {
-          ptr->handleGatewayReply(code, stream);
-        } else if (stream) {
-          LOG_ERROR("Reply::process() : Reply is already destructed, cannot send");
-        }
-      }, std::placeholders::_1, std::placeholders::_2));
-      return;
+      try {
+        auto buffer = m_reply->buildReply();
+        post(buffer);
+      } catch (HttpException& e) {
+        LOG_ERROR("HttpException: " << (int)e.code() );
+        buildErrorResponse(e.code(), e.closeConnection());
+      }
+    }
+  }
+
+  bool Reply::hasGateway(const SiteConfig* site) const
+  {
+    return gatewayName(site).length() > 0;
+  }
+
+  std::string Reply::gatewayName(const SiteConfig* site) const
+  {
+    if (site->m_backend.length()) {
+      return "";
     }
 
+    std::string path = CommonReply::requestedPath(m_request, site);
+
+    for (auto& connector : site->m_connectors)
+      if (StringUtils::regexMatch(connector.first, path)) {
+        return connector.second;
+      }
+
+    return "";
+  }
+
+  void Reply::handleHttpMethod(const SiteConfig* site)
+  {
     switch (m_request->method()) {
       case Method::GET:
         m_reply = std::make_shared<GetReply>(m_request, site);
@@ -85,14 +108,25 @@ namespace Interceptor::Http {
       default:
         break;
     }
+  }
 
-    try {
-      auto buffer = m_reply->buildReply();
-      post(buffer);
-    } catch (HttpException& e) {
-      LOG_ERROR("HttpException: " << (int)e.code() );
-      buildErrorResponse(e.code(), e.closeConnection());
-    }
+  void Reply::handleGatewayRequest(const SiteConfig* site)
+  {
+    m_gateway = std::make_unique<GatewayHandler>(gatewayName(site), m_request,
+                m_request->params()->m_pool);
+    std::weak_ptr<Reply> wp {shared_from_this()};
+    m_request->setCompleted(true);
+    m_gateway->route(std::bind([wp] (Http::Code code, std::stringstream * stream) {
+      auto ptr = wp.lock();
+
+      if (ptr) {
+        ptr->handleGatewayReply(code, stream);
+      } else if (stream) {
+        LOG_ERROR("Reply::process() : Reply is already destructed, cannot send");
+      }
+    }, std::placeholders::_1, std::placeholders::_2));
+    return;
+
   }
 
   void Reply::handleGatewayReply(Code code, std::stringstream* stream)

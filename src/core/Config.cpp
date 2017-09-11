@@ -92,6 +92,10 @@ namespace Interceptor {
         parseBackends(j["backends"]);
       }
 
+      if (j.count("connectors")) {
+        parseConnectors(j["connectors"]);
+      }
+
       // servers section
       auto servers = j["servers"];
 
@@ -150,11 +154,13 @@ namespace Interceptor {
           for (auto& loc : site["locations"]) {
             for (json::iterator it = loc.begin(); it != loc.end(); ++it) {
               if (it.value().is_structured()) {
-                BackendPtr backend = std::make_shared<Backend>();
-                backend->name = it.value()["name"];
-                backend->host = it.value()["host"];
-                backend->port = it.value()["port"];
-                s->m_connectors[it.key()] = backend;
+                std::string connectorName = it.value()["name"];
+
+                if (m_connectors.count(connectorName) == 0) {
+                  throw ConfigException("Unknow connector " + connectorName);
+                }
+
+                s->m_connectors[it.key()] = it.value()["name"];
               } else {
                 s->m_locations[it.key()] = it.value().get<uint16_t>();
               }
@@ -166,7 +172,7 @@ namespace Interceptor {
               throw ConfigException("Cannot define connectors and backend at the same time");
             }
 
-            if (m_backends.count(site["backend"])) {
+            if (m_backends.count(site["backend"]) > 0) {
               s->m_backend = site["backend"];
             } else {
               throw ConfigException("Unknown backend " + site["backend"].get<std::string>());
@@ -227,6 +233,11 @@ namespace Interceptor {
     return m_backends;
   }
 
+  const ConnectorsMap& Config::connectors() const
+  {
+    return m_connectors;
+  }
+
   bool Config::isLocalDomain(const std::string& domain)
   {
     return domain.find("127.0.0.1") != std::string::npos
@@ -263,7 +274,7 @@ namespace Interceptor {
     for (auto& backend : j) {
       std::string backendName = backend["name"];
 
-      if (m_backends.count(backendName)) {
+      if (m_backends.count(backendName) > 0) {
         throw ConfigException("Backend " + backendName + " already defined");
       }
 
@@ -273,6 +284,27 @@ namespace Interceptor {
       b->port = backend["port"];
       m_backends[backendName] = b;
     }
+  }
+
+  void Config::parseConnectors(json& j)
+  {
+    for (auto& connector : j) {
+      std::string connectorName = connector["name"];
+
+      if (m_backends.count(connectorName) > 0
+          || m_connectors.count(connectorName) > 0) {
+        throw ConfigException("Connector/Backend " + connectorName +
+                              " already defined");
+      }
+
+      ConnectorPtr b = std::make_shared<Connector>();
+      b->name = connector["name"];
+      b->host = connector["host"];
+      b->port = connector["port"];
+      b->type = connector["type"] == "fcgi" ? Connector::FCGI : Connector::Server;
+      m_connectors[connectorName] = b;
+    }
+
   }
 
   constexpr uint32_t  Config::mbToBytesFactor()

@@ -31,12 +31,16 @@ namespace Interceptor {
       void declineRequest(Code error);
 
     private:
+      void handleHttpMethod(const SiteConfig* site);
+      void handleGatewayRequest(const SiteConfig* site);
       void handleGatewayReply(Code code, std::stringstream*  stream);
 
       bool checkBackendReply(const std::stringstream& stream) const;
       void post(BufferPtr buffer);
       void postBackendReply(const std::stringstream& stream);
       void buildErrorResponse(Code error, bool closeConnection = false);
+      bool hasGateway(const SiteConfig* config) const;
+      std::string gatewayName(const SiteConfig* config) const;
 
     private:
       typedef std::unique_ptr<GatewayHandler> GatewayHandlerUPtr;

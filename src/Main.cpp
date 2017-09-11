@@ -142,6 +142,10 @@ namespace Interceptor {
       backends.push_back(std::const_pointer_cast<const Backend>(kv.second));
     }
 
+    for (auto& kv : m_config->connectors()) {
+      backends.push_back(std::const_pointer_cast<const Connector>(kv.second));
+    }
+
     return m_pool->initPool(backends);
   }
 

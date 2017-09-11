@@ -15,7 +15,7 @@ namespace Interceptor {
 
   class GatewayHandler {
   public:
-    GatewayHandler(const SiteConfig* site, HttpRequestPtr request,
+    GatewayHandler(const std::string& backendName, HttpRequestPtr request,
                    BackendsPool* pool);
     ~GatewayHandler();
 

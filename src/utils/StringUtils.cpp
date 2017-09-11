@@ -1,5 +1,6 @@
 #include "StringUtils.h"
 
+#include <regex>
 
 namespace Interceptor::StringUtils {
   bool containsString(const char* data, const std::string& pattern,
@@ -26,6 +27,14 @@ namespace Interceptor::StringUtils {
     }
 
     return -1;
+  }
+
+  bool regexMatch(const std::string& regex, const std::string& pattern)
+  {
+
+    std::regex reg(regex, std::regex_constants::ECMAScript);
+
+    return std::regex_search(pattern, reg);
   }
 
 };

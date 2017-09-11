@@ -6,9 +6,9 @@
 
 #include "utils/Logger.h"
 #include "utils/FileUtils.h"
+#include "utils/StringUtils.h"
 #include "common/Buffer.h"
 
-#include <regex>
 #include <boost/algorithm/string/replace.hpp>
 
 namespace Interceptor::Http {
@@ -28,9 +28,7 @@ namespace Interceptor::Http {
     std::string idx = m_request->index();
 
     for (const auto& kv : site->m_locations) {
-      std::regex reg(kv.first, std::regex_constants::ECMAScript);
-
-      if (std::regex_search(idx, reg) > 0) {
+      if (StringUtils::regexMatch(kv.first, idx)) {
         return (Code)kv.second;
       }
     }
@@ -156,17 +154,17 @@ namespace Interceptor::Http {
     }
   }
 
-
-  std::string CommonReply::requestedPath() const
+  std::string CommonReply::requestedPath(HttpRequestPtr request,
+                                         const SiteConfig* config)
   {
     std::string page;
 
-    if ( isRequestingRoot()) {
-      page = getRootFile();
+    if ( CommonReply::isRequestingRoot(request)) {
+      page = CommonReply::getRootFile(request, config);
     } else {
       // This request contains the filename, hence we should
       // not try a filename from the list of try-files
-      page = m_config->m_docroot + m_request->index();
+      page = config->m_docroot + request->index();
 
       if (!FileUtils::exists(page)) {
         throw HttpException(Code::NotFound);
@@ -177,23 +175,30 @@ namespace Interceptor::Http {
     boost::algorithm::replace_all(page, "///", "/");
     boost::algorithm::replace_all(page, "//", "/");
     return page;
+
   }
 
-  bool CommonReply::isRequestingRoot() const
+  std::string CommonReply::requestedPath() const
   {
-    return  m_request->index() == ""
-            || m_request->index() == "/"
-            || m_request->index().at(m_request->index().length() - 1) == '/';
+    return CommonReply::requestedPath(m_request, m_config);
   }
 
-  std::string CommonReply::getRootFile() const
+  bool CommonReply::isRequestingRoot(HttpRequestPtr request)
+  {
+    return  request->index() == ""
+            || request->index() == "/"
+            || request->index().at(request->index().length() - 1) == '/';
+  }
+
+  std::string CommonReply::getRootFile(HttpRequestPtr request,
+                                       const SiteConfig* config)
   {
     std::string page;
     bool found = false;
-    std::vector<std::string> tryFiles = m_config->m_tryFiles;
+    std::vector<std::string> tryFiles = config->m_tryFiles;
 
     for (const auto& index : tryFiles) {
-      page = m_config->m_docroot + m_request->index() + "/" + index;
+      page = config->m_docroot + request->index() + "/" + index;
 
       if (FileUtils::exists(page)) {
         found = true;

@@ -15,6 +15,7 @@ namespace Interceptor {
   typedef std::map<std::string, std::string> ErrorPageMap;
   typedef std::map<std::string, int16_t> LocationsMap;
   typedef std::map<std::string, BackendPtr> BackendsMap;
+  typedef std::map<std::string, ConnectorPtr> ConnectorsMap;
 
   class ConfigException : public std::exception {
   public:
@@ -52,7 +53,7 @@ namespace Interceptor {
         ErrorPageMap m_errorPages;
         LocationsMap m_locations;
         std::string m_backend;
-        BackendsMap m_connectors;
+        std::map<std::string, std::string> m_connectors;
       };
 
       std::string m_listenHost;
@@ -75,6 +76,7 @@ namespace Interceptor {
     uint64_t maxRequestSize() const;
     uint64_t maxInMemRequestSize() const;
     const BackendsMap& backends() const;
+    const ConnectorsMap& connectors() const;
 
     static bool isLocalDomain(const std::string& domain);
     static std::string localDomain();
@@ -86,6 +88,7 @@ namespace Interceptor {
     void parseErrorPages(json& j, ErrorPageMap& map, const std::string& appendPath);
     std::string parseDocRoot(const std::string& docroot) const;
     void parseBackends(json& j);
+    void parseConnectors(json& j);
 
   private:
     const std::string m_path;
@@ -95,6 +98,7 @@ namespace Interceptor {
     /* Global section */
     ErrorPageMap m_errorPages;
     BackendsMap m_backends;
+    ConnectorsMap m_connectors;
     uint32_t m_clientTimeout;
     uint32_t m_serverTimeout;
     uint16_t m_threadNr;
