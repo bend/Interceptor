@@ -42,19 +42,15 @@
 			}, 
 			{
 			  "REGEX" : {
-				"name": "php",
-				"host": "localhost",
-				"port": 5000
+				"type": "connector", 
+				"name": "php"
 			  }
 			}
 		  ]
-
-
-
 		}
 	  ]
 	},
-	{ 
+	{
 	  "listen-host": "0.0.0.0",
 	  "listen-port": 7002,
 
@@ -114,6 +110,20 @@
 	{ "name" : "backend_test2",
 	  "host": "127.0.0.1",
 	  "port" : 7005
+	}
+  ],
+
+  "	connectors" : [
+	{ "name": "php",
+	  "type": "fastcgi",
+	  "host": "localhost",
+	  "port" : 1234
+	},
+	{
+	  "name": "nginx",
+	  "type": "server",
+	  "host": "localhost",
+	  "port": 1234
 	}
   ]
 }
