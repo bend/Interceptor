@@ -249,12 +249,18 @@ namespace Interceptor::Http {
     return m_request->closeConnection() || getFlag(Closing);
   }
 
+  void CommonReply::buildStatusLine(std::stringstream& stream)
+  {
+    stream << "HTTP/" << m_request->httpVersion() << " ";
+    stringValue(m_status, stream);
+  }
+
   void CommonReply::buildHeaders(BufferPtr httpBuffer)
   {
     LOG_DEBUG("CommonReply::buildHeaders()");
     std::stringstream stream;
-    stream << "HTTP/" << m_request->httpVersion() << " ";
-    stringValue(m_status, stream);
+
+	buildStatusLine(stream);
 
     if (canChunkResponse()) {
       m_replyHeaders->addHeader("Transfer-Encoding", "chunked");

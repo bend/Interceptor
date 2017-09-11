@@ -13,6 +13,10 @@ namespace Interceptor::Http {
         stream << "206 Partial Content" << "\r\n";
         break;
 
+	  case Code::NotModified:
+		stream << "304 Not Modified" << "\r\n";
+		break;
+
       case Code::BadRequest:
         stream << "400 Bad Request" << "\r\n";
         break;

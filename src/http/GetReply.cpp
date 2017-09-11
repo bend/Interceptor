@@ -32,21 +32,32 @@ namespace Interceptor::Http {
       throw HttpException(ret, true);
     }
 
-    requestFileContents();
+    processRequest();
     return m_httpBuffer;
   }
 
 
+  void GetReply::processRequest()
+  {
+    LOG_DEBUG("GetReply::requestFileContents()");
+	if(m_request->hasIfModifiedSince())
+	{
+	  if(requestIfMofidiedSince())
+		return;
+	}
+
+	requestFileContents();
+  }
+
   void GetReply::requestFileContents()
   {
     std::stringstream stream;
-    LOG_DEBUG("GetReply::requestFileContents()");
-    std::string page;
     size_t bytes = 0;
+    std::string page;
 
     page = requestedPath();
 
-    if (m_request->partialRequest()) {
+	if (m_request->partialRequest()) {
       requestPartialFileContents(page, stream, bytes);
     } else {
       if (!m_request->cacheHandler()->size(page, bytes)) {
@@ -65,8 +76,28 @@ namespace Interceptor::Http {
         CommonReply::requestFileContents(page, stream, bytes);
       }
     }
-
     serialize(stream);
+  }
+
+  bool GetReply::requestIfMofidiedSince() 
+  {
+	std::time_t requestedTime = m_request->ifModifiedSince();
+	std::time_t lastModified = FileUtils::lastModified(requestedPath());
+
+	if(lastModified > requestedTime) 
+	  return false;
+
+	std::stringstream stream;
+	m_status = Code::NotModified;
+	buildStatusLine(stream);
+	const std::string * header =  m_request->getHeader("If-Modified-Since");
+	m_replyHeaders->addHeader("Date", *header);
+
+	m_replyHeaders->serialize(stream);
+
+	m_httpBuffer->m_buffers.push_back(m_httpBuffer->buf(stream.str()));
+
+	return true;
   }
 
   void GetReply::serialize(std::stringstream& stream)
