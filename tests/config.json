@@ -39,13 +39,7 @@
 		  "locations" : [
 			{ 
 			  "forbidden" : 403
-			}, 
-			{
-			  "index.html" : {
-				"type": "connector", 
-				"name": "php"
-			  }
-			}
+			} 
 		  ]
 		}
 	  ]
@@ -62,7 +56,16 @@
 			"index.html"
 		  ],
 		  "host": "localhost",
-		  "docroot": "site2/"
+		  "docroot": "site2/",
+
+		  "locations": [
+			{
+			"index.html" : {
+			  "type": "connector", 
+			  "name": "php"
+			}
+			}
+		  ]
 		}
 	  ]
 	},
