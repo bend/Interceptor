@@ -37,18 +37,18 @@ namespace Interceptor {
       bool supportsCompression() const;
       bool supportsChunking() const;
       bool partialRequest() const;
-	  std::time_t ifModifiedSince() const;
+      std::time_t ifModifiedSince() const;
       Code getRangeRequest(std::tuple<int64_t, int64_t>& range) const;
 
       void process();
       bool headersReceived() const;
       bool received() const;
       bool completed() const;
-	  bool hasIfModifiedSince() const;
+      bool hasIfModifiedSince() const;
       bool closeConnection() const;
       void setCompleted(bool completed);
       bool hasMatchingSite() const;
-	  const std::string* getHeader(const std::string& header) const;
+      const std::string* getHeader(const std::string& header) const;
 
       const SiteConfig* matchingSite() const;
       Packet* request();

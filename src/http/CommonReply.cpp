@@ -265,7 +265,7 @@ namespace Interceptor::Http {
     LOG_DEBUG("CommonReply::buildHeaders()");
     std::stringstream stream;
 
-	buildStatusLine(stream);
+    buildStatusLine(stream);
 
     if (canChunkResponse()) {
       m_replyHeaders->addHeader("Transfer-Encoding", "chunked");

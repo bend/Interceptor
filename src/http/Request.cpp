@@ -164,22 +164,34 @@ namespace Interceptor::Http {
 
   bool Request::hasIfModifiedSince() const
   {
-	return m_headers->getHeader("If-Modified-Since");
+    return m_headers->getHeader("If-Modified-Since");
   }
 
   std::time_t Request::ifModifiedSince() const
   {
-	auto timeStr = getHeader("If-Modified-Since");
-  
-	std::istringstream str_stream(*timeStr);
+    auto timeStr = getHeader("If-Modified-Since");
 
-	std::tm tm{};
+    std::array<std::string, 3> formats = {
+      "%a %b %d %H:%M:%S %Y",		// Fri Dec 31 23:59:59 1999
+      "%a, %d %b %Y %H:%M:%S GMT",	// Fri, 31 Dec 1999 23:59:59 GMT
+      "%aday, %d-%b-%y %H:%M:%S GMT",	// Friday, 31-Dec-99 23:59:59 GMT
+    };
 
-	str_stream >> std::get_time(&tm, "%a %b %d %H:%M:%S %Y");
-	std::time_t time = std::mktime(&tm);
+    for (auto format : formats) {
+      std::istringstream str_stream(*timeStr);
+      std::tm tm{};
+      str_stream >> std::get_time(&tm, format.c_str());
 
-	LOG_DEBUG("TIME : " << time);
-	return time;
+      if (str_stream.fail()) {
+        continue;
+      }
+
+      std::time_t time = std::mktime(&tm);
+      LOG_DEBUG("TIME : " << time);
+      return time;
+    }
+
+    return -1;
   }
 
   bool Request::closeConnection() const
@@ -455,10 +467,10 @@ namespace Interceptor::Http {
   {
     return m_sig;
   }
-	  
+
   const std::string* Request::getHeader(const std::string& header) const
   {
-	return m_headers ? m_headers->getHeader(header) : nullptr;
+    return m_headers ? m_headers->getHeader(header) : nullptr;
   }
 
 }

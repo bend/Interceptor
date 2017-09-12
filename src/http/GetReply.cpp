@@ -40,13 +40,14 @@ namespace Interceptor::Http {
   void GetReply::processRequest()
   {
     LOG_DEBUG("GetReply::requestFileContents()");
-	if(m_request->hasIfModifiedSince())
-	{
-	  if(requestIfMofidiedSince())
-		return;
-	}
 
-	requestFileContents();
+    if (m_request->hasIfModifiedSince()) {
+      if (requestIfMofidiedSince()) {
+        return;
+      }
+    }
+
+    requestFileContents();
   }
 
   void GetReply::requestFileContents()
@@ -57,7 +58,7 @@ namespace Interceptor::Http {
 
     page = requestedPath();
 
-	if (m_request->partialRequest()) {
+    if (m_request->partialRequest()) {
       requestPartialFileContents(page, stream, bytes);
     } else {
       if (!m_request->cacheHandler()->size(page, bytes)) {
@@ -76,28 +77,35 @@ namespace Interceptor::Http {
         CommonReply::requestFileContents(page, stream, bytes);
       }
     }
+
     serialize(stream);
   }
 
-  bool GetReply::requestIfMofidiedSince() 
+  bool GetReply::requestIfMofidiedSince()
   {
-	std::time_t requestedTime = m_request->ifModifiedSince();
-	std::time_t lastModified = FileUtils::lastModified(requestedPath());
+    std::time_t requestedTime = m_request->ifModifiedSince();
 
-	if(lastModified > requestedTime) 
-	  return false;
+    if (requestedTime <= 0) {
+      throw HttpException(Code::BadRequest, true);
+    }
 
-	std::stringstream stream;
-	m_status = Code::NotModified;
-	buildStatusLine(stream);
-	const std::string * header =  m_request->getHeader("If-Modified-Since");
-	m_replyHeaders->addHeader("Date", *header);
+    std::time_t lastModified = FileUtils::lastModified(requestedPath());
 
-	m_replyHeaders->serialize(stream);
+    if (lastModified > requestedTime) {
+      return false;
+    }
 
-	m_httpBuffer->m_buffers.push_back(m_httpBuffer->buf(stream.str()));
+    std::stringstream stream;
+    m_status = Code::NotModified;
+    buildStatusLine(stream);
+    const std::string* header =  m_request->getHeader("If-Modified-Since");
+    m_replyHeaders->addHeader("Date", *header);
 
-	return true;
+    m_replyHeaders->serialize(stream);
+
+    m_httpBuffer->m_buffers.push_back(m_httpBuffer->buf(stream.str()));
+
+    return true;
   }
 
   void GetReply::serialize(std::stringstream& stream)

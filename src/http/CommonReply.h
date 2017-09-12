@@ -62,7 +62,7 @@ namespace Interceptor::Http {
 
     void setHeadersFor(const std::string& filename);
 
-	void buildStatusLine(std::stringstream& strea);
+    void buildStatusLine(std::stringstream& strea);
 
     void buildHeaders(BufferPtr httpBuffer);
 
