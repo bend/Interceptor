@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <ctime>
 
 #include "http/Http.h"
 
@@ -39,6 +40,8 @@ namespace Interceptor::FileUtils {
    */
   std::tuple<std::string, std::string> generateCacheData(
     const std::string& path);
+  
+  std::time_t lastModified(const std::string& path);
 
 }
 

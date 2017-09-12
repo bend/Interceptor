@@ -217,5 +217,14 @@ namespace Interceptor::FileUtils {
     return {};
   }
 
+  std::time_t lastModified(const std::string& path)
+  {
+    struct stat st;
+	if(stat(path.c_str(), &st) == 0) {
+	  return st.st_mtime;
+	}
+	return {};
+  }
+
 }
 

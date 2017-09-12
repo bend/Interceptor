@@ -162,6 +162,26 @@ namespace Interceptor::Http {
     return pr && pr->find("bytes=") != std::string::npos;
   }
 
+  bool Request::hasIfModifiedSince() const
+  {
+	return m_headers->getHeader("If-Modified-Since");
+  }
+
+  std::time_t Request::ifModifiedSince() const
+  {
+	auto timeStr = getHeader("If-Modified-Since");
+  
+	std::istringstream str_stream(*timeStr);
+
+	std::tm tm{};
+
+	str_stream >> std::get_time(&tm, "%a %b %d %H:%M:%S %Y");
+	std::time_t time = std::mktime(&tm);
+
+	LOG_DEBUG("TIME : " << time);
+	return time;
+  }
+
   bool Request::closeConnection() const
   {
     if (!m_headers) {
@@ -434,6 +454,11 @@ namespace Interceptor::Http {
   boost::signals2::signal<void()>& Request::hasMoreData()
   {
     return m_sig;
+  }
+	  
+  const std::string* Request::getHeader(const std::string& header) const
+  {
+	return m_headers ? m_headers->getHeader(header) : nullptr;
   }
 
 }
