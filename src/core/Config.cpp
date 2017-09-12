@@ -150,7 +150,6 @@ namespace Interceptor {
           parseErrorPages(site["error-pages"], s->m_errorPages, s->m_docroot);
 
           // Parse locations
-
           for (auto& loc : site["locations"]) {
             for (json::iterator it = loc.begin(); it != loc.end(); ++it) {
               if (it.value().is_structured()) {

@@ -81,18 +81,24 @@ namespace Interceptor::Http {
       return "";
     }
 
-    std::string path = CommonReply::requestedPath(m_request, site);
+    try {
+      std::string path = CommonReply::requestedPath(m_request, site);
 
-    for (auto& connector : site->m_connectors)
-      if (StringUtils::regexMatch(connector.first, path)) {
-        return connector.second;
-      }
+      for (auto& connector : site->m_connectors)
+        if (StringUtils::regexMatch(connector.first, path)) {
+          return connector.second;
+        }
 
-    return "";
+      return "";
+    } catch (HttpException& e) {
+      return "";
+    }
   }
 
   void Reply::handleHttpMethod(const SiteConfig* site)
   {
+    LOG_DEBUG("Reply::handleHttpMethod()");
+
     switch (m_request->method()) {
       case Method::GET:
         m_reply = std::make_shared<GetReply>(m_request, site);
@@ -112,6 +118,7 @@ namespace Interceptor::Http {
 
   void Reply::handleGatewayRequest(const SiteConfig* site)
   {
+    LOG_DEBUG("Reply::handleGatewayRequest()");
     m_gateway = std::make_unique<GatewayHandler>(gatewayName(site), m_request,
                 m_request->params()->m_pool);
     std::weak_ptr<Reply> wp {shared_from_this()};
@@ -191,7 +198,6 @@ namespace Interceptor::Http {
     if (connection) {
       connection->postReply(buffer);
     }
-
   }
 
   void Reply::buildErrorResponse(Code error, bool closeConnection)
@@ -201,7 +207,6 @@ namespace Interceptor::Http {
     m_reply = std::make_shared<ErrorReply>(m_request, site, error, closeConnection);
     auto buffer = m_reply->buildReply();
     post(buffer);
-
   }
 
 }
