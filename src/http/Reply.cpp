@@ -77,8 +77,8 @@ namespace Interceptor::Http {
 
   std::string Reply::gatewayName(const SiteConfig* site) const
   {
-    if (site->m_backend.length()) {
-      return "";
+    if (site->m_backend.length() > 0) {
+      return site->m_backend;
     }
 
     try {
