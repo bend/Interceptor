@@ -54,6 +54,9 @@ namespace Interceptor {
         LocationsMap m_locations;
         std::string m_backend;
         std::map<std::string, std::string> m_connectors;
+        std::map<std::string, time_t> m_cacheTime;
+
+        const time_t getCacheTime(const std::string& path) const;
       };
 
       std::string m_listenHost;
@@ -89,6 +92,10 @@ namespace Interceptor {
     std::string parseDocRoot(const std::string& docroot) const;
     void parseBackends(json& j);
     void parseConnectors(json& j);
+    void parseLocations(json& j, ServerConfig::Site* s);
+
+  private:
+    static time_t parseTimeUnit(const std::string& time);
 
   private:
     const std::string m_path;

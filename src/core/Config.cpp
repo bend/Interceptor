@@ -2,6 +2,7 @@
 
 #include "vars.h"
 #include "utils/Logger.h"
+#include "utils/StringUtils.h"
 
 #include <fstream>
 #include <boost/algorithm/string.hpp>
@@ -147,23 +148,12 @@ namespace Interceptor {
           s->m_errorPages.insert(m_errorPages.begin(), m_errorPages.end());
 
           // Overwrite by local setting
-          parseErrorPages(site["error-pages"], s->m_errorPages, s->m_docroot);
+          if (site.count("error-pages")) {
+            parseErrorPages(site["error-pages"], s->m_errorPages, s->m_docroot);
+          }
 
-          // Parse locations
-          for (auto& loc : site["locations"]) {
-            for (json::iterator it = loc.begin(); it != loc.end(); ++it) {
-              if (it.value().is_structured()) {
-                std::string connectorName = it.value()["name"];
-
-                if (m_connectors.count(connectorName) == 0) {
-                  throw ConfigException("Unknow connector " + connectorName);
-                }
-
-                s->m_connectors[it.key()] = it.value()["name"];
-              } else {
-                s->m_locations[it.key()] = it.value().get<uint16_t>();
-              }
-            }
+          if (site.count("locations") > 0) {
+            parseLocations(site["locations"], s);
           }
 
           if (site.count("backend") > 0) {
@@ -237,6 +227,19 @@ namespace Interceptor {
     return m_connectors;
   }
 
+  const time_t Config::ServerConfig::Site::getCacheTime(const std::string& path)
+  const
+  {
+
+    for (auto& kv : m_cacheTime) {
+      if (StringUtils::regexMatch(kv.first, path)) {
+        return kv.second;
+      }
+    }
+
+    return -1;
+  }
+
   bool Config::isLocalDomain(const std::string& domain)
   {
     return domain.find("127.0.0.1") != std::string::npos
@@ -306,9 +309,87 @@ namespace Interceptor {
 
   }
 
+  void Config::parseLocations(json& j, ServerConfig::Site* s)
+  {
+    // Parse locations
+    for (auto& loc : j) {
+      for (json::iterator it = loc.begin(); it != loc.end(); ++it) {
+        if (it.value().is_structured()) {
+          std::string type = it.value()["type"];
+
+          if (type == "fcgi" || type == "connector") {
+            std::string connectorName = it.value()["name"];
+
+            if (m_connectors.count(connectorName) == 0) {
+              throw ConfigException("Unknow connector " + connectorName);
+            }
+
+            s->m_connectors[it.key()] = it.value()["name"];
+          } else if (type == "cache") {
+            time_t seconds = parseTimeUnit(it.value()["expires"]);
+            s->m_cacheTime[it.key()] = seconds;
+          }
+        } else {
+          s->m_locations[it.key()] = it.value().get<uint16_t>();
+        }
+      }
+    }
+
+
+  }
+
   constexpr uint32_t  Config::mbToBytesFactor()
   {
     return 1024 * 1024;
+  }
+
+  time_t Config::parseTimeUnit(const std::string& time)
+  {
+    std::string timeunit;
+
+    if (time.find("y") != std::string::npos) {
+      timeunit += "y";
+    }
+
+    if (time.find("d") != std::string::npos) {
+      timeunit += "d";
+    }
+
+    if (time.find("h") != std::string::npos) {
+      timeunit += "h";
+    }
+
+    if (time.find("m") != std::string::npos) {
+      timeunit += "m";
+    }
+
+    if (time.find("s") != std::string::npos) {
+      timeunit += "s";
+    }
+
+    if (timeunit.length() != 1) {
+      throw ConfigException("While parsing time units, only one time unit is allowed at once");
+    }
+
+    size_t pos = time.find(timeunit);
+
+    std::string timeStr = time.substr(0, pos);
+
+    int timeI =  boost::lexical_cast<int>(timeStr);
+
+    if (timeunit == "y") {
+      return timeI * 3.154e+7;
+    } else if (timeunit == "d") {
+      return timeI * 86400;
+    } else if (timeunit == "h") {
+      return timeI * 3600;
+    } else if (timeunit  == "m") {
+      return timeI * 60;
+    } else if ( timeunit == "s") {
+      return timeI;
+    }
+
+    throw ConfigException("Missing time unit ");
   }
 
 }

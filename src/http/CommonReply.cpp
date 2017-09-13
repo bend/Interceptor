@@ -285,6 +285,14 @@ namespace Interceptor::Http {
       m_replyHeaders->addHeader("Connection", "keep-alive");
     }
 
+    time_t cacheTime = m_config->getCacheTime(requestedPath());
+
+    if (cacheTime > 0) {
+      m_replyHeaders->addHeader("Cache-Control", std::to_string(cacheTime));
+    } else {
+      m_replyHeaders->addHeader("Cache-Control", "no-cache");
+    }
+
     m_replyHeaders->serialize(stream);
     const std::string& resp = stream.str();
 
