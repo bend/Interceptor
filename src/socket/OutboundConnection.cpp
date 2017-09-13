@@ -80,7 +80,7 @@ namespace Interceptor {
     std::function<void(boost::system::error_code)> callback)
   {
     m_spSocket.reset(new tcp::socket(io_service_));
-    boost::asio::async_connect(*m_spSocket , endpointIterator_,
+    boost::asio::async_connect(*m_spSocket, endpointIterator_,
                                std::bind(callback,
                                          std::placeholders::_1));
   }

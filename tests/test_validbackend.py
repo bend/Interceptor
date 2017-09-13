@@ -169,6 +169,54 @@ class TestValidHttpServer(unittest.TestCase):
         self.assertEqual(response.getheader('Transfer-Encoding'), 'chunked')
         lastmodifed2 = response.getheader("Last-Modified")
         self.assertNotEqual(lastmodifed, lastmodifed2)
+    
+    def test10(self):
+        conn = httplib.HTTPConnection(BACKEND_URL)
+        headers = { "Accept-Encoding" : "gzip"}
+        conn.request("GET", "/dir/", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.getheader("Cache-Control"), "31540000")
+
+    def test10_1(self):
+        conn = httplib.HTTPConnection(BACKEND_URL)
+        headers = { "Accept-Encoding" : "gzip"}
+        conn.request("GET", "/", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.getheader("Cache-Control"), "no-cache")
+
+    def test11(self):
+        conn = httplib.HTTPConnection(BACKEND_URL)
+        headers = { "Accept-Encoding" : "gzip", "If-Modified-Since" : "Fri, 31 Dec 1999 23:59:59 GMT"}
+        conn.request("GET", "/index.html", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.getheader("Cache-Control"), "no-cache")
+    
+    def test11_1(self):
+        conn = httplib.HTTPConnection(BACKEND_URL)
+        headers = { "Accept-Encoding" : "gzip", "If-Modified-Since" : "Friday, 31-Dec-99 23:59:59 GMT"}
+        conn.request("GET", "/index.html", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.getheader("Cache-Control"), "no-cache")
+    
+    def test11_2(self):
+        conn = httplib.HTTPConnection(BACKEND_URL)
+        headers = { "Accept-Encoding" : "gzip", "If-Modified-Since" : "Fri Dec 31 23:59:59 1999"}
+        conn.request("GET", "/index.html", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.getheader("Cache-Control"), "no-cache")
+    
+    def test11_3(self):
+        conn = httplib.HTTPConnection(BACKEND_URL)
+        headers = { "Accept-Encoding" : "gzip", "If-Modified-Since" : "Fri, 31 Dec 2019 23:59:59 GMT"}
+        conn.request("GET", "/index.html", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 304)
+
 
     def test_lastest(self):
         self.assertEqual(self.proc.poll(), None)

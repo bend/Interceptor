@@ -41,7 +41,7 @@
 			  "forbidden" : 403
 			},
 			{
-			  "/" : {
+			  "/dir" : {
 				"type" : "cache",
 				"expires": "1y"
 			  }

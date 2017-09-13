@@ -136,7 +136,7 @@ namespace Interceptor {
           if (site.count("gzip") > 0) {
             std::string line = site["gzip"];
             std::vector<std::string> exts;
-            boost::split(exts, line , boost::is_any_of(","));
+            boost::split(exts, line, boost::is_any_of(","));
 
             for (auto& e : exts) {
               s->m_gzip.insert(boost::trim_copy(e));

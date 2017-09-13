@@ -99,7 +99,7 @@ namespace Interceptor::Http {
       // avoid consuming to much memory
       requestLargeFileContents(page, stream, from, to, total);
     } else {
-      ret = FileUtils::readFile(page,	from, to , stream,
+      ret = FileUtils::readFile(page,	from, to, stream,
                                 bytes); //TODO take it from cache
 
       if (ret == Code::Ok) {
@@ -145,7 +145,7 @@ namespace Interceptor::Http {
       } else {
         from = to + 1;
         m_httpBuffer->m_nextCall = std::bind(&CommonReply::requestFileChunk,
-                                             shared_from_this(), page, from , limit, totalBytes);
+                                             shared_from_this(), page, from, limit, totalBytes);
         m_httpBuffer->m_flags |= Buffer::HasMore;
       }
 
@@ -286,15 +286,15 @@ namespace Interceptor::Http {
     }
 
 
-	if(m_config) {
-	  time_t cacheTime = m_config->getCacheTime(m_request->index());
+    if (m_config) {
+      time_t cacheTime = m_config->getCacheTime(m_request->index());
 
-	  if (cacheTime > 0) {
-		m_replyHeaders->addHeader("Cache-Control", std::to_string(cacheTime));
-	  } else {
-		m_replyHeaders->addHeader("Cache-Control", "no-cache");
-	  }
-	}
+      if (cacheTime > 0) {
+        m_replyHeaders->addHeader("Cache-Control", std::to_string(cacheTime));
+      } else {
+        m_replyHeaders->addHeader("Cache-Control", "no-cache");
+      }
+    }
 
     m_replyHeaders->serialize(stream);
     const std::string& resp = stream.str();

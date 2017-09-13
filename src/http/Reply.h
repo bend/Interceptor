@@ -17,9 +17,9 @@ namespace Interceptor {
     class CommonReply;
 
     enum class Code : short;
-      enum class Method : char;
+    enum class Method : char;
 
-      class Reply : public std::enable_shared_from_this<Reply> {
+    class Reply : public std::enable_shared_from_this<Reply> {
 
     public:
 
