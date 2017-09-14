@@ -25,10 +25,10 @@ namespace Interceptor {
     virtual const std::string& name() const override;
     virtual void reset() override;
     virtual void setReplyCallback(
-      std::function<void(Http::Code, std::stringstream*)> callback) override;
+      std::function<void(Http::Code, std::stringstream*)>& callback) override;
 
   protected:
-    virtual void readReply(std::function<void(Http::Code, std::stringstream*)>
+    virtual void readReply(std::function<void(Http::Code, std::stringstream*)>&
                            callback) override;
 
   private:
@@ -36,13 +36,13 @@ namespace Interceptor {
                         boost::asio::ip::tcp::resolver::iterator it);
     void handleConnected(const boost::system::error_code& error);
     void handleResponseRead(const boost::system::error_code& error,
-                            size_t bytesRead, std::function<void(Http::Code, std::stringstream*)> callback);
+                            size_t bytesRead, std::function<void(Http::Code, std::stringstream*)>& callback);
     void handlePacketForwarded(const boost::system::error_code& error,
                                Packet*  packet,
-                               std::function<void(Http::Code)> callback);
-    void doPost(std::pair<Packet*, std::function<void(Http::Code)>> data);
+                               std::function<void(Http::Code)>& callback);
+    void doPost(std::pair<Packet*, std::function<void(Http::Code)>>& data);
     void forwardNext();
-    void doForward(Packet* packet, std::function<void(Http::Code)> callback);
+    void doForward(Packet* packet, std::function<void(Http::Code)>& callback);
 
   private:
     enum State {

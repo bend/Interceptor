@@ -24,13 +24,8 @@ namespace Interceptor {
     bool reinit();
     void run();
     void stop();
-
-  public:
-    int _argc;
-    char** _argv;
-
+  
   private:
-
     bool parsePO(int argc, char** argv);
     bool initCache();
     bool initBackendsPool();

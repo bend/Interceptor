@@ -86,7 +86,7 @@ namespace Interceptor {
   }
 
   void BackendConnector::readReply(
-    std::function<void(Http::Code, std::stringstream*)> callback)
+    std::function<void(Http::Code, std::stringstream*)>& callback)
   {
     LOG_DEBUG("BackendConnector::readReply()");
     assert(m_callback);
@@ -101,7 +101,7 @@ namespace Interceptor {
   }
 
   void BackendConnector::setReplyCallback(
-    std::function<void(Http::Code, std::stringstream*)> callback)
+    std::function<void(Http::Code, std::stringstream*)>& callback)
   {
     LOG_DEBUG("BackendConnector::setReplyCallback()");
     assert(callback);
@@ -109,7 +109,7 @@ namespace Interceptor {
   }
 
   void BackendConnector::doPost(
-    std::pair<Packet*, std::function<void(Http::Code)>>
+    std::pair<Packet*, std::function<void(Http::Code)>>&
     data)
   {
     LOG_DEBUG("BackendConnector::doPost()");
@@ -131,7 +131,7 @@ namespace Interceptor {
   }
 
   void BackendConnector::doForward(Packet* packet,
-                                   std::function<void(Http::Code)> callback)
+                                   std::function<void(Http::Code)>& callback)
   {
     LOG_DEBUG("BackendConnector::doForward()");
     m_state &= ~CanWrite;
@@ -148,7 +148,7 @@ namespace Interceptor {
 
   void BackendConnector::handlePacketForwarded(const boost::system::error_code&
       error, Packet* packet,
-      std::function<void(Http::Code)> callback)
+      std::function<void(Http::Code)>& callback)
   {
     LOG_DEBUG("BackendConnector::handlePacketForwarded()");
     m_state |= CanWrite;
@@ -166,7 +166,7 @@ namespace Interceptor {
 
   void BackendConnector::handleResponseRead(const boost::system::error_code&
       error, size_t bytesRead,
-      std::function<void(Http::Code, std::stringstream*)> callback)
+      std::function<void(Http::Code, std::stringstream*)>& callback)
   {
     LOG_DEBUG("BackendConnector::handleResponseRead()");
     m_state &= ~Reading;

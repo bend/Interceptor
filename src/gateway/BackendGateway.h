@@ -18,7 +18,7 @@ namespace Interceptor {
 
     virtual AbstractConnectorPtr takeConnection() override;
 
-    virtual void handleRequest(std::function<void(Http::Code, std::stringstream*)>
+    virtual void handleRequest(std::function<void(Http::Code, std::stringstream*)>&
                                func) override;
 
     virtual void reset() override;

@@ -38,7 +38,7 @@ namespace Interceptor {
   }
 
   void BackendGateway::handleRequest(
-    std::function<void(Http::Code, std::stringstream*)> callback)
+    std::function<void(Http::Code, std::stringstream*)>& callback)
   {
     LOG_DEBUG("BackendGateway::handleRequest");
     m_callback = callback;
