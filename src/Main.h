@@ -24,7 +24,7 @@ namespace Interceptor {
     bool reinit();
     void run();
     void stop();
-  
+
   private:
     bool parsePO(int argc, char** argv);
     bool initCache();

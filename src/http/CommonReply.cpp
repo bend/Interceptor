@@ -289,7 +289,8 @@ namespace Interceptor::Http {
       time_t cacheTime = m_config->getCacheTime(m_request->index());
 
       if (cacheTime > 0) {
-        m_replyHeaders->addHeader("Cache-Control", "public, max-age=" + std::to_string(cacheTime));
+        m_replyHeaders->addHeader("Cache-Control",
+                                  "public, max-age=" + std::to_string(cacheTime));
       } else {
         m_replyHeaders->addHeader("Cache-Control", "no-cache");
       }
