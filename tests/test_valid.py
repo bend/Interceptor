@@ -185,7 +185,7 @@ class TestValidHttpServer(unittest.TestCase):
         conn.request("GET", "/dir/", None, headers)
         response = conn.getresponse()
         self.assertEqual(response.status, 200)
-        self.assertEqual(response.getheader("Cache-Control"), "max-age=31540000")
+        self.assertEqual(response.getheader("Cache-Control"), "public, max-age=31540000")
 
     def test10_1(self):
         conn = httplib.HTTPConnection(HTTP_URL)
