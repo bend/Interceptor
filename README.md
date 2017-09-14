@@ -17,6 +17,10 @@ A fast Web server written in C++
 - Custom Error pages
 - Locations access restriction
 - Local cache 
+- If-Modified-Since
+- Cache-Control
+- Reverse Proxy: Forward requests to another backend
+- Connectors: Forward matching files to another backend (Can be used for example to forward request for all php files to another server handling php requests.
 
 ## TODO
 
@@ -25,11 +29,18 @@ A fast Web server written in C++
 - FCGI connector
 - Basic Authentication support
 - SSL
+- Redirections
 - ...
 
 ## Build & Install
 
 This program need **libz**, **libboost**, **libgamin**, **c++17** compliant compiler
+You need cmake to build it.
+You can also build it using docker with this command:
+
+   ```
+sudo docker run -v $PWD:/code -t interceptor /bin/bash -c "export ENABLE_GZIP=$ENABLE_GZIP; export DEBUG_LOGGING=$DEBUG_LOGGING; export ENABLE_LOCAL_CACHE=$ENABLE_LOCAL_CACHE; cd /code; cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DEBUG_LOGGING . && make && make install && env CTEST_OUTPUT_ON_FAILURE=1 make test"
+```
 
 ### Compilation Flags 
   
@@ -82,9 +93,23 @@ You can find a configuration example in the config/ directory. Be carefull that 
 			{ "404" : "404.html" },
 			{ "400" : "400.html" }
 		  ],
-		  "locations" : [			// Default code to return for a specific location
-			{ "/forbidden" : 403 } // The string is a regex using the ECMA grammar
-		  }
+		 "locations" : [
+			{ 
+			  "forbidden" : 403 // default code to return for this directory
+			},
+			{
+			  "/dir" : { // use cache-control for this directory
+				"type" : "cache", 
+				"expires": "1y"
+			  }
+			 }, 
+			 {
+			  "*.php" : { // forward all php files to another connector
+				"type": "connector", 
+				"name": "php"
+			  }
+			}
+		  ]
 		}
 	  ]
 	},
@@ -101,11 +126,37 @@ You can find a configuration example in the config/ directory. Be carefull that 
 		  ],
 		  "host": "0xff.xyz",
 		  "docroot": "/home/ben/docker-data/cv-data/"
+		  "backend" : "backend_test" // forward all incomming requests for this site to the backend_test
 		}
 	  ]
 	}
+  ],
+  
+   // define backends
+   "backends" : [
+	{ "name" : "backend_test",
+	  "host": "127.0.0.1",
+	  "port" : 7000
+	},
+	{ "name" : "backend_test2",
+	  "host": "127.0.0.1",
+	  "port" : 7005
+	}
+  ],
 
-
+   // define connectors
+  "connectors" : [
+	{ "name": "php",
+	  "type": "fcgi",
+	  "host": "localhost",
+	  "port" : 1234
+	},
+	{
+	  "name": "nginx",
+	  "type": "server",
+	  "host": "localhost",
+	  "port": 1235
+	}
   ]
 }
 ````
