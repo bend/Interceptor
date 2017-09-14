@@ -276,7 +276,7 @@ namespace Interceptor::Http {
     std::string get = headers.substr(0, pos);
     headers = headers.substr(pos);
     std::vector<std::string> getParts;
-    boost::split(getParts, get , boost::is_any_of(" "));
+    boost::split(getParts, get, boost::is_any_of(" "));
 
     if (getParts.size() != 3) {
       LOG_ERROR("Missing Method part");

@@ -80,7 +80,7 @@ namespace Interceptor {
     desc.add_options()
     ("help", "produce help message")
     ("version,v", "print version string")
-    ("config,c", po::value<std::string>(&config_file) , "input configuration file")
+    ("config,c", po::value<std::string>(&config_file), "input configuration file")
     ("threads,t", po::value<uint16_t>(&m_nbThreads), "number of threads to use");
 
     po::variables_map vm;
