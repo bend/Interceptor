@@ -85,8 +85,13 @@ namespace Interceptor::Http {
   std::string Reply::gatewayName(const SiteConfig* site) const
   {
     try {
+      if (site->m_backend.length() > 0) {
+        return site->m_backend;
+      }
+
       std::string path = CommonReply::requestedPath(m_request, site);
-      return site->gatewayName(path);
+
+      return site->connectorName(path);
     } catch (HttpException& e) {
       return "";
     }

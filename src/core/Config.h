@@ -60,7 +60,7 @@ namespace Interceptor {
 
         const time_t getCacheTime(const std::string& path) const;
 
-        const std::string gatewayName(const std::string& path) const;
+        const std::string connectorName(const std::string& path) const;
 
         const Redirection* redirection(const std::string& path) const;
       };

@@ -244,13 +244,9 @@ namespace Interceptor {
     return -1;
   }
 
-  const std::string Config::ServerConfig::Site::gatewayName(
+  const std::string Config::ServerConfig::Site::connectorName(
     const std::string& path) const
   {
-    if (m_backend.length() > 0) {
-      return m_backend;
-    }
-
     for (auto& connector : m_connectors)
       if (StringUtils::regexMatch(connector.first, path)) {
         return connector.second;

@@ -103,23 +103,6 @@
 		  ],
 		  "host": "localhost",
 		  "docroot": "site2/",
-		  
-		  "redirects" : [
-			{
-			  "/index.html" : {
-				  "redirection" : "test.com",
-				  "type" : "permanent"
-			  }
-			},
-			{
-			  "URL2" : {
-				  "redirection" : "URL",
-				  "type" : "redirect"
-			  }
-			}
-		  ],
-
-
 
 		  "backend" : "backend_test"
 		}
