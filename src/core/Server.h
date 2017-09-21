@@ -3,8 +3,9 @@
 
 #include "common/Defs.h"
 
-#include <boost/asio.hpp>
 #include "Config.h"
+
+#include <boost/asio.hpp>
 
 
 namespace Interceptor {
@@ -21,12 +22,13 @@ namespace Interceptor {
     void listen();
     void handleAccept(SessionPtr session,
                       const boost::system::error_code& error);
+    void addSession(SessionPtr session);
+    void handleSessionRemoved(SessionPtr session);
 
   private:
     ParamsPtr m_params;
     boost::asio::io_service& m_ioService;
     boost::asio::ip::tcp::acceptor m_acceptor;
-
   };
 }
 

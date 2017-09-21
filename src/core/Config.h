@@ -7,6 +7,7 @@
 #include <set>
 #include "json/json.hpp"
 #include "backend/Backend.h"
+#include "common/Redirection.h"
 
 using json = nlohmann::json;
 
@@ -55,8 +56,13 @@ namespace Interceptor {
         std::string m_backend;
         std::map<std::string, std::string> m_connectors;
         std::map<std::string, time_t> m_cacheTime;
+        std::vector<Redirection> m_redirections;
 
         const time_t getCacheTime(const std::string& path) const;
+
+        const std::string gatewayName(const std::string& path) const;
+
+        const Redirection* redirection(const std::string& path) const;
       };
 
       std::string m_listenHost;
@@ -93,9 +99,11 @@ namespace Interceptor {
     void parseBackends(json& j);
     void parseConnectors(json& j);
     void parseLocations(json& j, ServerConfig::Site* s);
+    void parseRedirections(json& j, ServerConfig::Site* s);
 
   private:
     static time_t parseTimeUnit(const std::string& time);
+    static Redirection::Type toType(const std::string& type);
 
   private:
     const std::string m_path;

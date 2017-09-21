@@ -2,6 +2,7 @@ set(libcommon_src
   AbstractSessionHandler.cpp
   FileBuffer.cpp
   Buffer.cpp
+  Redirection.cpp
 	)
 
 INCLUDE_DIRECTORIES(

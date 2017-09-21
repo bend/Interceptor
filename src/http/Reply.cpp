@@ -5,11 +5,13 @@
 #include "cache/generic_cache.h"
 #include "common/Params.h"
 #include "common/Buffer.h"
+#include "common/Redirection.h"
 #include "gateway/GatewayHandler.h"
 #include "core/SessionConnection.h"
 #include "GetReply.h"
 #include "HeadReply.h"
 #include "ErrorReply.h"
+#include "RedirectReply.h"
 #include "HttpException.h"
 
 #include "utils/StringUtils.h"
@@ -55,7 +57,12 @@ namespace Interceptor::Http {
 
     const SiteConfig* site = m_request->matchingSite();
 
-    if (hasGateway(site)) {
+    const auto redirection = site->redirection(m_request->host() +
+                             m_request->index());
+
+    if (redirection) {
+      handleRedirection(redirection, site);
+    } else if (hasGateway(site)) {
       handleGatewayRequest(site);
     } else {
       handleHttpMethod(site);
@@ -77,19 +84,9 @@ namespace Interceptor::Http {
 
   std::string Reply::gatewayName(const SiteConfig* site) const
   {
-    if (site->m_backend.length() > 0) {
-      return site->m_backend;
-    }
-
     try {
       std::string path = CommonReply::requestedPath(m_request, site);
-
-      for (auto& connector : site->m_connectors)
-        if (StringUtils::regexMatch(connector.first, path)) {
-          return connector.second;
-        }
-
-      return "";
+      return site->gatewayName(path);
     } catch (HttpException& e) {
       return "";
     }
@@ -114,6 +111,15 @@ namespace Interceptor::Http {
       default:
         break;
     }
+  }
+
+  void Reply::handleRedirection(const Redirection* redirection,
+                                const SiteConfig* site)
+  {
+    LOG_DEBUG("Reply::handleRedirection()");
+    m_reply = std::make_shared<RedirectReply>(m_request, site, redirection);
+    auto buffer = m_reply->buildReply();
+    post(buffer);
   }
 
   void Reply::handleGatewayRequest(const SiteConfig* site)
@@ -184,6 +190,7 @@ namespace Interceptor::Http {
 
   bool Reply::checkBackendReply(const std::stringstream& stream) const
   {
+    //TODO
     return true;
   }
 

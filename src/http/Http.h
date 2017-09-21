@@ -9,6 +9,8 @@ namespace Interceptor::Http {
   enum class Code : short {
     Ok								= 200,
     PartialContent					= 206,
+    MovedPermanently				= 301,
+    Found							= 302,
     NotModified						= 304,
     BadRequest						= 400,
     Forbidden						= 403,

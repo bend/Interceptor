@@ -156,6 +156,10 @@ namespace Interceptor {
             parseLocations(site["locations"], s);
           }
 
+          if (site.count("redirects") > 0) {
+            parseRedirections(site["redirects"], s);
+          }
+
           if (site.count("backend") > 0) {
             if (s->m_connectors.size() > 0) {
               throw ConfigException("Cannot define connectors and backend at the same time");
@@ -238,6 +242,34 @@ namespace Interceptor {
     }
 
     return -1;
+  }
+
+  const std::string Config::ServerConfig::Site::gatewayName(
+    const std::string& path) const
+  {
+    if (m_backend.length() > 0) {
+      return m_backend;
+    }
+
+    for (auto& connector : m_connectors)
+      if (StringUtils::regexMatch(connector.first, path)) {
+        return connector.second;
+      }
+
+    return "";
+  }
+
+  const Redirection* Config::ServerConfig::Site::redirection(
+    const std::string& path) const
+  {
+
+    for (const auto& r : m_redirections) {
+      if (r.matches(path)) {
+        return &r;
+      }
+    }
+
+    return nullptr;
   }
 
   bool Config::isLocalDomain(const std::string& domain)
@@ -334,7 +366,18 @@ namespace Interceptor {
         }
       }
     }
+  }
 
+  void Config::parseRedirections(json& j, ServerConfig::Site* s)
+  {
+
+    for (auto& r : j) {
+      for (json::iterator it = r.begin(); it != r.end(); ++it) {
+        std::string pattern = it.value()["redirection"];
+        Redirection::Type type = toType(it.value()["type"]);
+        s->m_redirections.push_back({it.key(), pattern, type});
+      }
+    }
 
   }
 
@@ -391,5 +434,18 @@ namespace Interceptor {
 
     throw ConfigException("Missing time unit ");
   }
+
+  Redirection::Type Config::toType(const std::string& type)
+  {
+    if (type == "redirect") {
+      return Redirection::Type::Redirect;
+    } else if (type == "permanent") {
+      return Redirection::Type::Permanent;
+    }
+
+    throw ConfigException("Invalid redirection type: " + type);
+
+  }
+
 
 }

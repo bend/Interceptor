@@ -6,6 +6,7 @@ set(libhttp_src
   GetReply.cpp
   HeadReply.cpp
   ErrorReply.cpp
+  RedirectReply.cpp
   Http.cpp
   HTTP11SessionHandler.cpp
   Encoder.cpp

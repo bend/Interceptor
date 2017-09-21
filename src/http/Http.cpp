@@ -13,6 +13,14 @@ namespace Interceptor::Http {
         stream << "206 Partial Content" << "\r\n";
         break;
 
+      case Code::MovedPermanently:
+        stream << "301 Moved Permanently" << "\r\n";
+        break;
+
+      case Code::Found:
+        stream << "302 Found" << "\r\n";
+        break;
+
       case Code::NotModified:
         stream << "304 Not Modified" << "\r\n";
         break;

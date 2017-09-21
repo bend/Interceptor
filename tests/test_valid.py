@@ -226,6 +226,21 @@ class TestValidHttpServer(unittest.TestCase):
         response = conn.getresponse()
         self.assertEqual(response.status, 304)
 
+    def test12(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        headers = { "Accept-Encoding" : "gzip"}
+        conn.request("GET", "/redirect1", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 301)
+        self.assertEqual(response.getheader("Location"), "http://redirect.example.com")
+    
+    def test12_1(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        headers = { "Accept-Encoding" : "gzip"}
+        conn.request("GET", "/redirect2", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 302)
+        self.assertEqual(response.getheader("Location"), "http://redirect2.example.com")
 
 
     def test_lastest(self):

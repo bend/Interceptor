@@ -19,6 +19,7 @@ namespace Interceptor::Http {
       m_httpBuffer(std::make_shared<Buffer>()),
       m_encoder(std::make_unique<Encoder>()),
       m_config(config),
+      m_contentLength(0),
       m_status(Code::Ok)
   {
   }

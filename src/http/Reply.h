@@ -10,6 +10,7 @@
 
 namespace Interceptor {
 
+  class Redirection;
   class GatewayHandler;
 
   namespace Http {
@@ -32,6 +33,7 @@ namespace Interceptor {
 
     private:
       void handleHttpMethod(const SiteConfig* site);
+      void handleRedirection(const Redirection* r, const SiteConfig* site);
       void handleGatewayRequest(const SiteConfig* site);
       void handleGatewayReply(Code code, std::stringstream*  stream);
 

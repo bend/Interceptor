@@ -46,6 +46,21 @@
 				"expires": "1y"
 			  }
 			}
+		  ],
+		  
+		  "redirects" : [
+			{
+			  "/redirect1" : {
+				  "redirection" : "http://redirect.example.com",
+				  "type" : "permanent"
+			  }
+			},
+			{
+			  "/redirect2" :  {
+				  "redirection": "http://redirect2.example.com",
+				  "type" : "redirect"
+			  }
+			}
 		  ]
 		}
 	  ]
@@ -90,10 +105,18 @@
 		  "docroot": "site2/",
 		  
 		  "redirects" : [
-			  {
-				  "REGEX" : "URL/$1",
-				  "TYPE" : "permanent | redirect"
+			{
+			  "/index.html" : {
+				  "redirection" : "test.com",
+				  "type" : "permanent"
 			  }
+			},
+			{
+			  "URL2" : {
+				  "redirection" : "URL",
+				  "type" : "redirect"
+			  }
+			}
 		  ],
 
 
