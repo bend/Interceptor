@@ -191,13 +191,19 @@ namespace Interceptor::FileUtils {
   bool exists(const std::string& filename)
   {
     namespace fs = boost::filesystem;
-    fs::path dataDir(filename);
 
-    if (!fs::exists(dataDir) || fs::is_directory(dataDir)) {
+    try {
+      fs::path dataDir(filename);
+
+      if (!fs::exists(dataDir) || fs::is_directory(dataDir)) {
+        return false;
+      }
+
+      return true;
+
+    } catch (...) {
       return false;
     }
-
-    return true;
   }
 
   std::tuple<std::string, std::string> generateCacheData(

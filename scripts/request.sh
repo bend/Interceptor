@@ -21,5 +21,6 @@ set -o nounset                              # Treat unset variables as an error
 while true;do
   curl localhost:7003/index.html -O
   curl localhost:7000/index.html -O
+  curl localhost:7004/index.html -O
 done
 

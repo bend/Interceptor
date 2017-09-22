@@ -22,6 +22,7 @@ namespace Interceptor {
 
   void BackendsPool::initConnection(BackendCPtr backend)
   {
+    LOG_DEBUG("BackendsPool::initConnection()");
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     AbstractConnectorPtr connector = std::make_unique<BackendConnector>(backend,
                                      m_ioService);
@@ -62,8 +63,6 @@ namespace Interceptor {
     std::list<AbstractConnectorPtr>& connections = m_connections.at(
           connection->name());
     connections.push_back(std::move(connection));
-    LOG_DEBUG("BackendsPool::put connection " <<
-              m_connections.at("backend_test").front()->name());
   }
 
 }
