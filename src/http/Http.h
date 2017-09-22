@@ -37,7 +37,7 @@ namespace Interceptor::Http {
     PATCH
   };
 
-  void stringValue(Code error, std::stringstream& stream);
+  void serializeHttpCode(Code error, std::stringstream& stream);
 
   Code convertToHttpCode(const boost::system::error_code& error);
 

@@ -258,7 +258,7 @@ namespace Interceptor::Http {
   void CommonReply::buildStatusLine(std::stringstream& stream)
   {
     stream << "HTTP/" << m_request->httpVersion() << " ";
-    stringValue(m_status, stream);
+    serializeHttpCode(m_status, stream);
   }
 
   void CommonReply::buildHeaders(BufferPtr httpBuffer)

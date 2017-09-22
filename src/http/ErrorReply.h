@@ -14,6 +14,8 @@ namespace Interceptor::Http {
 
   protected:
     virtual void serialize(std::stringstream& stream) override {};
+    void serializeDetails(Code status, std::stringstream& stream);
+    std::string formatMsg() const;
 
   };
 

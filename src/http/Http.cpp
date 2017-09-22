@@ -2,7 +2,7 @@
 
 namespace Interceptor::Http {
 
-  void stringValue(Code error, std::stringstream& stream)
+  void serializeHttpCode(Code error, std::stringstream& stream)
   {
     switch (error) {
       case Code::Ok:
