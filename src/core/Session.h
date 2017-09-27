@@ -26,6 +26,9 @@ namespace Interceptor {
     void start();
 
   private:
+    void doStart();
+
+  private:
     typedef std::shared_ptr<SessionTypeDetector> SessionTypeDetectorPtr;
     ParamsPtr m_params;
     boost::asio::io_service& m_ioService;

@@ -105,6 +105,17 @@ namespace Interceptor {
         sc->m_listenPort = server["listen-port"];
         sc->m_listenHost = server["listen-host"];
 
+        if (server.count("use-ssl") > 0) {
+          sc->m_useSSL = server["use-ssl"];
+
+          if (sc->m_useSSL) {
+            sc->m_pemfile = server["pem-file"];
+            sc->m_dhfile = server["dh-file"];
+          }
+        } else {
+          sc->m_useSSL = false;
+        }
+
         if (server.count("client-timeout")) {
           sc->m_clientTimeout = server["client-timeout"];
         } else {

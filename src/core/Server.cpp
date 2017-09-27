@@ -49,8 +49,11 @@ namespace Interceptor {
       std::make_shared<Session>
       (m_params, m_ioService);
     m_acceptor.async_accept(newSession->m_connection->socket(),
-                            std::bind(&Server::handleAccept, shared_from_this(), newSession,
-                                      std::placeholders::_1)
+                            std::bind(
+                              &Server::handleAccept,
+                              shared_from_this(),
+                              newSession,
+                              std::placeholders::_1)
                            );
   }
 

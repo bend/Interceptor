@@ -2,7 +2,6 @@
 #define TCP_CONNECTION_H__
 
 #include <boost/asio.hpp>
-#include <boost/regex.hpp>
 
 using boost::asio::ip::tcp;
 

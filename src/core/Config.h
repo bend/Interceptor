@@ -67,13 +67,15 @@ namespace Interceptor {
 
       std::string m_listenHost;
       int m_listenPort;
+      bool m_useSSL;
+      std::string m_pemfile;
+      std::string m_dhfile;
 
       std::vector<Site*> m_sites;
       const ErrorPageMap& m_errorPages;
       uint32_t m_clientTimeout;
       uint32_t m_serverTimeout;
       Config* m_globalConfig;
-
     };
 
   public:

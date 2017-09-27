@@ -17,13 +17,23 @@ namespace Interceptor {
       m_readTimer(ioService),
       m_writeTimer(ioService)
   {
-    m_connection = std::make_shared<TcpInboundConnection>(m_ioService);
   }
 
   SessionConnection::~SessionConnection()
   {
     LOG_DEBUG("SessionConnection::~SessionConnection()");
+  }
 
+  void SessionConnection::initConnection()
+  {
+    LOG_DEBUG("SessionConnection::initConnection()");
+    m_connection = std::make_shared<TcpInboundConnection>(m_ioService);
+  }
+
+  void SessionConnection::init(std::function<void()> callback)
+  {
+    LOG_DEBUG("SessionConnection::init()");
+    callback();
   }
 
   void SessionConnection::asyncReadSome(char* buffer, size_t bytes,
@@ -243,6 +253,5 @@ namespace Interceptor {
   {
     return m_ioService;
   }
-
 
 };

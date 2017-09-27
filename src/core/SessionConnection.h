@@ -12,7 +12,10 @@ namespace Interceptor {
     std::enable_shared_from_this<SessionConnection> {
   public:
     SessionConnection(ParamsPtr params, boost::asio::io_service& ioService);
-    ~SessionConnection();
+    virtual ~SessionConnection();
+
+    virtual void init(std::function<void()> callback);
+    virtual void initConnection();
 
     boost::asio::ip::tcp::socket& socket() const;
     const std::string ip() const;
@@ -52,11 +55,12 @@ namespace Interceptor {
     void doCloseConnection();
 
 
-  private:
+  protected:
     boost::asio::io_service& m_ioService;
     InboundConnectionPtr m_connection;
     ParamsPtr m_params;
 
+  private:
     int m_state;
 
     std::deque<BufferPtr> m_buffers;

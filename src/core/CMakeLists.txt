@@ -6,6 +6,15 @@ set(libcore_src
   SessionConnection.cpp
 )
 
+if(ENABLE_SSL)
+  set(libcore_src
+    ${libcore_src}
+    SSLSessionConnection.cpp
+  )
+endif(ENABLE_SSL)
+
+
+
 INCLUDE_DIRECTORIES(
   "."
 )

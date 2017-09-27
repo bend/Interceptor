@@ -13,6 +13,7 @@ set(ENABLE_GZIP ON CACHE BOOL "ENABLE GZIP") # Configurable by user
 set(DEBUG_LOGGING OFF CACHE BOOL "DEBUG_LOGGING") # Configurable by user
 set(ENABLE_LOCAL_CACHE ON CACHE BOOL "ENABLE_LOCAL_CACHE") # Configurable by user
 set(DUMP_NETWORK OFF CACHE BOOL "DUMP_NETWORK") # Configurable by user
+set(ENABLE_SSL ON CACHE BOOL "ENABLE_SSL") # Configurable by user
 
 include(./cmake/FindFam.cmake)
 
@@ -42,6 +43,15 @@ if(NOT ZLIB_FOUND)
   MESSAGE(WARNING "** zlib not found, disabling gzip compression **")
   set(ENABLE_GZIP OFF CACHE BOOL "ENABLE_GZIP" FORCE) # Configurable by user
 endif(NOT ZLIB_FOUND)
+
+if(ENABLE_SSL)
+  find_package(OpenSSL)
+endif(ENABLE_SSL)
+
+if(NOT OPENSSL_FOUND) 
+  MESSAGE(WARNING "** OpenSSL not found, disabling SSL support **")
+  set(ENABLE_SSL OFF CACHE BOOL "ENABLE_SSL" FORCE) # Configurable by user
+endif(NOT OPENSSL_FOUND)
 
 execute_process(
   COMMAND git log -1 --format=%h
@@ -74,6 +84,14 @@ if(ENABLE_GZIP)
   )
 endif(ENABLE_GZIP)
 
+if(ENABLE_SSL)
+  set(LIBS ${LIBS} ${OPENSSL_LIBRARIES})
+  include_directories(
+	${OPENSSL_INCLUDE_DIRS}
+    )
+endif(ENABLE_SSL)
+
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fext-numeric-literals -Wall -Werror=return-type")
 
 subdirs(src)
@@ -87,7 +105,6 @@ if(CPACK_ENABLED)
 	set(CPACK_PACKAGE_FILE_NAME Interceptor-${GIT_REVISION})
 	set(CPACK_GENERATOR "TGZ")
 	set(CPACK_STRIP_FILES "1")
-
 	include(CPack)
 endif(CPACK_ENABLED)
 

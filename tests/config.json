@@ -124,6 +124,25 @@
 		  "backend" : "backend_test2"
 		}
 	  ]
+	},
+	{
+	  "listen-host": "0.0.0.0",
+	  "listen-port": 7007,
+	  "use-ssl" : true,
+	  "pem-file" : "test.pem",
+	  "dh-file" : "dh512.pem",
+
+	  "sites" : [
+		{
+		  "gzip": "all",
+		  "try-files" : [
+			"index.php",
+			"index.html"
+		  ],
+		  "host": "localhost",
+		  "docroot": "site2/"
+		}
+	  ]
 	}
   ],
 

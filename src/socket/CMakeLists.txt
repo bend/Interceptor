@@ -3,6 +3,14 @@ set(libsocket_src
   OutboundConnection.cpp
 )
 
+if(ENABLE_SSL)
+  set(libsocket_src
+     ${libsocket_src}
+     SSLInboundConnection.cpp
+  )
+endif(ENABLE_SSL)
+
+
 INCLUDE_DIRECTORIES(
   "."
 )
