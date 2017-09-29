@@ -35,45 +35,41 @@ namespace Interceptor::Http {
   void Reply::process()
   {
     LOG_DEBUG("Reply::process()");
-    std::stringstream stream;
 
-    if ( !m_request->headersReceived() ) {
+    try {
       std::stringstream stream;
-      buildErrorResponse(Code::BadRequest, true);
-      return;
-    }
 
-    Code status =  m_request->parse();
+      if ( !m_request->headersReceived() ) {
+        std::stringstream stream;
+        buildErrorResponse(Code::BadRequest, true);
+        return;
+      }
 
-    if (status != Code::Ok) {
-      buildErrorResponse(status, true);
-      return;
-    }
+      m_request->parse();
 
-    if (!m_request->hasMatchingSite()) {
-      buildErrorResponse(Code::NotFound, true);
-      return;
-    }
+      if (!m_request->hasMatchingSite()) {
+        buildErrorResponse(Code::NotFound, true);
+        return;
+      }
 
-    const SiteConfig* site = m_request->matchingSite();
+      const SiteConfig* site = m_request->matchingSite();
 
-    const auto redirection = site->redirection(m_request->host() +
-                             m_request->index());
+      const auto redirection = site->redirection(m_request->host() +
+                               m_request->index());
 
-    if (redirection) {
-      handleRedirection(redirection, site);
-    } else if (hasGateway(site)) {
-      handleGatewayRequest(site);
-    } else {
-      handleHttpMethod(site);
+      if (redirection) {
+        handleRedirection(redirection, site);
+      } else if (hasGateway(site)) {
+        handleGatewayRequest(site);
+      } else {
+        handleHttpMethod(site);
 
-      try {
         auto buffer = m_reply->buildReply();
         post(buffer);
-      } catch (HttpException& e) {
-        LOG_ERROR("HttpException: " << (int)e.code() );
-        buildErrorResponse(e.code(), e.closeConnection());
       }
+    } catch (HttpException& e) {
+      LOG_ERROR("HttpException: " << (int)e.code() );
+      buildErrorResponse(e.code(), e.closeConnection());
     }
   }
 
@@ -168,15 +164,14 @@ namespace Interceptor::Http {
 
   void Reply::declineRequest(Code error)
   {
-    Code ret;
     LOG_DEBUG("Reply::declineRequest()");
 
     if (m_request->headersReceived())  {
       if (!m_request->parsed()) {
-        ret = m_request->parse();
-
-        if (ret != Code::Ok) {
-          error = ret;
+        try {
+          m_request->parse();
+        } catch (HttpException& e) {
+          error = e.code();
         }
       }
     }

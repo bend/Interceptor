@@ -6,6 +6,9 @@ namespace Interceptor {
       boost::asio::ssl::context& context) :
     m_spSocket(io_service, context)
   {
+#ifdef SSL_OP_NO_COMPRESSION
+    SSL_set_options(m_spSocket.native_handle(), SSL_OP_NO_COMPRESSION);
+#endif
   }
 
   void SSLInboundConnection::asyncRead( void* b, size_t size,

@@ -1,10 +1,12 @@
 #include "HTTP11SessionHandler.h"
 
+#include "Request.h"
+#include "Reply.h"
+#include "HttpException.h"
+
 #include "core/SessionConnection.h"
 #include "utils/Logger.h"
 #include "common/Buffer.h"
-#include "Request.h"
-#include "Reply.h"
 
 
 namespace Interceptor::Http {
@@ -57,32 +59,33 @@ namespace Interceptor::Http {
   {
     LOG_INFO("Request read from " << m_connection->ip());
 
-    // Previous request already done, this is a new request
-    if (!m_request || m_request->completed() ) {
-      m_request = std::make_shared<Http::Request>(m_connection);
-    }
+    try {
 
-    // Append data to current request
-    Http::Code ret =  m_request->appendData(data, length);
+      // Previous request already done, this is a new request
+      if (!m_request || m_request->completed() ) {
+        m_request = std::make_shared<Http::Request>(m_connection);
+      }
 
-    if (ret != Http::Code::Ok) {
+      // Append data to current request
+      m_request->appendData(data, length);
+
+      send101Continue();
+
+      if (!m_request->headersReceived()) {
+        read();
+      } else  {
+        // Complete headers received
+        m_reply = std::make_shared<Http::Reply>(m_request);
+        m_reply->process();
+        read();
+      }
+
+    } catch (HttpException& e) {
       if (!m_reply) {
         m_reply = std::make_shared<Http::Reply>(m_request);
       }
 
-      m_reply->declineRequest(ret);
-      return;
-    }
-
-    send101Continue();
-
-    if (!m_request->headersReceived()) {
-      read();
-    } else  {
-      // Complete headers received
-      m_reply = std::make_shared<Http::Reply>(m_request);
-      m_reply->process();
-      read();
+      m_reply->declineRequest(e.code());
     }
   }
 
@@ -91,8 +94,6 @@ namespace Interceptor::Http {
     BufferPtr buf = std::make_shared<Buffer>();
     buf->m_buffers.push_back(buf->buf("HTTP/1.1 100 Continue\r\n\r\n"));
     m_connection->postReply(buf);
-
   }
-
 
 }

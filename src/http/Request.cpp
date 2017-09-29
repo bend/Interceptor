@@ -1,7 +1,8 @@
 #include "Request.h"
 
-#include "core/SessionConnection.h"
 #include "Headers.h"
+#include "HttpException.h"
+#include "core/SessionConnection.h"
 #include "utils/Logger.h"
 #include "common/FileBuffer.h"
 #include "common/Params.h"
@@ -46,14 +47,14 @@ namespace Interceptor::Http {
     return mirs > 0 && (m_request.length() <= mirs && !m_state.test(Dumping));
   }
 
-  Code Request::appendData(const char* data, size_t length)
+  void Request::appendData(const char* data, size_t length)
   {
     try {
       LOG_DEBUG("Request::appendData()");
       m_request.append(std::string(data, data + length));
 
       if (!requestSizeIsAccepted()) {
-        return Code::RequestEntityTooLarge;
+        throw HttpException(Code::RequestEntityTooLarge, true);
       }
 
       if (!requestSizeFitsInMemory()) {
@@ -73,10 +74,8 @@ namespace Interceptor::Http {
 
     } catch (std::exception& e) {
       LOG_ERROR("Exception" << e.what());
-      return Code::InternalServerError;
+      throw HttpException(Code::InternalServerError, true);
     }
-
-    return Code::Ok;
   }
 
   bool Request::headersReceived() const
@@ -204,8 +203,9 @@ namespace Interceptor::Http {
     return connection && *connection != "keep-alive";
   }
 
-  Code Request::getRangeRequest(std::tuple<int64_t, int64_t>& tuple) const
+  std::tuple<int64_t, int64_t> Request::getRangeRequest() const
   {
+    std::tuple<int64_t, int64_t> tuple;
     const std::string* pr = m_headers->getHeader("Range");
 
     if (!pr)
@@ -214,13 +214,13 @@ namespace Interceptor::Http {
     size_t pos = pr->find("bytes=");
 
     if (pos == std::string::npos) {
-      return Code::BadRequest;
+      throw HttpException(Code::BadRequest, true);
     }
 
     std::string range = pr->substr(pos + 6);
 
     if (range.find("-") == std::string::npos) {
-      return Code::BadRequest;
+      throw HttpException(Code::BadRequest, true);
     }
 
     typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
@@ -234,9 +234,9 @@ namespace Interceptor::Http {
         try {
           vals.push_back(std::stoi(boost::trim_copy(token)));
         } catch (std::out_of_range) {
-          return Code::RequestRangeNotSatisfiable;
+          throw HttpException(Code::RequestRangeNotSatisfiable, true);
         } catch (std::invalid_argument) {
-          return Code::BadRequest;
+          throw HttpException(Code::BadRequest, true);
         }
       } else {
         vals.push_back(-1);
@@ -246,7 +246,7 @@ namespace Interceptor::Http {
 
     std::get<0>(tuple) = vals[0];
     std::get<1>(tuple) = vals[1];
-    return Code::Ok;
+    return tuple;
   }
 
   std::string Request::headersData()
@@ -260,7 +260,7 @@ namespace Interceptor::Http {
     return m_request.substr(0, pos);
   }
 
-  Code Request::parse()
+  void Request::parse()
   {
     LOG_DEBUG("Request::parse()");
     LOG_NETWORK("Request:", m_request);
@@ -270,7 +270,7 @@ namespace Interceptor::Http {
 
     if (pos == std::string::npos) {
       LOG_ERROR("Request missing separator.. aborting");
-      return Code::BadRequest;
+      throw HttpException(Code::BadRequest);
     }
 
     std::string get = headers.substr(0, pos);
@@ -280,16 +280,12 @@ namespace Interceptor::Http {
 
     if (getParts.size() != 3) {
       LOG_ERROR("Missing Method part");
-      return Code::BadRequest;
+      throw HttpException(Code::BadRequest);
     }
 
-    if (!parseMethod(getParts[0])) {
-      return Code::BadRequest;
-    }
+    parseMethod(getParts[0]);
 
-    if (!parseHttpVersion(getParts[2])) {
-      return Code::HttpVersionNotSupported;
-    }
+    parseHttpVersion(getParts[2]);
 
     switch (m_method) {
       case Method::GET: {
@@ -309,7 +305,7 @@ namespace Interceptor::Http {
       case Method::OPTIONS:
       case Method::CONNECT:
       case Method::PATCH:
-        return Code::NotImplemented;
+        throw HttpException(Code::NotImplemented);
         break;
 
       default:
@@ -323,7 +319,7 @@ namespace Interceptor::Http {
     Code code = m_headers->parse();
 
     if (code != Code::Ok) {
-      return code;
+      throw HttpException(code);
     }
 
     // parse host
@@ -331,7 +327,7 @@ namespace Interceptor::Http {
 
     if (!host) {
       LOG_ERROR("Missing Host" );
-      return Code::BadRequest;
+      throw HttpException(Code::BadRequest);
     }
 
     size_t spos = host->find(":");
@@ -339,50 +335,43 @@ namespace Interceptor::Http {
 
     // TODO parse body, check that everything is received
     m_state.set(Received); // TODO FIXME check if actually received
-    return Code::Ok;
   }
 
-  bool Request::parseHttpVersion(const std::string& version)
+  void Request::parseHttpVersion(const std::string& version)
   {
     const std::string http = "HTTP/";
     size_t idx = version.find(http);
 
     if (idx != 0) {
-      return false;
+      throw HttpException(Code::BadRequest);
     }
 
     m_httpVersion = version.substr(idx + http.length());
 
-    if (m_httpVersion == "1.1") {
-      return true;
+    if (m_httpVersion != "1.1") {
+      throw HttpException(Code::HttpVersionNotSupported);
     }
 
-    return false;
   }
 
-  bool Request::parseMethod(const std::string& method)
+  void Request::parseMethod(const std::string& method)
   {
     if (method == "GET") {
       m_method = Method::GET;
-      return true;
     } else if (method == "HEAD") {
       m_method = Method::HEAD;
-      return true;
     } else if (method == "POST") {
       m_method = Method::POST;
-      return true;
     } else if (method == "DELETE") {
       m_method = Method::DELETE;
-      return true;
+    } else {
+      throw HttpException(Code::BadRequest);
     }
-
-    return false;
   }
 
-  bool Request::parseParameters(const std::string& params)
+  void Request::parseParameters(const std::string& params)
   {
     LOG_DEBUG("Parsing parameters " << params);
-    return true;
   }
 
   bool Request::hasMatchingSite() const

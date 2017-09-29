@@ -24,7 +24,8 @@ namespace Interceptor {
       Request(SessionConnectionPtr session);
       ~Request();
 
-      Code appendData(const char* data, size_t length);
+      void appendData(const char* data, size_t length);
+      void process();
 
       Method method() const;
       Host host() const;
@@ -38,9 +39,8 @@ namespace Interceptor {
       bool supportsChunking() const;
       bool partialRequest() const;
       std::time_t ifModifiedSince() const;
-      Code getRangeRequest(std::tuple<int64_t, int64_t>& range) const;
+      std::tuple<int64_t, int64_t> getRangeRequest() const;
 
-      void process();
       bool headersReceived() const;
       bool received() const;
       bool completed() const;
@@ -57,11 +57,11 @@ namespace Interceptor {
       bool hasData();
 
     private:
-      Code parse();
+      void parse();
       bool parsed();
-      bool parseMethod(const std::string& method);
-      bool parseParameters(const std::string& parameters);
-      bool parseHttpVersion(const std::string& version);
+      void parseMethod(const std::string& method);
+      void parseParameters(const std::string& parameters);
+      void parseHttpVersion(const std::string& version);
       bool dumpToFile(const char* data, size_t length);
       bool requestSizeIsAccepted() const;
       bool requestSizeFitsInMemory() const;

@@ -69,9 +69,7 @@ namespace Interceptor::Http {
     std::tuple<int64_t, int64_t> range;
     Code ret;
 
-    if ((ret = m_request->getRangeRequest(range)) != Code::Ok) {
-      throw HttpException(ret, true);
-    }
+    range = m_request->getRangeRequest();
 
     int64_t from = std::get<0>(range);
     int64_t to = std::get<1>(range);
