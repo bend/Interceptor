@@ -16,7 +16,7 @@ namespace Interceptor::Http {
   {
     std::stringstream stream;
     m_status = m_redirection->type() == Redirection::Permanent ?
-               Code::MovedPermanently : Code::Found;
+               StatusCode::MovedPermanently : StatusCode::Found;
 
     m_replyHeaders->addHeader("Location", m_redirection->redirectURL());
 

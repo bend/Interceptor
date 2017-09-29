@@ -54,7 +54,7 @@ namespace Interceptor::Http {
       m_request.append(std::string(data, data + length));
 
       if (!requestSizeIsAccepted()) {
-        throw HttpException(Code::RequestEntityTooLarge, true);
+        throw HttpException(StatusCode::RequestEntityTooLarge, true);
       }
 
       if (!requestSizeFitsInMemory()) {
@@ -74,7 +74,7 @@ namespace Interceptor::Http {
 
     } catch (std::exception& e) {
       LOG_ERROR("Exception" << e.what());
-      throw HttpException(Code::InternalServerError, true);
+      throw HttpException(StatusCode::InternalServerError, true);
     }
   }
 
@@ -214,13 +214,13 @@ namespace Interceptor::Http {
     size_t pos = pr->find("bytes=");
 
     if (pos == std::string::npos) {
-      throw HttpException(Code::BadRequest, true);
+      throw HttpException(StatusCode::BadRequest, true);
     }
 
     std::string range = pr->substr(pos + 6);
 
     if (range.find("-") == std::string::npos) {
-      throw HttpException(Code::BadRequest, true);
+      throw HttpException(StatusCode::BadRequest, true);
     }
 
     typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
@@ -234,9 +234,9 @@ namespace Interceptor::Http {
         try {
           vals.push_back(std::stoi(boost::trim_copy(token)));
         } catch (std::out_of_range) {
-          throw HttpException(Code::RequestRangeNotSatisfiable, true);
+          throw HttpException(StatusCode::RequestRangeNotSatisfiable, true);
         } catch (std::invalid_argument) {
-          throw HttpException(Code::BadRequest, true);
+          throw HttpException(StatusCode::BadRequest, true);
         }
       } else {
         vals.push_back(-1);
@@ -270,7 +270,7 @@ namespace Interceptor::Http {
 
     if (pos == std::string::npos) {
       LOG_ERROR("Request missing separator.. aborting");
-      throw HttpException(Code::BadRequest);
+      throw HttpException(StatusCode::BadRequest);
     }
 
     std::string get = headers.substr(0, pos);
@@ -280,7 +280,7 @@ namespace Interceptor::Http {
 
     if (getParts.size() != 3) {
       LOG_ERROR("Missing Method part");
-      throw HttpException(Code::BadRequest);
+      throw HttpException(StatusCode::BadRequest);
     }
 
     parseMethod(getParts[0]);
@@ -305,7 +305,7 @@ namespace Interceptor::Http {
       case Method::OPTIONS:
       case Method::CONNECT:
       case Method::PATCH:
-        throw HttpException(Code::NotImplemented);
+        throw HttpException(StatusCode::NotImplemented);
         break;
 
       default:
@@ -316,18 +316,14 @@ namespace Interceptor::Http {
 
     m_headers = std::make_unique<Headers>(headers);
 
-    Code code = m_headers->parse();
-
-    if (code != Code::Ok) {
-      throw HttpException(code);
-    }
+    m_headers->parse();
 
     // parse host
     const std::string* host = m_headers->getHeader("Host");
 
     if (!host) {
       LOG_ERROR("Missing Host" );
-      throw HttpException(Code::BadRequest);
+      throw HttpException(StatusCode::BadRequest);
     }
 
     size_t spos = host->find(":");
@@ -343,13 +339,13 @@ namespace Interceptor::Http {
     size_t idx = version.find(http);
 
     if (idx != 0) {
-      throw HttpException(Code::BadRequest);
+      throw HttpException(StatusCode::BadRequest);
     }
 
     m_httpVersion = version.substr(idx + http.length());
 
     if (m_httpVersion != "1.1") {
-      throw HttpException(Code::HttpVersionNotSupported);
+      throw HttpException(StatusCode::HttpVersionNotSupported);
     }
 
   }
@@ -365,7 +361,7 @@ namespace Interceptor::Http {
     } else if (method == "DELETE") {
       m_method = Method::DELETE;
     } else {
-      throw HttpException(Code::BadRequest);
+      throw HttpException(StatusCode::BadRequest);
     }
   }
 

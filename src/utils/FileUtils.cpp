@@ -9,20 +9,20 @@
 
 namespace Interceptor::FileUtils {
 
-  Http::Code readFile(const std::string& filename, char** data,
-                      size_t& pageLength)
+  Http::StatusCode readFile(const std::string& filename, char** data,
+                            size_t& pageLength)
   {
     namespace fs = boost::filesystem;
     std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
     fs::path dataDir(filename);
 
     if (!fs::exists(dataDir) || fs::is_directory(dataDir)) {
-      return Http::Code::NotFound;
+      return Http::StatusCode::NotFound;
     }
 
     if ( !ifs.is_open() ) {
       LOG_ERROR("Could not open file");
-      return Http::Code::NotFound;
+      return Http::StatusCode::NotFound;
     }
 
     std::ifstream::pos_type pos = ifs.tellg();
@@ -32,24 +32,25 @@ namespace Interceptor::FileUtils {
       *data = new char[pageLength]();
     } catch (std::bad_alloc) {
       ifs.close();
-      return Http::Code::BadRequest;
+      return Http::StatusCode::BadRequest;
     }
 
     ifs.seekg(0, std::ios::beg);
     ifs.read(reinterpret_cast<char*>(*data), pageLength);
     ifs.close();
 
-    return Http::Code::Ok;
+    return Http::StatusCode::Ok;
   }
 
-  Http::Code readFile(const std::string& filename, std::stringstream& stream,
-                      size_t& pageLength)
+  Http::StatusCode readFile(const std::string& filename,
+                            std::stringstream& stream,
+                            size_t& pageLength)
   {
     std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
 
     if ( !ifs.is_open() ) {
       LOG_ERROR("Could not open file");
-      return Http::Code::NotFound;
+      return Http::StatusCode::NotFound;
     }
 
     std::ifstream::pos_type pos = ifs.tellg();
@@ -57,23 +58,23 @@ namespace Interceptor::FileUtils {
     ifs.seekg(0, std::ios::beg);
     stream << ifs.rdbuf();
     ifs.close();
-    return Http::Code::Ok;
+    return Http::StatusCode::Ok;
   }
 
-  Http::Code readFile(const std::string& filename, size_t from, size_t to,
-                      std::stringstream& stream, size_t& fileSize)
+  Http::StatusCode readFile(const std::string& filename, size_t from, size_t to,
+                            std::stringstream& stream, size_t& fileSize)
   {
     std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
     std::ifstream::pos_type pos = ifs.tellg();
 
     if ( !ifs.is_open() ) {
       LOG_ERROR("Could not open file");
-      return Http::Code::NotFound;
+      return Http::StatusCode::NotFound;
     }
 
     if (to > (size_t)pos - 1) {
       ifs.close();
-      return Http::Code::BadRequest;
+      return Http::StatusCode::BadRequest;
     }
 
     ifs.seekg(from, std::ios::beg);
@@ -83,7 +84,7 @@ namespace Interceptor::FileUtils {
       buffer = new char[to - from + 1];
     } catch (std::bad_alloc) {
       ifs.close();
-      return Http::Code::RequestRangeNotSatisfiable;
+      return Http::StatusCode::RequestRangeNotSatisfiable;
     }
 
     ifs.read(buffer, to - from + 1);
@@ -95,17 +96,17 @@ namespace Interceptor::FileUtils {
 
     delete [] buffer;
 
-    return Http::Code::Ok;
+    return Http::StatusCode::Ok;
   }
 
-  Http::Code calculateBounds(const std::string& filename, int64_t& from,
-                             int64_t& to)
+  Http::StatusCode calculateBounds(const std::string& filename, int64_t& from,
+                                   int64_t& to)
   {
     std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
 
     if ( !ifs.is_open() ) {
       LOG_ERROR("Could not open file");
-      return Http::Code::NotFound;
+      return Http::StatusCode::NotFound;
     }
 
 
@@ -114,7 +115,7 @@ namespace Interceptor::FileUtils {
     if (from  == -1) {
       if (to == -1) {
         ifs.close();
-        return Http::Code::RequestRangeNotSatisfiable;
+        return Http::StatusCode::RequestRangeNotSatisfiable;
       }
 
       from = pos - to;
@@ -125,7 +126,7 @@ namespace Interceptor::FileUtils {
 
     ifs.close();
 
-    return Http::Code::Ok;
+    return Http::StatusCode::Ok;
   }
 
 

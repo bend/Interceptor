@@ -41,14 +41,14 @@ namespace Interceptor::Http {
 
       if ( !m_request->headersReceived() ) {
         std::stringstream stream;
-        buildErrorResponse(Code::BadRequest, true);
+        buildErrorResponse(StatusCode::BadRequest, true);
         return;
       }
 
       m_request->parse();
 
       if (!m_request->hasMatchingSite()) {
-        buildErrorResponse(Code::NotFound, true);
+        buildErrorResponse(StatusCode::NotFound, true);
         return;
       }
 
@@ -130,7 +130,8 @@ namespace Interceptor::Http {
                 m_request->params()->m_pool);
     std::weak_ptr<Reply> wp {shared_from_this()};
     m_request->setCompleted(true);
-    m_gateway->route(std::bind([wp] (Http::Code code, std::stringstream * stream) {
+    m_gateway->route(std::bind([wp] (Http::StatusCode code,
+    std::stringstream * stream) {
       auto ptr = wp.lock();
 
       if (ptr) {
@@ -143,11 +144,11 @@ namespace Interceptor::Http {
 
   }
 
-  void Reply::handleGatewayReply(Code code, std::stringstream* stream)
+  void Reply::handleGatewayReply(StatusCode code, std::stringstream* stream)
   {
     LOG_DEBUG("Reply::handleGatewayReply()");
 
-    if (code != Code::Ok || !stream) {
+    if (code != StatusCode::Ok || !stream) {
       buildErrorResponse(code, true);
     } else {
       LOG_NETWORK("Reply::handleGatewayReply() - got reply: ", stream->str());
@@ -155,14 +156,14 @@ namespace Interceptor::Http {
       if (checkBackendReply(*stream)) {
         postBackendReply(*stream);
       } else {
-        buildErrorResponse(Code::InternalServerError, true);
+        buildErrorResponse(StatusCode::InternalServerError, true);
       }
 
       delete stream;
     }
   }
 
-  void Reply::declineRequest(Code error)
+  void Reply::declineRequest(StatusCode error)
   {
     LOG_DEBUG("Reply::declineRequest()");
 
@@ -207,7 +208,7 @@ namespace Interceptor::Http {
     }
   }
 
-  void Reply::buildErrorResponse(Code error, bool closeConnection)
+  void Reply::buildErrorResponse(StatusCode error, bool closeConnection)
   {
     LOG_DEBUG("Reply::buildErrorResponse()");
     auto site = m_request->matchingSite();

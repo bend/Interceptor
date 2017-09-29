@@ -38,7 +38,7 @@ namespace Interceptor {
   }
 
   void BackendGateway::handleRequest(
-    std::function<void(Http::Code, std::stringstream*)>& callback)
+    std::function<void(Http::StatusCode, std::stringstream*)>& callback)
   {
     LOG_DEBUG("BackendGateway::handleRequest");
     m_callback = callback;
@@ -60,9 +60,9 @@ namespace Interceptor {
   {
     LOG_DEBUG("BackendGateway::forward()");
     m_connection->forward(packet,
-    std::bind([ = ]( Http::Code code, HttpRequestPtr request) {
+    std::bind([ = ]( Http::StatusCode code, HttpRequestPtr request) {
 
-      if (code != Http::Code::Ok) {
+      if (code != Http::StatusCode::Ok) {
         m_callback(code, nullptr);
       }
 

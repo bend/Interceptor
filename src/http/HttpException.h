@@ -8,7 +8,7 @@ namespace Interceptor::Http {
 
   class HttpException : public InterceptorException {
   public:
-    HttpException(Code code, bool closeConnection = false,
+    HttpException(StatusCode code, bool closeConnection = false,
                   const std::string& msg = "")
       : InterceptorException(msg),
         m_code(code),
@@ -17,7 +17,7 @@ namespace Interceptor::Http {
 
     }
 
-    Code code()  const
+    StatusCode code()  const
     {
       return m_code;
     }
@@ -28,7 +28,7 @@ namespace Interceptor::Http {
     }
 
   private:
-    Code m_code;
+    StatusCode m_code;
     bool m_close;
   };
 }

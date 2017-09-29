@@ -6,7 +6,7 @@
 namespace Interceptor::Http {
 
   ErrorReply::ErrorReply(HttpRequestPtr request, const SiteConfig* config,
-                         Code error, bool closeConnection)
+                         StatusCode error, bool closeConnection)
     : CommonReply(request, config)
   {
     m_status = error;
@@ -26,7 +26,8 @@ namespace Interceptor::Http {
     if (map.count(std::to_string((int)m_status)) > 0 ) {
       std::string url = map.at(std::to_string((int)m_status));
 
-      if (m_request->cacheHandler()->read(url, stream, m_contentLength) == Code::Ok) {
+      if (m_request->cacheHandler()->read(url, stream,
+                                          m_contentLength) == StatusCode::Ok) {
         found = true;
       }
     }
@@ -59,34 +60,34 @@ namespace Interceptor::Http {
   std::string ErrorReply::formatMsg() const
   {
     switch (m_status) {
-      case Http::Code::BadRequest:
+      case Http::StatusCode::BadRequest:
         return "The request is malformed";
 
-      case Http::Code::Forbidden:
+      case Http::StatusCode::Forbidden:
         return "Access is Forbidden for the current URL";
 
-      case Http::Code::NotFound:
+      case Http::StatusCode::NotFound:
         return "The resource was not found on the server";
 
-      case Http::Code::RequestEntityTooLarge:
+      case Http::StatusCode::RequestEntityTooLarge:
         return "The requested entity is too large";
 
-      case Http::Code::RequestRangeNotSatisfiable:
+      case Http::StatusCode::RequestRangeNotSatisfiable:
         return "The Requested Range is not possible for the URL";
 
-      case Http::Code::UnprocessableEntity:
+      case Http::StatusCode::UnprocessableEntity:
         return "The request is not processable";
 
-      case Http::Code::InternalServerError:
+      case Http::StatusCode::InternalServerError:
         return "The server encountered an internal error";
 
-      case Http::Code::NotImplemented:
+      case Http::StatusCode::NotImplemented:
         return "The request is not supported by the server";
 
-      case Http::Code::ServiceUnavailable:
+      case Http::StatusCode::ServiceUnavailable:
         return "The service is unavailable";
 
-      case Http::Code::HttpVersionNotSupported:
+      case Http::StatusCode::HttpVersionNotSupported:
         return "The HTTP version is not supported by the server";
 
       default:

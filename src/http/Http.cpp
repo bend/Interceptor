@@ -2,66 +2,66 @@
 
 namespace Interceptor::Http {
 
-  void serializeHttpCode(Code error, std::stringstream& stream)
+  void serializeHttpCode(StatusCode error, std::stringstream& stream)
   {
     switch (error) {
-      case Code::Ok:
+      case StatusCode::Ok:
         stream << "200 OK" << "\r\n";
         break;
 
-      case Code::PartialContent:
+      case StatusCode::PartialContent:
         stream << "206 Partial Content" << "\r\n";
         break;
 
-      case Code::MovedPermanently:
+      case StatusCode::MovedPermanently:
         stream << "301 Moved Permanently" << "\r\n";
         break;
 
-      case Code::Found:
+      case StatusCode::Found:
         stream << "302 Found" << "\r\n";
         break;
 
-      case Code::NotModified:
+      case StatusCode::NotModified:
         stream << "304 Not Modified" << "\r\n";
         break;
 
-      case Code::BadRequest:
+      case StatusCode::BadRequest:
         stream << "400 Bad Request" << "\r\n";
         break;
 
-      case Code::Forbidden:
+      case StatusCode::Forbidden:
         stream << "403 Forbidden" << "\r\n";
         break;
 
-      case Code::NotFound:
+      case StatusCode::NotFound:
         stream  << "404 Not Found" << "\r\n";
         break;
 
-      case Code::RequestEntityTooLarge:
+      case StatusCode::RequestEntityTooLarge:
         stream << "413 Request Entity Too Large" << "\r\n";
         break;
 
-      case Code::RequestRangeNotSatisfiable:
+      case StatusCode::RequestRangeNotSatisfiable:
         stream << "416 Request Range Not Satisfiable" << "\r\n";
         break;
 
-      case Code::UnprocessableEntity:
+      case StatusCode::UnprocessableEntity:
         stream << "422 Unprocessable Entity" << "\r\n";
         break;
 
-      case Code::InternalServerError:
+      case StatusCode::InternalServerError:
         stream << "500 Internal Server Error" << "\r\n";
         break;
 
-      case Code::NotImplemented:
+      case StatusCode::NotImplemented:
         stream << "501 Not Implemented" << "\r\n";
         break;
 
-      case Code::ServiceUnavailable:
+      case StatusCode::ServiceUnavailable:
         stream << "503 Service Not Available" << "\r\n";
         break;
 
-      case Code::HttpVersionNotSupported:
+      case StatusCode::HttpVersionNotSupported:
         stream << "505 HTTP Version Not Supported" << "\r\n";
         break;
 
@@ -71,19 +71,19 @@ namespace Interceptor::Http {
     }
   }
 
-  Code convertToHttpCode(const boost::system::error_code& error)
+  StatusCode convertToHttpCode(const boost::system::error_code& error)
   {
     switch (error.value()) {
       case boost::system::errc::success:
-        return Code::Ok;
+        return StatusCode::Ok;
 
       case boost::system::errc::network_down:
       case boost::system::errc::broken_pipe:
       case boost::system::errc::network_unreachable:
-        return Code::ServiceUnavailable;
+        return StatusCode::ServiceUnavailable;
 
       default:
-        return Code::InternalServerError;
+        return StatusCode::InternalServerError;
     }
   }
 

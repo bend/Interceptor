@@ -17,7 +17,7 @@ namespace Interceptor {
 
     class CommonReply;
 
-    enum class Code : short;
+    enum class StatusCode : short;
       enum class Method : char;
 
       class Reply : public std::enable_shared_from_this<Reply> {
@@ -29,18 +29,18 @@ namespace Interceptor {
 
       void process();
 
-      void declineRequest(Code error);
+      void declineRequest(StatusCode error);
 
     private:
       void handleHttpMethod(const SiteConfig* site);
       void handleRedirection(const Redirection* r, const SiteConfig* site);
       void handleGatewayRequest(const SiteConfig* site);
-      void handleGatewayReply(Code code, std::stringstream*  stream);
+      void handleGatewayReply(StatusCode code, std::stringstream*  stream);
 
       bool checkBackendReply(const std::stringstream& stream) const;
       void post(BufferPtr buffer);
       void postBackendReply(const std::stringstream& stream);
-      void buildErrorResponse(Code error, bool closeConnection = false);
+      void buildErrorResponse(StatusCode error, bool closeConnection = false);
       bool hasGateway(const SiteConfig* config) const;
       std::string gatewayName(const SiteConfig* config) const;
 

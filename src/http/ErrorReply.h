@@ -7,14 +7,14 @@ namespace Interceptor::Http {
 
   class ErrorReply : public CommonReply {
   public:
-    ErrorReply(HttpRequestPtr request, const SiteConfig* site, Code errorCode,
+    ErrorReply(HttpRequestPtr request, const SiteConfig* site, StatusCode errorCode,
                bool closeConnection);
 
     virtual BufferPtr buildReply() override;
 
   protected:
     virtual void serialize(std::stringstream& stream) override {};
-    void serializeDetails(Code status, std::stringstream& stream);
+    void serializeDetails(StatusCode status, std::stringstream& stream);
     std::string formatMsg() const;
 
   };

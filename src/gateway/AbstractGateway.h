@@ -16,8 +16,9 @@ namespace Interceptor {
 
     virtual AbstractConnectorPtr takeConnection() = 0;
 
-    virtual void handleRequest(std::function<void(Http::Code, std::stringstream*)>&
-                               func) = 0;
+    virtual void handleRequest(
+      std::function<void(Http::StatusCode, std::stringstream*)>&
+      func) = 0;
     virtual void reset() = 0;
 
   protected:

@@ -55,22 +55,22 @@ namespace Interceptor {
     return {};
   }
 
-  Http::Code CacheHandler::read(const std::string& file,
-                                std::stringstream& stream, size_t& bytes)
+  Http::StatusCode CacheHandler::read(const std::string& file,
+                                      std::stringstream& stream, size_t& bytes)
   {
     auto data = m_fileDatabase->data(file);
 
     if (data) {
       LOG_DEBUG("CacheHandler::read() - cache hit for " << file);
       stream.write(reinterpret_cast<const char*>(data->first), data->second);
-      return Http::Code::Ok;
+      return Http::StatusCode::Ok;
     }
 
     char* mdata;
-    Http::Code ret;
+    Http::StatusCode ret;
     LOG_DEBUG("CacheHandler::read() - cache miss for " << file);
 
-    if ((ret = FileUtils::readFile(file, &mdata, bytes)) == Http::Code::Ok) {
+    if ((ret = FileUtils::readFile(file, &mdata, bytes)) == Http::StatusCode::Ok) {
       stream.write(reinterpret_cast<const char*>(mdata), bytes);
       m_fileDatabase->setData(file, mdata, bytes);
     }

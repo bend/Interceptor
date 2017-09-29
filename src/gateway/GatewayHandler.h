@@ -19,7 +19,7 @@ namespace Interceptor {
                    BackendsPool* pool);
     ~GatewayHandler();
 
-    void route(std::function<void(Http::Code, std::stringstream*)> callback);
+    void route(std::function<void(Http::StatusCode, std::stringstream*)> callback);
 
   protected:
     const SiteConfig*  m_site;

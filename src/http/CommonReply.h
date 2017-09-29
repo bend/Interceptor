@@ -43,7 +43,7 @@ namespace Interceptor::Http {
   protected:
     CommonReply(HttpRequestPtr request, const SiteConfig* config);
 
-    Code getLocationCode(const SiteConfig* config) const;
+    StatusCode getLocationCode(const SiteConfig* config) const;
 
     void requestPartialFileContents(const std::string& page,
                                     std::stringstream& stream, size_t& bytes);
@@ -83,7 +83,7 @@ namespace Interceptor::Http {
     size_t m_contentLength;
     std::bitset<5> m_flags;
 
-    Code m_status;
+    StatusCode m_status;
 
     std::mutex m_mutex;
 

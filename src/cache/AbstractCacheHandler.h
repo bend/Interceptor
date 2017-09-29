@@ -20,8 +20,8 @@ namespace Interceptor {
 
     virtual bool size(const std::string& file, size_t& bytes) = 0;
 
-    virtual Http::Code read(const std::string& file, std::stringstream& out,
-                            size_t& bytes) = 0;
+    virtual Http::StatusCode read(const std::string& file, std::stringstream& out,
+                                  size_t& bytes) = 0;
 
   protected:
     size_t m_maxCacheSize;

@@ -39,8 +39,8 @@ namespace Interceptor {
     return FileUtils::fileSize(file, bytes);
   }
 
-  Http::Code BasicCacheHandler::read(const std::string& file,
-                                     std::stringstream& stream, size_t& bytes)
+  Http::StatusCode BasicCacheHandler::read(const std::string& file,
+      std::stringstream& stream, size_t& bytes)
   {
     return FileUtils::readFile(file, stream, bytes);
   }

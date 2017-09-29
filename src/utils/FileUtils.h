@@ -13,17 +13,17 @@ namespace Interceptor::FileUtils {
    * Read the file content into a buffer
    * @return the initialized buffer and the size
    */
-  Http::Code readFile(const std::string& path, char** data,
-                      size_t& bytes);
+  Http::StatusCode readFile(const std::string& path, char** data,
+                            size_t& bytes);
 
-  Http::Code readFile(const std::string& path, std::stringstream& stream,
-                      size_t& bytes);
+  Http::StatusCode readFile(const std::string& path, std::stringstream& stream,
+                            size_t& bytes);
 
-  Http::Code readFile(const std::string& filename, size_t from, size_t to,
-                      std::stringstream& stream, size_t& fileSize);
+  Http::StatusCode readFile(const std::string& filename, size_t from, size_t to,
+                            std::stringstream& stream, size_t& fileSize);
 
-  Http::Code calculateBounds(const std::string& filename, int64_t& from,
-                             int64_t& to);
+  Http::StatusCode calculateBounds(const std::string& filename, int64_t& from,
+                                   int64_t& to);
 
   bool fileSize(const std::string& path, size_t& bytes);
 

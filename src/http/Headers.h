@@ -25,7 +25,7 @@ namespace Interceptor {
       void addGeneralHeaders();
       void serialize(std::stringstream& response) const;
       void fillFrom(const Headers* headers);
-      Code parse();
+      void parse();
 
       void setHeadersFor(const std::string filename, AbstractCacheHandler* cache);
 

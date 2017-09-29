@@ -16,8 +16,8 @@ namespace Interceptor {
 
     virtual bool size(const std::string& file, size_t& bytes) override;
 
-    virtual Http::Code read(const std::string& file, std::stringstream& out,
-                            size_t& bytes) override;
+    virtual Http::StatusCode read(const std::string& file, std::stringstream& out,
+                                  size_t& bytes) override;
 
   };
 

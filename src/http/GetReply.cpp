@@ -26,9 +26,9 @@ namespace Interceptor::Http {
   {
     LOG_DEBUG("GetReply::handleRetrievalRequest()");
 
-    Code ret;
+    StatusCode ret;
 
-    if ( (ret = getLocationCode(m_config)) != Code::Ok) {
+    if ( (ret = getLocationCode(m_config)) != StatusCode::Ok) {
       throw HttpException(ret, true);
     }
 
@@ -62,7 +62,7 @@ namespace Interceptor::Http {
       requestPartialFileContents(page, stream, bytes);
     } else {
       if (!m_request->cacheHandler()->size(page, bytes)) {
-        throw HttpException(Code::InternalServerError, true);
+        throw HttpException(StatusCode::InternalServerError, true);
       }
 
       if (bytes > MAX_CHUNK_SIZE) {
@@ -86,7 +86,7 @@ namespace Interceptor::Http {
     std::time_t requestedTime = m_request->ifModifiedSince();
 
     if (requestedTime <= 0) {
-      throw HttpException(Code::BadRequest, true);
+      throw HttpException(StatusCode::BadRequest, true);
     }
 
     std::time_t lastModified = FileUtils::lastModified(requestedPath());
@@ -96,7 +96,7 @@ namespace Interceptor::Http {
     }
 
     std::stringstream stream;
-    m_status = Code::NotModified;
+    m_status = StatusCode::NotModified;
     buildStatusLine(stream);
     const std::string* header =  m_request->getHeader("If-Modified-Since");
     m_replyHeaders->addHeader("Date", *header);

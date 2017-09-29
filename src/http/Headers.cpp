@@ -1,12 +1,15 @@
 #include "Headers.h"
 
+#include "HttpException.h"
+
 #include "utils/Logger.h"
 #include "utils/ServerInfo.h"
+#include "cache/generic_cache.h"
+#include "utils/FileUtils.h"
 
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
-#include "cache/generic_cache.h"
-#include "utils/FileUtils.h"
+
 
 namespace Interceptor::Http {
 
@@ -20,7 +23,7 @@ namespace Interceptor::Http {
   }
 
 
-  Code Headers::parse()
+  void Headers::parse()
   {
     const std::string headers = m_request;
     typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -32,7 +35,7 @@ namespace Interceptor::Http {
 
       if (pos == std::string::npos) {
         LOG_ERROR("Headers missing separator.. aborting for " << header);
-        return Code::UnprocessableEntity;
+        throw HttpException(StatusCode::UnprocessableEntity);
       }
 
       std::string part1 = header.substr(0, pos);
@@ -40,8 +43,6 @@ namespace Interceptor::Http {
       m_headers[boost::trim_copy(part1)] = boost::trim_copy(part2);
       LOG_DEBUG("Parsing header " << part1 << ":" << part2);
     }
-
-    return Code::Ok;
   }
 
   const std::string* Headers::getHeader(const std::string& key) const

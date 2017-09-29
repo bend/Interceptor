@@ -14,9 +14,9 @@ namespace Interceptor::Http {
   {
     LOG_DEBUG("HeadReply::handleRetrievalRequest()");
 
-    Code ret;
+    StatusCode ret;
 
-    if ( (ret = getLocationCode(m_config)) != Code::Ok) {
+    if ( (ret = getLocationCode(m_config)) != StatusCode::Ok) {
       throw HttpException(ret, true);
     }
 
@@ -35,7 +35,7 @@ namespace Interceptor::Http {
     setHeadersFor(page);
 
     if (!m_request->cacheHandler()->size(page, m_contentLength)) {
-      throw HttpException(Code::NotFound, false);
+      throw HttpException(StatusCode::NotFound, false);
     }
 
     buildHeaders(m_httpBuffer);

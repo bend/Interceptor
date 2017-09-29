@@ -20,21 +20,21 @@ namespace Interceptor::Http {
       m_encoder(std::make_unique<Encoder>()),
       m_config(config),
       m_contentLength(0),
-      m_status(Code::Ok)
+      m_status(StatusCode::Ok)
   {
   }
 
-  Code CommonReply::getLocationCode(const SiteConfig* site) const
+  StatusCode CommonReply::getLocationCode(const SiteConfig* site) const
   {
     std::string idx = m_request->index();
 
     for (const auto& kv : site->m_locations) {
       if (StringUtils::regexMatch(kv.first, idx)) {
-        return (Code)kv.second;
+        return (StatusCode)kv.second;
       }
     }
 
-    return Code::Ok;
+    return StatusCode::Ok;
   }
 
   void CommonReply::setFlag(Flag flag, bool value)
@@ -51,9 +51,9 @@ namespace Interceptor::Http {
   void CommonReply::requestFileContents(const std::string& page,
                                         std::stringstream& stream, size_t bytes)
   {
-    Code ret = m_request->cacheHandler()->read(page, stream, bytes);
+    StatusCode ret = m_request->cacheHandler()->read(page, stream, bytes);
 
-    if (ret == Code::Ok) {
+    if (ret == StatusCode::Ok) {
       setHeadersFor(page);
       m_request->setCompleted(true);
       m_contentLength = bytes;
@@ -67,7 +67,7 @@ namespace Interceptor::Http {
   {
     LOG_DEBUG("CommonReply::requestPartialFileContents()");
     std::tuple<int64_t, int64_t> range;
-    Code ret;
+    StatusCode ret;
 
     range = m_request->getRangeRequest();
 
@@ -76,12 +76,12 @@ namespace Interceptor::Http {
     size_t total = 0;
     ret = FileUtils::calculateBounds(page, from, to);
 
-    if (ret != Code::Ok) {
+    if (ret != StatusCode::Ok) {
       throw HttpException(ret, true);
     }
 
     if (!FileUtils::fileSize(page, total)) {
-      throw HttpException(Code::NotFound, false);
+      throw HttpException(StatusCode::NotFound, false);
     }
 
     bytes = to - from + 1;
@@ -90,7 +90,7 @@ namespace Interceptor::Http {
     m_replyHeaders->addHeader("Content-Range",
                               "bytes " + std::to_string(from) + "-"
                               + std::to_string(to) + "/" + std::to_string(total));
-    m_status = Code::PartialContent;
+    m_status = StatusCode::PartialContent;
     setHeadersFor(page);
 
     if (to - from > MAX_CHUNK_SIZE) {
@@ -101,7 +101,7 @@ namespace Interceptor::Http {
       ret = FileUtils::readFile(page,	from, to, stream,
                                 bytes); //TODO take it from cache
 
-      if (ret == Code::Ok) {
+      if (ret == StatusCode::Ok) {
         m_request->setCompleted(true);
       } else {
         throw HttpException(ret, true);
@@ -136,9 +136,10 @@ namespace Interceptor::Http {
 
     m_httpBuffer = std::make_shared<Buffer>();
 
-    Code ret;
+    StatusCode ret;
 
-    if ((ret = FileUtils::readFile(page, from, to, stream, bytes)) == Code::Ok) {
+    if ((ret = FileUtils::readFile(page, from, to, stream,
+                                   bytes)) == StatusCode::Ok) {
       if (to == limit - 1) {
         m_request->setCompleted(true);
       } else {
@@ -166,7 +167,7 @@ namespace Interceptor::Http {
       page = config->m_docroot + request->index();
 
       if (!FileUtils::exists(page)) {
-        throw HttpException(Code::NotFound);
+        throw HttpException(StatusCode::NotFound);
       }
     }
 
@@ -206,7 +207,7 @@ namespace Interceptor::Http {
     }
 
     if (!found) {
-      throw HttpException(Code::NotFound);
+      throw HttpException(StatusCode::NotFound);
     }
 
     return page;
@@ -235,14 +236,14 @@ namespace Interceptor::Http {
   {
     return getFlag(Flag::ChunkedEncoding)
            && m_request->method() != Method::HEAD
-           && m_status != Code::PartialContent;
+           && m_status != StatusCode::PartialContent;
   }
 
   bool CommonReply::canEncodeResponse() const
   {
 #ifdef ENABLE_GZIP
     return getFlag(Flag::GzipEncoding) && m_request->method() != Method::HEAD
-           && m_status != Code::PartialContent;
+           && m_status != StatusCode::PartialContent;
 #else
     return false;
 #endif // ENABLE_GZIP

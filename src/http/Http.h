@@ -6,7 +6,7 @@
 #include <boost/system/error_code.hpp>
 
 namespace Interceptor::Http {
-  enum class Code : short {
+  enum class StatusCode : short {
     Ok								= 200,
     PartialContent					= 206,
     MovedPermanently				= 301,
@@ -37,9 +37,9 @@ namespace Interceptor::Http {
     PATCH
   };
 
-  void serializeHttpCode(Code error, std::stringstream& stream);
+  void serializeHttpCode(StatusCode error, std::stringstream& stream);
 
-  Code convertToHttpCode(const boost::system::error_code& error);
+  StatusCode convertToHttpCode(const boost::system::error_code& error);
 
 }
 

@@ -88,7 +88,7 @@ namespace Interceptor {
     size_t size;
 
     if (FileUtils::readFile(m_tmpname, from, to, stream,
-                            size) != Http::Code::Ok) {
+                            size) != Http::StatusCode::Ok) {
       throw InterceptorException("Could not read data");
     }
 
