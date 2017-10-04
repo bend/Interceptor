@@ -4,6 +4,7 @@ set(libhttp_src
   Reply.cpp
   CommonReply.cpp
   GetReply.cpp
+  PostReply.cpp
   HeadReply.cpp
   ErrorReply.cpp
   RedirectReply.cpp

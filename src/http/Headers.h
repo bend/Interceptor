@@ -27,7 +27,7 @@ namespace Interceptor {
       void fillFrom(const Headers* headers);
       void parse();
 
-      void setHeadersFor(const std::string filename, AbstractCacheHandler* cache);
+      void setHeadersFor(const std::string& filename, AbstractCacheHandler* cache);
 
     private:
       std::unordered_map<std::string, std::string> m_headers;

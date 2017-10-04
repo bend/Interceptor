@@ -39,7 +39,7 @@ namespace Interceptor::Http {
 
   void GetReply::processRequest()
   {
-    LOG_DEBUG("GetReply::requestFileContents()");
+    LOG_DEBUG("GetReply::processRequest()");
 
     if (m_request->hasIfModifiedSince()) {
       if (requestIfMofidiedSince()) {
@@ -52,6 +52,7 @@ namespace Interceptor::Http {
 
   void GetReply::requestFileContents()
   {
+    LOG_DEBUG("GetReply::requestFileContents()");
     std::stringstream stream;
     size_t bytes = 0;
     std::string page;
@@ -83,6 +84,8 @@ namespace Interceptor::Http {
 
   bool GetReply::requestIfMofidiedSince()
   {
+    LOG_DEBUG("GetReply::requestIfMofidiedSince()");
+
     std::time_t requestedTime = m_request->ifModifiedSince();
 
     if (requestedTime <= 0) {

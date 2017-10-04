@@ -13,9 +13,7 @@ namespace Interceptor::Http {
 
   protected:
     virtual void serialize(std::stringstream& stream) override;
-
-  private:
-    void processRequest();
+    virtual void processRequest();
     void requestFileContents();
     bool requestIfMofidiedSince();
   };

@@ -241,6 +241,16 @@ class TestValidHttpServer(unittest.TestCase):
         response = conn.getresponse()
         self.assertEqual(response.status, 302)
         self.assertEqual(response.getheader("Location"), "http://redirect2.example.com")
+    
+    def test13_1(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        conn.request("POST", "/")
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        r = response.read()
+        r2 = Utils.read_file("site1/index.html")
+        self.assertEqual(r, r2)
+        conn.close()
 
 
     def test_lastest(self):

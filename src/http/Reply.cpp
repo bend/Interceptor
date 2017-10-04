@@ -11,6 +11,7 @@
 #include "GetReply.h"
 #include "HeadReply.h"
 #include "ErrorReply.h"
+#include "PostReply.h"
 #include "RedirectReply.h"
 #include "HttpException.h"
 
@@ -107,6 +108,7 @@ namespace Interceptor::Http {
         break;
 
       case Method::POST:
+        m_reply = std::make_shared<PostReply>(m_request, site);
         break;
 
       default:

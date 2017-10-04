@@ -298,7 +298,10 @@ namespace Interceptor::Http {
         }
         break;
 
+      case Method::HEAD:
       case Method::POST:
+        break;
+
       case Method::PUT:
       case Method::DELETE:
       case Method::TRACE:
