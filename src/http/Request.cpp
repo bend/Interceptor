@@ -327,7 +327,7 @@ namespace Interceptor::Http {
     }
 
     // parse host
-    const std::string* host = m_headers->getHeader("Host");
+    const std::string* host = getHeader("Host");
 
     if (!host) {
       LOG_ERROR("Missing Host" );
