@@ -94,7 +94,7 @@ namespace Interceptor {
 
     if (vm.count("version")) {
       std::cout << ServerInfo::name() << " " << ServerInfo::version() <<
-                " (build " << ServerInfo::build() << ")" <<
+                " (build " << ServerInfo::build() << " - " << ServerInfo::buildDate() << ")" <<
                 std::endl;
       return false;
     }

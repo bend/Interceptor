@@ -71,6 +71,9 @@ include_directories(
 )
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
+string(TIMESTAMP BUILD_DATE UTC)
+
+add_definitions(-DINTERCEPTOR_BUILD_DATE="${BUILD_DATE}")
 
 set(LIBS
     ${Boost_LIBRARIES}

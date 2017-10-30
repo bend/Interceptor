@@ -14,6 +14,7 @@ namespace Interceptor::ServerInfo {
   std::string osName();
   std::string build();
   std::string currentDate();
+  std::string buildDate();
 }
 
 #endif //SERVER_H__

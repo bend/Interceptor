@@ -44,13 +44,17 @@ namespace Interceptor::ServerInfo {
     return INTERCEPTOR_GIT_COMMIT_ID;
   }
 
+  std::string buildDate() 
+  {
+	return INTERCEPTOR_BUILD_DATE;
+  }
+
   std::string currentDate()
   {
     std::time_t t = std::time(nullptr);
     std::stringstream sstr;
     sstr << std::put_time(std::gmtime(&t), "%a, %d %b %Y %T %Z");
     return sstr.str();
-
   }
 
 }
