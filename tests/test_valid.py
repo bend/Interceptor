@@ -27,6 +27,16 @@ class TestValidHttpServer(unittest.TestCase):
         r2 = Utils.read_file("site1/dir/index.html")
         self.assertEqual(r, r2)
         conn.close()
+    
+    def test1_2(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        conn.request("GET", "/dir")
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        r = response.read()
+        r2 = Utils.read_file("site1/dir/index.html")
+        self.assertEqual(r, r2)
+        conn.close()
 
     # Page not found test
     def test2(self):

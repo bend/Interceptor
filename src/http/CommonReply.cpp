@@ -9,6 +9,7 @@
 #include "utils/StringUtils.h"
 #include "common/Buffer.h"
 
+#include <boost/filesystem.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
 namespace Interceptor::Http {
@@ -160,7 +161,7 @@ namespace Interceptor::Http {
   {
     std::string page;
 
-    if ( CommonReply::isRequestingRoot(request)) {
+    if ( CommonReply::isRequestingRoot(request, config)) {
       page = CommonReply::getRootFile(request, config);
     } else {
       // This request contains the filename, hence we should
@@ -184,11 +185,15 @@ namespace Interceptor::Http {
     return CommonReply::requestedPath(m_request, m_config);
   }
 
-  bool CommonReply::isRequestingRoot(HttpRequestPtr request)
+  bool CommonReply::isRequestingRoot(HttpRequestPtr request, const SiteConfig* config)
   {
-    return  request->index() == ""
-            || request->index() == "/"
-            || request->index().at(request->index().length() - 1) == '/';
+	try {
+	  boost::filesystem::path p(config->m_docroot + "/" + request->index());
+	  return boost::filesystem::is_directory(p);
+	} catch (const boost::filesystem::filesystem_error& e)
+	{
+	  return false;
+	}
   }
 
   std::string CommonReply::getRootFile(HttpRequestPtr request,
