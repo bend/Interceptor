@@ -35,7 +35,7 @@ namespace Interceptor::Http {
     static std::string requestedPath(HttpRequestPtr request,
                                      const SiteConfig* config);
 
-    static bool isRequestingRoot(HttpRequestPtr request);
+    static bool isRequestingRoot(HttpRequestPtr request, const SiteConfig* config);
 
     static std::string getRootFile(HttpRequestPtr request,
                                    const SiteConfig* config);

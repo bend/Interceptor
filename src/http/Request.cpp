@@ -322,7 +322,7 @@ namespace Interceptor::Http {
     m_headers->parse();
 
     // parse host
-    const std::string* host = m_headers->getHeader("Host");
+    const std::string* host = getHeader("Host");
 
     if (!host) {
       LOG_ERROR("Missing Host" );
@@ -458,7 +458,16 @@ namespace Interceptor::Http {
 
   const std::string* Request::getHeader(const std::string& header) const
   {
-    return m_headers ? m_headers->getHeader(header) : nullptr;
+	if(!m_headers)
+	  return nullptr;
+	
+	auto value = m_headers->getHeader(header);
+	if(value)
+	  return value;
+	else  {
+	  std::string hdr = boost::algorithm::to_lower_copy(header);
+	  return m_headers->getHeader(hdr);
+	}
   }
 
 }
