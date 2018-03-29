@@ -9,3 +9,4 @@ INCLUDE_DIRECTORIES(
   )
 
 add_library(interceptor_hello SHARED ${libhello_src})
+install(TARGETS interceptor_hello DESTINATION lib)

@@ -179,7 +179,7 @@
 
   "modules" : [
 	{ "name": "mymodule",
-	  "so-path": "/home/ben/projects/interceptor/build/src/module-example/libinterceptor_hello.so"
+	  "so-path": "/usr/local/lib/libinterceptor_hello.so"
 	}
  ]
 
