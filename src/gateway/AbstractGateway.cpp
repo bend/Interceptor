@@ -1,6 +1,6 @@
 #include "AbstractGateway.h"
 
-namespace Interceptor {
+namespace Interceptor::Backends {
 
   AbstractGateway::AbstractGateway(HttpRequestPtr request)
     : m_request(request)

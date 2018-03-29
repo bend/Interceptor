@@ -10,7 +10,7 @@
 #include <mutex>
 #include <boost/asio/io_service.hpp>
 
-namespace Interceptor {
+namespace Interceptor::Backends {
 
   class BackendConnector;
 
@@ -37,6 +37,7 @@ namespace Interceptor {
   };
 
 }
+
 
 
 #endif // BACKENDS_POOL_H__

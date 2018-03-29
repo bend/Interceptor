@@ -2,7 +2,7 @@
 
 #include "utils/Logger.h"
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   FileDatabase::FileDatabase(size_t maxSize)
     : m_maxSize(maxSize),

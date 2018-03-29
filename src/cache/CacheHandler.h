@@ -8,7 +8,7 @@
 #include "FileMetadataDatabase.h"
 #include "Subject.h"
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   class CacheHandler : public AbstractCacheHandler {
   public:

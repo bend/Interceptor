@@ -7,7 +7,7 @@
 #include <memory>
 #include <mutex>
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   class FileDatabase : public AbstractDatabase {
   public:

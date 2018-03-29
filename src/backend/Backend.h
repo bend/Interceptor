@@ -5,25 +5,27 @@
 #include <memory>
 
 namespace Interceptor {
+  namespace Backends {
 
-  struct Backend {
-    std::string name;
-    std::string host;
-    uint16_t port;
-  };
-
-  struct Connector : public Backend {
-    enum Type {
-      FCGI,
-      Server
+    struct Backend {
+      std::string name;
+      std::string host;
+      uint16_t port;
     };
 
-    Type type;
-  };
+    struct Connector : public Backend {
+      enum Type {
+        FCGI,
+        Server
+      };
 
-  typedef std::shared_ptr<const Backend> BackendCPtr;
-  typedef std::shared_ptr<Backend> BackendPtr;
-  typedef std::shared_ptr<Connector> ConnectorPtr;
+      Type type;
+    };
+
+  }
+  typedef std::shared_ptr<const Backends::Backend> BackendCPtr;
+  typedef std::shared_ptr<Backends::Backend> BackendPtr;
+  typedef std::shared_ptr<Backends::Connector> ConnectorPtr;
 
 }
 

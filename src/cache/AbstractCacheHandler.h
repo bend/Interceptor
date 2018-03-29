@@ -4,7 +4,7 @@
 #include <string>
 #include "http/Http.h"
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   class AbstractCacheHandler {
 

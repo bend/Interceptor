@@ -13,9 +13,13 @@
 #include <boost/signals2.hpp>
 
 namespace Interceptor {
-  class AbstractCacheHandler;
+
   class FileBuffer;
   struct Packet;
+
+  namespace Cache  {
+    class AbstractCacheHandler;
+  }
 
   namespace Http {
 
@@ -33,7 +37,7 @@ namespace Interceptor {
       std::string httpVersion() const;
       SessionConnectionPtr connection() const;
       ParamsPtr params() const;
-      AbstractCacheHandler* cacheHandler() const;
+      Cache::AbstractCacheHandler* cacheHandler() const;
       std::string queryString() const;
       bool supportsCompression() const;
       bool supportsChunking() const;

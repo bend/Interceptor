@@ -10,25 +10,29 @@
 namespace Interceptor {
 
   class Params;
-  class AbstractGateway;
-  class BackendsPool;
 
-  class GatewayHandler {
-  public:
-    GatewayHandler(const std::string& backendName, HttpRequestPtr request,
-                   BackendsPool* pool);
-    ~GatewayHandler();
+  namespace Backends {
+    class AbstractGateway;
+    class BackendsPool;
 
-    void route(std::function<void(Http::StatusCode, std::stringstream*)> callback);
 
-  protected:
-    const SiteConfig*  m_site;
-    HttpRequestPtr m_request;
-    BackendsPool* m_pool;
+    class GatewayHandler {
+    public:
+      GatewayHandler(const std::string& backendName, HttpRequestPtr request,
+                     BackendsPool* pool);
+      ~GatewayHandler();
 
-    std::shared_ptr<AbstractGateway> m_gateway;
+      void route(std::function<void(Http::StatusCode, std::stringstream*)> callback);
 
-  };
+    protected:
+      const SiteConfig*  m_site;
+      HttpRequestPtr m_request;
+      BackendsPool* m_pool;
+
+      std::shared_ptr<AbstractGateway> m_gateway;
+
+    };
+  }
 
 }
 

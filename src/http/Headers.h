@@ -8,7 +8,9 @@
 
 namespace Interceptor {
 
-  class AbstractCacheHandler;
+  namespace Cache {
+    class AbstractCacheHandler;
+  }
 
   namespace Http {
 
@@ -27,7 +29,8 @@ namespace Interceptor {
       void fillFrom(const Headers* headers);
       void parse();
 
-      void setHeadersFor(const std::string& filename, AbstractCacheHandler* cache);
+      void setHeadersFor(const std::string& filename,
+                         Cache::AbstractCacheHandler* cache);
 
     private:
       std::unordered_map<std::string, std::string> m_headers;

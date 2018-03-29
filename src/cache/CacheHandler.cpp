@@ -6,7 +6,7 @@
 #include <tuple>
 #include <iomanip>
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   CacheHandler::CacheHandler(size_t maxCacheSize, Subject& subject)
     : AbstractCacheHandler(maxCacheSize),

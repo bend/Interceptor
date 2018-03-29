@@ -44,9 +44,9 @@ namespace Interceptor::ServerInfo {
     return INTERCEPTOR_GIT_COMMIT_ID;
   }
 
-  std::string buildDate() 
+  std::string buildDate()
   {
-	return INTERCEPTOR_BUILD_DATE;
+    return INTERCEPTOR_BUILD_DATE;
   }
 
   std::string currentDate()

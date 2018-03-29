@@ -3,7 +3,7 @@
 
 #include "AbstractListener.h"
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   class CacheMonitor;
 

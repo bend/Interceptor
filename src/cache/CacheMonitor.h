@@ -10,7 +10,7 @@
 #include <thread>
 
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   class CacheMonitor {
 

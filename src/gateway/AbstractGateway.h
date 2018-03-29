@@ -4,7 +4,7 @@
 #include "http/Request.h"
 #include "AbstractConnector.h"
 
-namespace Interceptor {
+namespace Interceptor::Backends {
 
   class AbstractGateway {
   public:

@@ -1,6 +1,6 @@
 #include "FileMetadataDatabase.h"
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   std::string FileMetadataDatabase::eTag(const std::string& filename) const
   {

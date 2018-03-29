@@ -4,7 +4,7 @@
 #include "AbstractCacheHandler.h"
 #include <string>
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   class BasicCacheHandler : public AbstractCacheHandler {
   public:

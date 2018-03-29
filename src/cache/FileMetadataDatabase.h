@@ -3,7 +3,7 @@
 
 #include "AbstractDatabase.h"
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   class FileMetadataDatabase : public AbstractDatabase {
   public:

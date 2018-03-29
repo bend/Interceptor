@@ -2,7 +2,7 @@
 #include "BackendConnector.h"
 #include "utils/Logger.h"
 
-namespace Interceptor {
+namespace Interceptor::Backends {
 
   BackendsPool::BackendsPool(boost::asio::io_service& ioService)
     : m_ioService(ioService)

@@ -1,6 +1,6 @@
 #include "BackendReply.h"
 
-namespace Interceptor {
+namespace Interceptor::Backends {
 
   void BackendReply::appendData(const char* data, size_t size)
   {

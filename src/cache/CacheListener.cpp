@@ -2,7 +2,7 @@
 
 #include "CacheHandler.h"
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   CacheListener::CacheListener(CacheHandler* cache)
     : m_cacheHandler(cache)

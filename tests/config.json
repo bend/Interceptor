@@ -85,7 +85,13 @@
 				"type": "connector", 
 				"name": "php"
 			  }
+			},
+		   {
+			"/api" : {
+			 "type":  "module",
+			 "name":  "mymodule"
 			}
+		   }
 		  ]
 		}
 	  ]
@@ -169,5 +175,12 @@
 	  "host": "localhost",
 	  "port": 1234
 	}
-  ]
+  ],
+
+  "modules" : [
+	{ "name": "mymodule",
+	  "so-path": "/so.so"
+	}
+ ]
+
 }

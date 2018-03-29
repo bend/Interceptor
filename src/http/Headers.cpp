@@ -92,7 +92,7 @@ namespace Interceptor::Http {
   }
 
   void Headers::setHeadersFor(const std::string& filename,
-                              AbstractCacheHandler* cache)
+                              Cache::AbstractCacheHandler* cache)
   {
     addHeader("Content-Type", FileUtils::mimeType(filename));
 

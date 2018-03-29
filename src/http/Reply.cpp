@@ -128,7 +128,8 @@ namespace Interceptor::Http {
   void Reply::handleGatewayRequest(const SiteConfig* site)
   {
     LOG_DEBUG("Reply::handleGatewayRequest()");
-    m_gateway = std::make_unique<GatewayHandler>(gatewayName(site), m_request,
+    m_gateway = std::make_unique<Backends::GatewayHandler>(gatewayName(site),
+                m_request,
                 m_request->params()->m_pool);
     std::weak_ptr<Reply> wp {shared_from_this()};
     m_request->setCompleted(true);

@@ -5,7 +5,7 @@
 
 #include "Event.h"
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   class AbstractListener;
 

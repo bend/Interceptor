@@ -9,12 +9,18 @@
 
 namespace Interceptor {
 
-  class AbstractCacheHandler;
   class Config;
-  class Subject;
-  class CacheMonitor;
-  class BackendsPool;
   class Server;
+
+  namespace Cache {
+    class Subject;
+    class AbstractCacheHandler;
+    class CacheMonitor;
+  }
+
+  namespace Backends {
+    class BackendsPool;
+  }
 
   class Main {
   public:
@@ -32,13 +38,13 @@ namespace Interceptor {
 
   private:
     boost::asio::io_service m_ioService;
-    AbstractCacheHandler* m_cacheHandler;
+    Cache::AbstractCacheHandler* m_cacheHandler;
 #ifdef ENABLE_LOCAL_CACHE
-    Subject* m_subject;
-    CacheMonitor* m_monitor;
+    Cache::Subject* m_subject;
+    Cache::CacheMonitor* m_monitor;
 #endif // ENABLE_LOCAL_CACHE
     Config* m_config;
-    BackendsPool* m_pool;
+    Backends::BackendsPool* m_pool;
     uint16_t m_nbThreads;
     std::vector<std::future<void>> m_futures;
     typedef std::shared_ptr<Server> ServerPtr;

@@ -3,7 +3,7 @@
 
 #include <map>
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   class AbstractDatabase {
   public:

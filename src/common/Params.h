@@ -9,8 +9,8 @@ namespace Interceptor {
 
   class Params {
   public:
-    Params(Config::ServerConfig* config, AbstractCacheHandler* cache,
-           BackendsPool* pool)
+    Params(Config::ServerConfig* config, Cache::AbstractCacheHandler* cache,
+           Backends::BackendsPool* pool)
       : m_config(config),
         m_cache(cache),
         m_pool(pool)
@@ -23,19 +23,19 @@ namespace Interceptor {
       return m_config;
     }
 
-    AbstractCacheHandler* cache() const
+    Cache::AbstractCacheHandler* cache() const
     {
       return m_cache;
     }
 
-    BackendsPool* backendsPool() const
+    Backends::BackendsPool* backendsPool() const
     {
       return m_pool;
     }
 
     Config::ServerConfig* m_config;
-    AbstractCacheHandler* m_cache;
-    BackendsPool* m_pool;
+    Cache::AbstractCacheHandler* m_cache;
+    Backends::BackendsPool* m_pool;
   };
 
 }

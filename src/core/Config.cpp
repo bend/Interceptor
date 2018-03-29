@@ -97,6 +97,10 @@ namespace Interceptor {
         parseConnectors(j["connectors"]);
       }
 
+      if (j.count("modules")) {
+        parseModules(j["modules"]);
+      }
+
       // servers section
       auto servers = j["servers"];
 
@@ -174,6 +178,10 @@ namespace Interceptor {
           if (site.count("backend") > 0) {
             if (s->m_connectors.size() > 0) {
               throw ConfigException("Cannot define connectors and backend at the same time");
+            }
+
+            if (s->m_modules.size() > 0) {
+              throw ConfigException("Cannot define modules and backend at the same time");
             }
 
             if (m_backends.count(site["backend"]) > 0) {
@@ -319,7 +327,7 @@ namespace Interceptor {
         throw ConfigException("Backend " + backendName + " already defined");
       }
 
-      BackendPtr b = std::make_shared<Backend>();
+      BackendPtr b = std::make_shared<Backends::Backend>();
       b->name = backend["name"];
       b->host = backend["host"];
       b->port = backend["port"];
@@ -334,18 +342,37 @@ namespace Interceptor {
 
       if (m_backends.count(connectorName) > 0
           || m_connectors.count(connectorName) > 0) {
-        throw ConfigException("Connector/Backend " + connectorName +
+        throw ConfigException("Connector " + connectorName +
                               " already defined");
       }
 
-      ConnectorPtr b = std::make_shared<Connector>();
+      ConnectorPtr b = std::make_shared<Backends::Connector>();
       b->name = connector["name"];
       b->host = connector["host"];
       b->port = connector["port"];
-      b->type = connector["type"] == "fcgi" ? Connector::FCGI : Connector::Server;
+      b->type = connector["type"] == "fcgi" ? Backends::Connector::FCGI :
+                Backends::Connector::Server;
       m_connectors[connectorName] = b;
     }
 
+  }
+
+  void Config::parseModules(json& j)
+  {
+    for (auto& module : j) {
+      std::string moduleName = module["name"];
+
+      if (m_backends.count(moduleName) > 0
+          || m_connectors.count(moduleName) > 0) {
+        throw ConfigException("Module " + moduleName +
+                              " already defined");
+      }
+
+      ModulePtr mod = std::make_shared<Modules::Module>();
+      mod->name = moduleName;
+      mod->path = module["so-path"];
+      m_modules[moduleName] = mod;
+    }
   }
 
   void Config::parseLocations(json& j, ServerConfig::Site* s)
@@ -367,6 +394,13 @@ namespace Interceptor {
           } else if (type == "cache") {
             time_t seconds = parseTimeUnit(it.value()["expires"]);
             s->m_cacheTime[it.key()] = seconds;
+          } else if (type == "module") {
+            std::string moduleName = it.value()["name"];
+
+            if (m_modules.count(moduleName) == 0) {
+              throw ConfigException("Unknow module " + moduleName);
+            }
+
           }
         } else {
           s->m_locations[it.key()] = it.value().get<uint16_t>();

@@ -3,7 +3,7 @@
 
 #include "common/Packet.h"
 
-namespace Interceptor {
+namespace Interceptor::Backends {
 
   BackendGateway::BackendGateway(HttpRequestPtr request)
     : AbstractGateway(request)

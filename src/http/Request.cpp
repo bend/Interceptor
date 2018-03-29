@@ -114,7 +114,7 @@ namespace Interceptor::Http {
     return m_connection->params();
   }
 
-  AbstractCacheHandler* Request::cacheHandler() const
+  Cache::AbstractCacheHandler* Request::cacheHandler() const
   {
     return m_connection->params()->cache();
   }
@@ -458,16 +458,18 @@ namespace Interceptor::Http {
 
   const std::string* Request::getHeader(const std::string& header) const
   {
-	if(!m_headers)
-	  return nullptr;
-	
-	auto value = m_headers->getHeader(header);
-	if(value)
-	  return value;
-	else  {
-	  std::string hdr = boost::algorithm::to_lower_copy(header);
-	  return m_headers->getHeader(hdr);
-	}
+    if (!m_headers) {
+      return nullptr;
+    }
+
+    auto value = m_headers->getHeader(header);
+
+    if (value) {
+      return value;
+    } else  {
+      std::string hdr = boost::algorithm::to_lower_copy(header);
+      return m_headers->getHeader(hdr);
+    }
   }
 
 }

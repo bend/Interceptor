@@ -184,15 +184,15 @@ namespace Interceptor::Http {
     return CommonReply::requestedPath(m_request, m_config);
   }
 
-  bool CommonReply::isRequestingRoot(HttpRequestPtr request, const SiteConfig* config)
+  bool CommonReply::isRequestingRoot(HttpRequestPtr request,
+                                     const SiteConfig* config)
   {
-	try {
-	  boost::filesystem::path p(config->m_docroot + "/" + request->index());
-	  return boost::filesystem::is_directory(p);
-	} catch (const boost::filesystem::filesystem_error& e)
-	{
-	  return false;
-	}
+    try {
+      boost::filesystem::path p(config->m_docroot + "/" + request->index());
+      return boost::filesystem::is_directory(p);
+    } catch (const boost::filesystem::filesystem_error& e) {
+      return false;
+    }
   }
 
   std::string CommonReply::getRootFile(HttpRequestPtr request,

@@ -5,7 +5,7 @@
 #include "BackendGateway.h"
 #include "common/Params.h"
 
-namespace Interceptor {
+namespace Interceptor::Backends {
 
   GatewayHandler::GatewayHandler(const std::string& backendName,
                                  HttpRequestPtr request,

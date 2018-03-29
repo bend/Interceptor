@@ -6,7 +6,7 @@
 
 using namespace std::chrono_literals;
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   CacheMonitor::CacheMonitor(Subject& subject)
     : m_runningThread(nullptr),

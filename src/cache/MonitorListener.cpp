@@ -2,7 +2,7 @@
 
 #include "CacheMonitor.h"
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   MonitorListener::MonitorListener(CacheMonitor* cache)
     : m_monitor(cache)

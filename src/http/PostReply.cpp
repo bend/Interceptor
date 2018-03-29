@@ -12,7 +12,9 @@ namespace Interceptor::Http {
   void PostReply::processRequest()
   {
     LOG_DEBUG("PostRequest::processRequest()");
-    //TODO check body
+    //TODO check body in Request
+    // We also need to implement chunking probably to
+    // parse the request.
     requestFileContents();
   }
 

@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   struct Event {
     int event;

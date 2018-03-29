@@ -7,6 +7,7 @@
 #include <set>
 #include "json/json.hpp"
 #include "backend/Backend.h"
+#include "modules/Module.h"
 #include "common/Redirection.h"
 
 using json = nlohmann::json;
@@ -17,6 +18,7 @@ namespace Interceptor {
   typedef std::map<std::string, int16_t> LocationsMap;
   typedef std::map<std::string, BackendPtr> BackendsMap;
   typedef std::map<std::string, ConnectorPtr> ConnectorsMap;
+  typedef std::map<std::string, ModulePtr> ModulesMap;
 
   class ConfigException : public std::exception {
   public:
@@ -55,6 +57,7 @@ namespace Interceptor {
         LocationsMap m_locations;
         std::string m_backend;
         std::map<std::string, std::string> m_connectors;
+        std::map<std::string, std::string> m_modules;
         std::map<std::string, time_t> m_cacheTime;
         std::vector<Redirection> m_redirections;
 
@@ -100,6 +103,7 @@ namespace Interceptor {
     std::string parseDocRoot(const std::string& docroot) const;
     void parseBackends(json& j);
     void parseConnectors(json& j);
+    void parseModules(json& j);
     void parseLocations(json& j, ServerConfig::Site* s);
     void parseRedirections(json& j, ServerConfig::Site* s);
 
@@ -116,6 +120,7 @@ namespace Interceptor {
     ErrorPageMap m_errorPages;
     BackendsMap m_backends;
     ConnectorsMap m_connectors;
+    ModulesMap m_modules;
     uint32_t m_clientTimeout;
     uint32_t m_serverTimeout;
     uint16_t m_threadNr;

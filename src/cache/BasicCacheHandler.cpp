@@ -4,7 +4,7 @@
 
 #include <tuple>
 
-namespace Interceptor {
+namespace Interceptor::Cache {
 
   BasicCacheHandler::BasicCacheHandler()
     : AbstractCacheHandler(0)

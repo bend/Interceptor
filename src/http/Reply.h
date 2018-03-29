@@ -11,7 +11,10 @@
 namespace Interceptor {
 
   class Redirection;
-  class GatewayHandler;
+
+  namespace Backends  {
+    class GatewayHandler;
+  }
 
   namespace Http {
 
@@ -45,7 +48,7 @@ namespace Interceptor {
       std::string gatewayName(const SiteConfig* config) const;
 
     private:
-      typedef std::unique_ptr<GatewayHandler> GatewayHandlerUPtr;
+      typedef std::unique_ptr<Backends::GatewayHandler> GatewayHandlerUPtr;
       typedef std::shared_ptr<CommonReply> CommonReplyPtr;
       HttpRequestPtr m_request;
       GatewayHandlerUPtr m_gateway;

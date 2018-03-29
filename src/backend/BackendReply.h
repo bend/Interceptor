@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-namespace Interceptor {
+namespace Interceptor::Backends {
 
   class BackendReply {
   public:

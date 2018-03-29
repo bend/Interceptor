@@ -87,5 +87,16 @@
 	  "port": 8002
 	}
 
+  ],
+
+  "modules": [
+	{
+	  "so-path": "path",
+	  "handled-paths" : [
+		"/api/v1",
+		"/api/v2"
+	  ]
+	}
   ]
+
 }

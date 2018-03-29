@@ -116,34 +116,36 @@ namespace Interceptor {
   bool Main::initCache()
   {
 #ifdef ENABLE_LOCAL_CACHE
-    m_subject = new Subject();
-    m_cacheHandler = new CacheHandler(m_config->maxCacheSize(), *m_subject);
-    m_monitor = new CacheMonitor(*m_subject);
-    CacheListener* cacheListener = new CacheListener(dynamic_cast<CacheHandler*>
-        (m_cacheHandler));
-    MonitorListener* monitorListener = new MonitorListener(m_monitor);
+    m_subject = new Cache::Subject();
+    m_cacheHandler = new Cache::CacheHandler(m_config->maxCacheSize(), *m_subject);
+    m_monitor = new Cache::CacheMonitor(*m_subject);
+    Cache::CacheListener* cacheListener = new Cache::CacheListener(
+      dynamic_cast<Cache::CacheHandler*>
+      (m_cacheHandler));
+    Cache::MonitorListener* monitorListener = new Cache::MonitorListener(m_monitor);
     m_subject->addListener(cacheListener);
     m_subject->addListener(monitorListener);
     m_monitor->start();
 
 #else
-    m_cacheHandler = new BasicCacheHandler();
+    m_cacheHandler = new Cache::BasicCacheHandler();
 #endif //ENABLE_LOCAL_CACHE
     return true;
   }
 
   bool Main::initBackendsPool()
   {
-    m_pool = new BackendsPool(m_ioService);
+    m_pool = new Backends::BackendsPool(m_ioService);
 
     std::vector<BackendCPtr> backends;
 
     for (auto& kv : m_config->backends()) {
-      backends.push_back(std::const_pointer_cast<const Backend>(kv.second));
+      backends.push_back(std::const_pointer_cast<const Backends::Backend>(kv.second));
     }
 
     for (auto& kv : m_config->connectors()) {
-      backends.push_back(std::const_pointer_cast<const Connector>(kv.second));
+      backends.push_back(std::const_pointer_cast<const Backends::Connector>
+                         (kv.second));
     }
 
     return m_pool->initPool(backends);
