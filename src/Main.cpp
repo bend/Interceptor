@@ -7,6 +7,7 @@
 #include "utils/ServerInfo.h"
 #include "cache/generic_cache.h"
 #include "backend/BackendsPool.cpp"
+#include "modules/ModulesLoader.h"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -52,6 +53,10 @@ namespace Interceptor {
     }
 
     if (!initBackendsPool()) {
+      return false;
+    }
+
+    if (!initModules()) {
       return false;
     }
 
@@ -151,6 +156,19 @@ namespace Interceptor {
     return m_pool->initPool(backends);
   }
 
+  bool Main::initModules()
+  {
+    m_modules = new Modules::ModulesLoader();
+    std::vector<ModuleCPtr> modules;
+
+    for (auto& kv : m_config->modules()) {
+      modules.push_back(std::const_pointer_cast<const Modules::Module>
+                        (kv.second));
+    }
+
+    return m_modules->loadModules(modules);
+  }
+
   void Main::run()
   {
     LOG_DEBUG("Main::run()");
@@ -158,7 +176,7 @@ namespace Interceptor {
 
     for (const auto& serverConfig : m_config->serversConfig()) {
       ParamsPtr params = std::make_shared<Params>(serverConfig, m_cacheHandler,
-                         m_pool);
+                         m_pool, m_modules);
       std::shared_ptr<Server> interceptor = std::make_shared<Server>(params,
                                             m_ioService);
       interceptor->init();

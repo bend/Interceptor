@@ -22,6 +22,10 @@ namespace Interceptor {
     class BackendsPool;
   }
 
+  namespace Modules {
+    class ModulesLoader;
+  }
+
   class Main {
   public:
     Main();
@@ -35,6 +39,7 @@ namespace Interceptor {
     bool parsePO(int argc, char** argv);
     bool initCache();
     bool initBackendsPool();
+    bool initModules();
 
   private:
     boost::asio::io_service m_ioService;
@@ -45,6 +50,8 @@ namespace Interceptor {
 #endif // ENABLE_LOCAL_CACHE
     Config* m_config;
     Backends::BackendsPool* m_pool;
+    Modules::ModulesLoader* m_modules;
+
     uint16_t m_nbThreads;
     std::vector<std::future<void>> m_futures;
     typedef std::shared_ptr<Server> ServerPtr;

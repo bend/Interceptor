@@ -38,14 +38,18 @@ namespace Interceptor {
       void handleHttpMethod(const SiteConfig* site);
       void handleRedirection(const Redirection* r, const SiteConfig* site);
       void handleGatewayRequest(const SiteConfig* site);
+      void handleModuleRequest(const SiteConfig* site);
       void handleGatewayReply(StatusCode code, std::stringstream*  stream);
+      void handleModuleReply(BufferPtr buffer);
 
       bool checkBackendReply(const std::stringstream& stream) const;
       void post(BufferPtr buffer);
       void postBackendReply(const std::stringstream& stream);
       void buildErrorResponse(StatusCode error, bool closeConnection = false);
       bool hasGateway(const SiteConfig* config) const;
+      bool hasModule(const SiteConfig* config) const;
       std::string gatewayName(const SiteConfig* config) const;
+      std::string moduleName(const SiteConfig* config) const;
 
     private:
       typedef std::unique_ptr<Backends::GatewayHandler> GatewayHandlerUPtr;

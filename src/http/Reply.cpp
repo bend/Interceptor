@@ -7,6 +7,7 @@
 #include "common/Buffer.h"
 #include "common/Redirection.h"
 #include "gateway/GatewayHandler.h"
+#include "modules/AbstractModule.h"
 #include "core/SessionConnection.h"
 #include "GetReply.h"
 #include "HeadReply.h"
@@ -62,6 +63,8 @@ namespace Interceptor::Http {
         handleRedirection(redirection, site);
       } else if (hasGateway(site)) {
         handleGatewayRequest(site);
+      } else if (hasModule(site)) {
+        handleModuleRequest(site);
       } else {
         handleHttpMethod(site);
 
@@ -77,6 +80,20 @@ namespace Interceptor::Http {
   bool Reply::hasGateway(const SiteConfig* site) const
   {
     return gatewayName(site).length() > 0;
+  }
+
+  bool Reply::hasModule(const SiteConfig* site) const
+  {
+    return moduleName(site).length() > 0;
+  }
+
+  std::string Reply::moduleName(const SiteConfig* site) const
+  {
+    try {
+      return site->moduleName(m_request->index());
+    } catch (HttpException& e) {
+      return "";
+    }
   }
 
   std::string Reply::gatewayName(const SiteConfig* site) const
@@ -147,6 +164,28 @@ namespace Interceptor::Http {
 
   }
 
+  void Reply::handleModuleRequest(const SiteConfig* site)
+  {
+    LOG_DEBUG("Reply::handleModuleRequest()");
+    Modules::AbstractModule* module = m_request->params()->m_modules->get(
+                                        moduleName(site));
+
+    std::weak_ptr<Reply> wp {shared_from_this()};
+    m_request->setCompleted(true);
+
+    module->handleRequest(std::bind([wp] (BufferPtr buffer) {
+      auto ptr = wp.lock();
+
+      if (ptr) {
+        ptr->handleModuleReply(buffer);
+      } else if (buffer) {
+        LOG_ERROR("Reply::process() : Reply is already destructed, cannot send");
+      }
+    }, std::placeholders::_1));
+
+
+  }
+
   void Reply::handleGatewayReply(StatusCode code, std::stringstream* stream)
   {
     LOG_DEBUG("Reply::handleGatewayReply()");
@@ -163,6 +202,18 @@ namespace Interceptor::Http {
       }
 
       delete stream;
+    }
+  }
+
+  void Reply::handleModuleReply(BufferPtr buffer)
+  {
+    LOG_DEBUG("Reply::handleModuleReply()");
+
+    if (buffer) {
+      post(buffer);
+    } else {
+      LOG_ERROR("Reply::handleModuleReply() - Got an empty buffer");
+      buildErrorResponse(StatusCode::InternalServerError, true);
     }
   }
 

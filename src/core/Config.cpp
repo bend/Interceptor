@@ -250,6 +250,11 @@ namespace Interceptor {
     return m_connectors;
   }
 
+  const ModulesMap& Config::modules() const
+  {
+    return m_modules;
+  }
+
   const time_t Config::ServerConfig::Site::getCacheTime(const std::string& path)
   const
   {
@@ -261,6 +266,17 @@ namespace Interceptor {
     }
 
     return -1;
+  }
+
+  const std::string Config::ServerConfig::Site::moduleName(
+    const std::string& path) const
+  {
+    for (auto& module : m_modules)
+      if (StringUtils::regexMatch(module.first, path)) {
+        return module.second;
+      }
+
+    return "";
   }
 
   const std::string Config::ServerConfig::Site::connectorName(
@@ -401,6 +417,7 @@ namespace Interceptor {
               throw ConfigException("Unknow module " + moduleName);
             }
 
+            s->m_modules[it.key()] = it.value()["name"];
           }
         } else {
           s->m_locations[it.key()] = it.value().get<uint16_t>();

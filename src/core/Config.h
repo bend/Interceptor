@@ -65,6 +65,8 @@ namespace Interceptor {
 
         const std::string connectorName(const std::string& path) const;
 
+        const std::string moduleName(const std::string& path) const;
+
         const Redirection* redirection(const std::string& path) const;
       };
 
@@ -91,6 +93,7 @@ namespace Interceptor {
     uint64_t maxInMemRequestSize() const;
     const BackendsMap& backends() const;
     const ConnectorsMap& connectors() const;
+    const ModulesMap& modules() const;
 
     static bool isLocalDomain(const std::string& domain);
     static std::string localDomain();

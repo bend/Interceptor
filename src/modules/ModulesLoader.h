@@ -3,14 +3,26 @@
 
 #include "Module.h"
 
+#include <vector>
+#include <unordered_map>
+
 namespace Interceptor::Modules {
+
+  class AbstractModule;
 
   class ModulesLoader {
 
   public:
     ModulesLoader() = default;
+    ~ModulesLoader();
 
-    bool loadModule(const Module& module);
+    bool loadModules(std::vector<ModuleCPtr>& modules);
+    bool loadModule(ModuleCPtr module);
+
+    AbstractModule* get(const std::string& moduleName) const;
+
+  private:
+    std::unordered_map<std::string, AbstractModule*> m_modules;
 
 
   };

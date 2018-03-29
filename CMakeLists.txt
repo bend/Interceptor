@@ -63,6 +63,7 @@ execute_process(
 add_definitions(-DINTERCEPTOR_GIT_COMMIT_ID="${INTERCEPTOR_GIT_COMMIT_ID}")
 
 link_directories(
+  ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 include_directories(
@@ -78,6 +79,7 @@ add_definitions(-DINTERCEPTOR_BUILD_DATE="${BUILD_DATE}")
 set(LIBS
     ${Boost_LIBRARIES}
     pthread
+	dl
   )
 
 if(ENABLE_GZIP)

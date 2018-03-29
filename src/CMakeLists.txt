@@ -15,6 +15,7 @@ subdirs(utils)
 subdirs(socket)
 subdirs(common)
 subdirs(modules)
+subdirs(module-example)
 
 set(LIBS
   interceptor_core

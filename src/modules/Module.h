@@ -15,6 +15,7 @@ namespace Interceptor {
 
 
   }
+  typedef std::shared_ptr<const Modules::Module> ModuleCPtr;
   typedef std::shared_ptr<Modules::Module> ModulePtr;
 }
 #endif // MODULE_H__
