@@ -1,7 +1,7 @@
 #include "OutboundConnection.h"
 #include <boost/asio.hpp>
 
-namespace Interceptor {
+namespace Interceptor::Network {
 
   OutboundConnection::OutboundConnection(boost::asio::io_service& io_service,
                                          const std::string& host, const std::string& port):

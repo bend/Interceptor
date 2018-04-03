@@ -3,6 +3,8 @@
 
 #include "Backend.h"
 #include "gateway/AbstractConnector.h"
+#include "common/Defs.h"
+
 #include <memory>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio.hpp>
@@ -10,7 +12,6 @@
 
 namespace Interceptor {
 
-  class OutboundConnection;
   struct Packet;
 
   namespace Backends {
@@ -59,7 +60,7 @@ namespace Interceptor {
     private:
       BackendCPtr m_backend;
       boost::asio::io_service& m_ioService;
-      std::shared_ptr<OutboundConnection> m_connection;
+      OutboundConnectionPtr m_connection;
       char m_response[4096];
       std::deque<std::pair<Packet*, std::function<void(Http::StatusCode)>>> m_outbox;
       boost::asio::strand m_writestrand;

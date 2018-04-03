@@ -6,7 +6,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 
-namespace Interceptor {
+namespace Interceptor::Network {
 
   class SSLInboundConnection : public InboundConnection {
   public:

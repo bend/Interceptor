@@ -3,7 +3,7 @@
 #include <boost/lexical_cast.hpp>
 #include "utils/Logger.h"
 
-namespace Interceptor {
+namespace Interceptor::Network {
 
   std::string InboundConnection::ip()
   {

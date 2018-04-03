@@ -5,7 +5,7 @@
 
 using boost::asio::ip::tcp;
 
-namespace Interceptor {
+namespace Interceptor::Network {
 
   class OutboundConnection {
   public:

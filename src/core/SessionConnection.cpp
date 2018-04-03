@@ -27,7 +27,7 @@ namespace Interceptor {
   void SessionConnection::initConnection()
   {
     LOG_DEBUG("SessionConnection::initConnection()");
-    m_connection = std::make_shared<TcpInboundConnection>(m_ioService);
+    m_connection = std::make_shared<Network::TcpInboundConnection>(m_ioService);
   }
 
   void SessionConnection::init(std::function<void()> callback)

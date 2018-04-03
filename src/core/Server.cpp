@@ -4,7 +4,6 @@
 #include "socket/InboundConnection.h"
 #include "utils/Logger.h"
 #include "utils/ServerInfo.h"
-#include "cache/generic_cache.h"
 #include "common/Params.h"
 #include "SessionConnection.h"
 

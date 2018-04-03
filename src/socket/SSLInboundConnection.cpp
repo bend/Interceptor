@@ -1,6 +1,6 @@
 #include "SSLInboundConnection.h"
 
-namespace Interceptor {
+namespace Interceptor::Network {
 
   SSLInboundConnection::SSLInboundConnection(boost::asio::io_service& io_service,
       boost::asio::ssl::context& context) :
