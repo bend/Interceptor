@@ -12,7 +12,7 @@ namespace Interceptor::ServerInfo {
 
   std::string version()
   {
-    return SERVER_VERSION;
+    return std::to_string(SERVER_VERSION_MAJOR) + "." + std::to_string(SERVER_VERSION_MINOR) + "." + std::to_string(SERVER_VERSION_PATCH);
   }
 
   std::string name()

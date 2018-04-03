@@ -4,7 +4,9 @@
 #include <string>
 
 #define SERVER_NAME		"Interceptor"
-#define SERVER_VERSION	"0.1"
+#define SERVER_VERSION_MAJOR	0
+#define SERVER_VERSION_MINOR	2
+#define SERVER_VERSION_PATCH	0
 
 namespace Interceptor::ServerInfo {
 
