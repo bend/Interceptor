@@ -278,14 +278,13 @@ class TestValidHttpServer(unittest.TestCase):
     
     def test14_3(self):
         conn = httplib.HTTPConnection(HTTP_URL)
-        headers = { "Accept-Encoding" : "gzip", "Authorization" : "Basic"}
+        headers = { "Authorization" : "Basic"}
         conn.request("GET", "/secured/secured.html", None, headers)
         response = conn.getresponse()
         self.assertEqual(response.status, 200)
         r = response.read()
-        data = Utils.uncompress_response(r)
         r2 = Utils.read_file("site1/secured/secured.html")
-        self.assertEqual(data, r2)
+        self.assertEqual(r, r2)
         conn.close()
 
     def test_lastest(self):
