@@ -100,6 +100,10 @@ namespace Interceptor {
       if (j.count("modules")) {
         parseModules(j["modules"]);
       }
+      
+	  if (j.count("authentications")) {
+        parseAuthentications(j["authentications"]);
+      }
 
       // servers section
       auto servers = j["servers"];
@@ -254,6 +258,11 @@ namespace Interceptor {
   {
     return m_modules;
   }
+	
+  const AuthenticationsMap& Config::authentications() const
+  {	
+	return m_authenticators;
+  }
 
   const time_t Config::ServerConfig::Site::getCacheTime(const std::string& path)
   const
@@ -290,6 +299,18 @@ namespace Interceptor {
     return "";
   }
 
+
+  const std::string Config::ServerConfig::Site::authenticatorName(const std::string& path) const
+  {
+    for (auto& auth : m_authenticators)
+      if (StringUtils::regexMatch(auth.first, path)) {
+        return auth.second;
+      }
+
+    return "";
+	
+  }
+
   const Redirection* Config::ServerConfig::Site::redirection(
     const std::string& path) const
   {
@@ -301,6 +322,17 @@ namespace Interceptor {
     }
 
     return nullptr;
+  }
+
+  const std::string Config::ServerConfig::Site::realm(const std::string& path) const
+  {
+	for (const auto& p : m_realms)
+	{
+	  if(StringUtils::regexMatch(p.first, path)) {
+		return p.second;
+	  }
+	}
+	return "";
   }
 
   bool Config::isLocalDomain(const std::string& domain)
@@ -391,6 +423,26 @@ namespace Interceptor {
     }
   }
 
+  void Config::parseAuthentications(json& j)
+  {
+    for (auto& auth : j) {
+      std::string authName = auth["name"];
+
+      if (m_backends.count(authName) > 0
+          || m_connectors.count(authName) > 0) {
+        throw ConfigException("Authentication " + authName +
+                              " already defined");
+      }
+
+      AuthenticationPtr authentication = std::make_shared<Authentication::Authentication>();
+      authentication->name = authName;
+	  authentication->type = Authentication::Authentication::Basic;
+	  authentication->credentials = auth["credentials"];
+      m_authenticators[authName] = authentication;
+    }
+
+  }
+
   void Config::parseLocations(json& j, ServerConfig::Site* s)
   {
     // Parse locations
@@ -414,11 +466,28 @@ namespace Interceptor {
             std::string moduleName = it.value()["name"];
 
             if (m_modules.count(moduleName) == 0) {
-              throw ConfigException("Unknow module " + moduleName);
+              throw ConfigException("Unknown module " + moduleName);
             }
 
             s->m_modules[it.key()] = it.value()["name"];
-          }
+          } else if (type == "authentication") {
+			std::string authName = it.value()["name"];
+
+			if(m_authenticators.count(authName) == 0) {
+			  throw ConfigException("Unknown authentication");
+			}
+
+			s->m_authenticators[it.key()] = it.value()["name"];
+			
+			if(it.value().count("realm") > 0)
+			{
+			  s->m_realms[it.key()] = it.value()["realm"];
+			} else 
+			{
+			  s->m_realms[it.key()] = "";
+			}
+
+		  }
         } else {
           s->m_locations[it.key()] = it.value().get<uint16_t>();
         }

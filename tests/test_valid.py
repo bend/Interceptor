@@ -261,7 +261,32 @@ class TestValidHttpServer(unittest.TestCase):
         r2 = Utils.read_file("site1/index.html")
         self.assertEqual(r, r2)
         conn.close()
-
+    
+    def test14_1(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        conn.request("GET", "/secured")
+        response = conn.getresponse()
+        self.assertEqual(response.status, 401)
+        conn.close()
+    
+    def test14_2(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        conn.request("GET", "/secured/secured.html")
+        response = conn.getresponse()
+        self.assertEqual(response.status, 401)
+        conn.close()
+    
+    def test14_3(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        headers = { "Accept-Encoding" : "gzip", "Authorization" : "Basic"}
+        conn.request("GET", "/secured/secured.html", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 200)
+        r = response.read()
+        data = Utils.uncompress_response(r)
+        r2 = Utils.read_file("site1/secured/secured.html")
+        self.assertEqual(data, r2)
+        conn.close()
 
     def test_lastest(self):
         self.assertEqual(self.proc.poll(), None)

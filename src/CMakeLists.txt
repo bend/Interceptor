@@ -16,6 +16,7 @@ subdirs(socket)
 subdirs(common)
 subdirs(modules)
 subdirs(module-example)
+subdirs(authentication)
 
 set(LIBS
   interceptor_core
@@ -27,6 +28,7 @@ set(LIBS
   interceptor_common
   interceptor_utils
   interceptor_modules
+  interceptor_auth
   ${LIBS}
 )
 

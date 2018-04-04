@@ -45,6 +45,13 @@
 				"type" : "cache",
 				"expires": "1y"
 			  }
+			},
+			{
+			  "/secured" : {
+				"type" : "authentication",
+				"realm" : "Test",
+				"name" : "basic1"
+			  }
 			}
 		  ],
 		  
@@ -181,6 +188,14 @@
 	{ "name": "mymodule",
 	  "so-path": "/usr/local/lib/libinterceptor_hello.so"
 	}
+ ],
+
+ "authentications" : [
+   {
+	"name": "basic1",
+	"type" : "basic",
+	"credentials" : "abcd"
+   }
  ]
 
 }

@@ -8,6 +8,7 @@
 #include "json/json.hpp"
 #include "backend/Backend.h"
 #include "modules/Module.h"
+#include "authentication/Authentication.h"
 #include "common/Redirection.h"
 
 using json = nlohmann::json;
@@ -19,6 +20,7 @@ namespace Interceptor {
   typedef std::map<std::string, BackendPtr> BackendsMap;
   typedef std::map<std::string, ConnectorPtr> ConnectorsMap;
   typedef std::map<std::string, ModulePtr> ModulesMap;
+  typedef std::map<std::string, AuthenticationPtr> AuthenticationsMap;
 
   class ConfigException : public std::exception {
   public:
@@ -58,6 +60,8 @@ namespace Interceptor {
         std::string m_backend;
         std::map<std::string, std::string> m_connectors;
         std::map<std::string, std::string> m_modules;
+        std::map<std::string, std::string> m_authenticators;
+		std::map<std::string, std::string> m_realms;
         std::map<std::string, time_t> m_cacheTime;
         std::vector<Redirection> m_redirections;
 
@@ -67,7 +71,11 @@ namespace Interceptor {
 
         const std::string moduleName(const std::string& path) const;
 
+		const std::string authenticatorName(const std::string& path) const;
+
         const Redirection* redirection(const std::string& path) const;
+
+		const std::string realm(const std::string& path) const;
       };
 
       std::string m_listenHost;
@@ -94,6 +102,7 @@ namespace Interceptor {
     const BackendsMap& backends() const;
     const ConnectorsMap& connectors() const;
     const ModulesMap& modules() const;
+	const AuthenticationsMap& authentications() const;
 
     static bool isLocalDomain(const std::string& domain);
     static std::string localDomain();
@@ -107,6 +116,7 @@ namespace Interceptor {
     void parseBackends(json& j);
     void parseConnectors(json& j);
     void parseModules(json& j);
+	void parseAuthentications(json& j);
     void parseLocations(json& j, ServerConfig::Site* s);
     void parseRedirections(json& j, ServerConfig::Site* s);
 
@@ -124,6 +134,7 @@ namespace Interceptor {
     BackendsMap m_backends;
     ConnectorsMap m_connectors;
     ModulesMap m_modules;
+	AuthenticationsMap m_authenticators;
     uint32_t m_clientTimeout;
     uint32_t m_serverTimeout;
     uint16_t m_threadNr;

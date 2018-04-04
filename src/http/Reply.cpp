@@ -12,6 +12,7 @@
 #include "GetReply.h"
 #include "HeadReply.h"
 #include "ErrorReply.h"
+#include "AuthenticationReply.h"
 #include "PostReply.h"
 #include "RedirectReply.h"
 #include "HttpException.h"
@@ -55,6 +56,12 @@ namespace Interceptor::Http {
       }
 
       const SiteConfig* site = m_request->matchingSite();
+	  
+	  if(hasAuthentication(site))
+	  {
+		if(!handleAuthentication(site))
+		  return;
+	  }
 
       const auto redirection = site->redirection(m_request->host() +
                                m_request->index());
@@ -75,6 +82,16 @@ namespace Interceptor::Http {
       LOG_ERROR("HttpException: " << (int)e.code() );
       buildErrorResponse(e.code(), e.closeConnection());
     }
+  }
+
+  bool Reply::hasAuthentication(const SiteConfig* site) const
+  {
+	return authName(site).length() > 0;
+  }
+
+  std::string Reply::authName(const SiteConfig* site) const
+  {
+	return site->authenticatorName(m_request->index());
   }
 
   bool Reply::hasGateway(const SiteConfig* site) const
@@ -131,6 +148,19 @@ namespace Interceptor::Http {
       default:
         break;
     }
+  }
+
+  bool Reply::handleAuthentication(const SiteConfig* site)
+  {
+	if(m_request->getHeader("Authorization")) {
+	  std::string aName = authName(site);
+	  return m_request->params()->m_authLoader->get(aName)->authenticate(m_request);
+	}
+
+	m_reply = std::make_shared<AuthenticationReply>(m_request, site);
+	auto buffer = m_reply->buildReply();
+	post(buffer);
+	return false;
   }
 
   void Reply::handleRedirection(const Redirection* redirection,
