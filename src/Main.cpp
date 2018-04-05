@@ -34,6 +34,7 @@ namespace Interceptor {
 
   Main::~Main()
   {
+	LOG_DEBUG("Main::~Main()");
     delete m_config;
 #ifdef ENABLE_LOCAL_CACHE
     delete m_subject;
@@ -41,6 +42,7 @@ namespace Interceptor {
 #endif // ENABLE_LOCAL_CACHE
     delete m_cacheHandler;
     delete m_pool;
+	delete m_auths;
   }
 
   bool Main::init(int argc, char** argv)
