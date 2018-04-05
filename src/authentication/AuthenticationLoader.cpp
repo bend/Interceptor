@@ -16,7 +16,7 @@ namespace Interceptor::Authentication {
 
   bool AuthenticationLoader::loadAuthentication(AuthenticationCPtr auth)
   {
-	m_auths[auth->name] = std::make_shared<BasicAuthentication>();
+	m_auths[auth->name] = std::make_shared<BasicAuthentication>(auth);
 	return true;
   }
 

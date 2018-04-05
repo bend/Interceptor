@@ -1,5 +1,6 @@
 set(libauth_src
   AuthenticationLoader.cpp
+  AbstractAuthentication.cpp
   BasicAuthentication.cpp
 )
 

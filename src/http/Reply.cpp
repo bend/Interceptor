@@ -59,8 +59,10 @@ namespace Interceptor::Http {
 	  
 	  if(hasAuthentication(site))
 	  {
-		if(!handleAuthentication(site))
+		if(!handleAuthentication(site)) {
+		  buildErrorResponse(StatusCode::Unauthorized, true);
 		  return;
+		}
 	  }
 
       const auto redirection = site->redirection(m_request->host() +

@@ -278,7 +278,16 @@ class TestValidHttpServer(unittest.TestCase):
     
     def test14_3(self):
         conn = httplib.HTTPConnection(HTTP_URL)
-        headers = { "Authorization" : "Basic"}
+        headers = { "Authorization" : "Basic 123"}
+        conn.request("GET", "/secured/secured.html", None, headers)
+        response = conn.getresponse()
+        self.assertEqual(response.status, 401)
+        conn.close()
+    
+    
+    def test14_4(self):
+        conn = httplib.HTTPConnection(HTTP_URL)
+        headers = { "Authorization" : "Basic abcd"}
         conn.request("GET", "/secured/secured.html", None, headers)
         response = conn.getresponse()
         self.assertEqual(response.status, 200)
