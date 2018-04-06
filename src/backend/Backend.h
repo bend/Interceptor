@@ -23,9 +23,6 @@ namespace Interceptor {
     };
 
   }
-  typedef std::shared_ptr<const Backends::Backend> BackendCPtr;
-  typedef std::shared_ptr<Backends::Backend> BackendPtr;
-  typedef std::shared_ptr<Backends::Connector> ConnectorPtr;
 
 }
 

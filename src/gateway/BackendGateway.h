@@ -3,6 +3,8 @@
 
 #include "AbstractGateway.h"
 
+#include <boost/signals2/signal.hpp>
+
 namespace Interceptor {
 
   struct Packet;

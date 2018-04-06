@@ -2,7 +2,6 @@
 #define ABSTRACT_CONNECTOR_H__
 
 #include <http/Http.h>
-#include "common/Defs.h"
 #include <memory>
 #include <sstream>
 
@@ -30,8 +29,6 @@ namespace Interceptor {
                              callback) = 0;
 
     };
-
-    typedef std::shared_ptr<AbstractConnector> AbstractConnectorPtr;
 
   }
 

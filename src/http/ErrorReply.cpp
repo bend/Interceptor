@@ -1,5 +1,6 @@
 #include "ErrorReply.h"
 
+#include "Request.h"
 #include "utils/FileUtils.h"
 #include "common/Buffer.h"
 

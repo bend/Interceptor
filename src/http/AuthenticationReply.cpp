@@ -1,11 +1,14 @@
 #include "AuthenticationReply.h"
 
+#include "Request.h"
+
 #include "common/Buffer.h"
 #include "authentication/Authentication.h"
 
 namespace Interceptor::Http {
 
-  AuthenticationReply::AuthenticationReply(HttpRequestPtr request, const SiteConfig* site)
+  AuthenticationReply::AuthenticationReply(HttpRequestPtr request,
+      const SiteConfig* site)
     : CommonReply(request, site)
   {
     setFlag(Flag::Closing, true);
@@ -15,15 +18,16 @@ namespace Interceptor::Http {
   {
     std::stringstream stream;
 
-	const std::string authName = m_config->authenticatorName(m_request->index());
+    const std::string authName = m_config->authenticatorName(m_request->index());
 
-	auto auth = m_request->params()->m_authLoader->get(authName);
+    auto auth = m_request->params()->m_authLoader->get(authName);
 
-	std::string authType = "Basic";
-	std::string realm = m_config->realm(m_request->index());
+    std::string authType = "Basic";
+    std::string realm = m_config->realm(m_request->index());
 
-    m_replyHeaders->addHeader("WWW-Authenticate", authType + " realm=\"" + realm + "\", charset=\"UTF-8\"");
-	m_status = StatusCode::Unauthorized;
+    m_replyHeaders->addHeader("WWW-Authenticate",
+                              authType + " realm=\"" + realm + "\", charset=\"UTF-8\"");
+    m_status = StatusCode::Unauthorized;
 
     buildHeaders(m_httpBuffer);
 

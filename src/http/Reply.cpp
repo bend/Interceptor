@@ -9,6 +9,7 @@
 #include "gateway/GatewayHandler.h"
 #include "modules/AbstractModule.h"
 #include "core/SessionConnection.h"
+#include "authentication/AbstractAuthentication.h"
 #include "GetReply.h"
 #include "HeadReply.h"
 #include "ErrorReply.h"
@@ -56,14 +57,13 @@ namespace Interceptor::Http {
       }
 
       const SiteConfig* site = m_request->matchingSite();
-	  
-	  if(hasAuthentication(site))
-	  {
-		if(!handleAuthentication(site)) {
-		  buildErrorResponse(StatusCode::Unauthorized, true);
-		  return;
-		}
-	  }
+
+      if (hasAuthentication(site)) {
+        if (!handleAuthentication(site)) {
+          buildErrorResponse(StatusCode::Unauthorized, true);
+          return;
+        }
+      }
 
       const auto redirection = site->redirection(m_request->host() +
                                m_request->index());
@@ -88,12 +88,12 @@ namespace Interceptor::Http {
 
   bool Reply::hasAuthentication(const SiteConfig* site) const
   {
-	return authName(site).length() > 0;
+    return authName(site).length() > 0;
   }
 
   std::string Reply::authName(const SiteConfig* site) const
   {
-	return site->authenticatorName(m_request->index());
+    return site->authenticatorName(m_request->index());
   }
 
   bool Reply::hasGateway(const SiteConfig* site) const
@@ -154,15 +154,15 @@ namespace Interceptor::Http {
 
   bool Reply::handleAuthentication(const SiteConfig* site)
   {
-	if(m_request->getHeader("Authorization")) {
-	  std::string aName = authName(site);
-	  return m_request->params()->m_authLoader->get(aName)->authenticate(m_request);
-	}
+    if (m_request->getHeader("Authorization")) {
+      std::string aName = authName(site);
+      return m_request->params()->m_authLoader->get(aName)->authenticate(m_request);
+    }
 
-	m_reply = std::make_shared<AuthenticationReply>(m_request, site);
-	auto buffer = m_reply->buildReply();
-	post(buffer);
-	return false;
+    m_reply = std::make_shared<AuthenticationReply>(m_request, site);
+    auto buffer = m_reply->buildReply();
+    post(buffer);
+    return false;
   }
 
   void Reply::handleRedirection(const Redirection* redirection,

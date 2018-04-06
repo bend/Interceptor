@@ -1,9 +1,7 @@
 #ifndef ABSTRACT_MODULE_H__
 #define ABSTRACT_MODULE_H__
 
-#include "http/Http.h"
-
-#include "common/Defs.h"
+#include "common/defs.h"
 
 #include <sstream>
 #include <functional>

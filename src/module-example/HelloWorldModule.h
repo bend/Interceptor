@@ -1,7 +1,7 @@
 #ifndef HELLO_WORLD_MODULE_H__
 
 #include "modules/AbstractModule.h"
-#include "common/Defs.h"
+#include "common/defs.h"
 
 class HelloWorld : public Interceptor::Modules::AbstractModule {
 public:

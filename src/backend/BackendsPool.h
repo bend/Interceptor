@@ -1,7 +1,8 @@
 #ifndef BACKENDS_POOL_H__
 #define BACKENDS_POOL_H__
 
-#include "gateway/AbstractGateway.h"
+#include "defs.h"
+#include "gateway/defs.h"
 
 #include <memory>
 #include <vector>

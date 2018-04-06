@@ -1,6 +1,8 @@
 #include "BackendGateway.h"
-#include "utils/Logger.h"
 
+#include "AbstractConnector.h"
+#include "utils/Logger.h"
+#include "http/Request.h"
 #include "common/Packet.h"
 
 namespace Interceptor::Backends {

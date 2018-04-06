@@ -1,5 +1,9 @@
 #include "GatewayHandler.h"
 
+#include "defs.h"
+
+#include "AbstractConnector.h"
+
 #include "http/Request.h"
 #include "utils/Logger.h"
 #include "BackendGateway.h"

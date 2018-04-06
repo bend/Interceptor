@@ -1,4 +1,5 @@
 #include "BackendConnector.h"
+#include "Backend.h"
 
 #include "socket/OutboundConnection.h"
 #include "utils/Logger.h"

@@ -3,12 +3,12 @@
 
 #include "Module.h"
 
+#include "defs.h"
+
 #include <vector>
 #include <unordered_map>
 
 namespace Interceptor::Modules {
-
-  class AbstractModule;
 
   class ModulesLoader {
 
@@ -19,10 +19,10 @@ namespace Interceptor::Modules {
     bool loadModules(std::vector<ModuleCPtr>& modules);
     bool loadModule(ModuleCPtr module);
 
-    AbstractModule* get(const std::string& moduleName) const;
+    AbstractModulePtr get(const std::string& moduleName) const;
 
   private:
-    std::unordered_map<std::string, AbstractModule*> m_modules;
+    std::unordered_map<std::string, AbstractModulePtr> m_modules;
 
 
   };

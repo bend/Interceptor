@@ -3,7 +3,7 @@
 
 #include "CommonReply.h"
 
-#include "common/Buffer.h"
+#include "common/defs.h"
 
 namespace Interceptor::Http {
 

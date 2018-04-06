@@ -4,25 +4,22 @@
 #include <string>
 #include <memory>
 
-namespace Interceptor{
+namespace Interceptor {
   namespace Authentication {
 
-  struct Authentication {
+    struct Authentication {
 
-	enum Type  {
-	  Basic
-	};
+      enum Type  {
+        Basic
+      };
 
-	std::string name;
-	std::string credentials;
-	Type type;
+      std::string name;
+      std::string credentials;
+      Type type;
 
-  };
-	
+    };
+
   }
-
-  typedef std::shared_ptr<const Authentication::Authentication> AuthenticationCPtr;
-  typedef std::shared_ptr<Authentication::Authentication> AuthenticationPtr;
 
 }
 

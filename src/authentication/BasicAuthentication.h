@@ -6,13 +6,13 @@
 namespace Interceptor::Authentication {
 
 
-class BasicAuthentication : public AbstractAuthentication {
+  class BasicAuthentication : public AbstractAuthentication {
   public:
-	BasicAuthentication(AuthenticationCPtr config);
-	virtual ~BasicAuthentication() = default;
-	virtual bool authenticate(HttpRequestPtr request) const;
+    BasicAuthentication(AuthenticationCPtr config);
+    virtual ~BasicAuthentication() = default;
+    virtual bool authenticate(HttpRequestPtr request) const;
 
-};
+  };
 
 }
 

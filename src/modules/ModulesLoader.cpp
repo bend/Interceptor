@@ -1,9 +1,8 @@
 #include "ModulesLoader.h"
 
-#include <Module.h>
-#include <AbstractModule.h>
-#include <utils/Logger.h>
-
+#include "Module.h"
+#include "AbstractModule.h"
+#include "utils/Logger.h"
 
 #include <dlfcn.h>
 
@@ -16,13 +15,13 @@ namespace Interceptor::Modules {
     }
   }
 
-  AbstractModule* ModulesLoader::get(const std::string& moduleName) const
+  AbstractModulePtr ModulesLoader::get(const std::string& moduleName) const
   {
     if (m_modules.count(moduleName) > 0) {
       return m_modules.at(moduleName);
     }
 
-    return nullptr;
+    return {};
   }
 
 
@@ -49,7 +48,7 @@ namespace Interceptor::Modules {
 
     pf_Module func = (pf_Module) dlsym(handler, "make");
 
-    AbstractModule* pModule = func();
+    AbstractModulePtr pModule = func();
     pModule->m_handler = handler;
 
     m_modules[module->name] = pModule;

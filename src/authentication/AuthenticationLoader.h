@@ -1,8 +1,7 @@
 #ifndef AUTHENTICATION_LOADER_H__
 #define AUTHENTICATION_LOADER_H__
 
-#include "Authentication.h"
-#include "AbstractAuthentication.h"
+#include "defs.h"
 
 #include <vector>
 #include <map>
@@ -10,17 +9,17 @@
 namespace Interceptor::Authentication {
 
   class AuthenticationLoader {
-	public:
-	  AuthenticationLoader() = default;
+  public:
+    AuthenticationLoader() = default;
 
 
-	  bool loadAuthentications(std::vector<AuthenticationCPtr>& auths);
-	  bool loadAuthentication(AuthenticationCPtr auth);
+    bool loadAuthentications(std::vector<AuthenticationCPtr>& auths);
+    bool loadAuthentication(AuthenticationCPtr auth);
 
-	  AbstractAuthenticationPtr get(const std::string& name) const;
+    AbstractAuthenticationPtr get(const std::string& name) const;
 
-	private:
-	  std::map<std::string, AbstractAuthenticationPtr> m_auths;
+  private:
+    std::map<std::string, AbstractAuthenticationPtr> m_auths;
 
   };
 

@@ -1,7 +1,7 @@
 #ifndef SESSION_TYPE_DETECTOR_H__
 #define SESSION_TYPE_DETECTOR_H__
 
-#include "common/Defs.h"
+#include "defs.h"
 #include <boost/system/error_code.hpp>
 
 namespace Interceptor {

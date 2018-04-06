@@ -1,7 +1,9 @@
 #include "HeadReply.h"
 
+#include "Request.h"
 #include "HttpException.h"
 #include "utils/FileUtils.h"
+#include "common/Buffer.h"
 
 
 namespace Interceptor::Http {

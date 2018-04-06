@@ -34,7 +34,7 @@ namespace Interceptor {
 
   Main::~Main()
   {
-	LOG_DEBUG("Main::~Main()");
+    LOG_DEBUG("Main::~Main()");
     delete m_config;
 #ifdef ENABLE_LOCAL_CACHE
     delete m_subject;
@@ -42,7 +42,7 @@ namespace Interceptor {
 #endif // ENABLE_LOCAL_CACHE
     delete m_cacheHandler;
     delete m_pool;
-	delete m_auths;
+    delete m_auths;
   }
 
   bool Main::init(int argc, char** argv)
@@ -62,8 +62,8 @@ namespace Interceptor {
     if (!initModules()) {
       return false;
     }
-    
-	if (!initAuthentication()) {
+
+    if (!initAuthentication()) {
       return false;
     }
 
@@ -175,7 +175,7 @@ namespace Interceptor {
 
     return m_modules->loadModules(modules);
   }
-  
+
   bool Main::initAuthentication()
   {
     m_auths = new Authentication::AuthenticationLoader();
@@ -183,7 +183,7 @@ namespace Interceptor {
 
     for (auto& kv : m_config->authentications()) {
       auths.push_back(std::const_pointer_cast<const Authentication::Authentication>
-                        (kv.second));
+                      (kv.second));
     }
 
     return m_auths->loadAuthentications(auths);

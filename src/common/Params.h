@@ -12,12 +12,13 @@ namespace Interceptor {
   class Params {
   public:
     Params(Config::ServerConfig* config, Cache::AbstractCacheHandler* cache,
-           Backends::BackendsPool* pool, Modules::ModulesLoader* modulesLoader, Authentication::AuthenticationLoader* authLoader)
+           Backends::BackendsPool* pool, Modules::ModulesLoader* modulesLoader,
+           Authentication::AuthenticationLoader* authLoader)
       : m_config(config),
         m_cache(cache),
         m_pool(pool),
         m_modules(modulesLoader),
-		m_authLoader(authLoader)
+        m_authLoader(authLoader)
     {}
 
     ~Params() = default;
@@ -46,7 +47,7 @@ namespace Interceptor {
     Cache::AbstractCacheHandler* m_cache;
     Backends::BackendsPool* m_pool;
     Modules::ModulesLoader* m_modules;
-	Authentication::AuthenticationLoader* m_authLoader;
+    Authentication::AuthenticationLoader* m_authLoader;
   };
 
 }

@@ -3,6 +3,9 @@
 #include "vars.h"
 #include "utils/Logger.h"
 #include "utils/StringUtils.h"
+#include "backend/Backend.h"
+#include "modules/Module.h"
+#include "authentication/Authentication.h"
 
 #include <fstream>
 #include <boost/algorithm/string.hpp>
@@ -100,8 +103,8 @@ namespace Interceptor {
       if (j.count("modules")) {
         parseModules(j["modules"]);
       }
-      
-	  if (j.count("authentications")) {
+
+      if (j.count("authentications")) {
         parseAuthentications(j["authentications"]);
       }
 
@@ -258,10 +261,10 @@ namespace Interceptor {
   {
     return m_modules;
   }
-	
+
   const AuthenticationsMap& Config::authentications() const
-  {	
-	return m_authenticators;
+  {
+    return m_authenticators;
   }
 
   const time_t Config::ServerConfig::Site::getCacheTime(const std::string& path)
@@ -300,7 +303,8 @@ namespace Interceptor {
   }
 
 
-  const std::string Config::ServerConfig::Site::authenticatorName(const std::string& path) const
+  const std::string Config::ServerConfig::Site::authenticatorName(
+    const std::string& path) const
   {
     for (auto& auth : m_authenticators)
       if (StringUtils::regexMatch(auth.first, path)) {
@@ -308,7 +312,7 @@ namespace Interceptor {
       }
 
     return "";
-	
+
   }
 
   const Redirection* Config::ServerConfig::Site::redirection(
@@ -324,15 +328,16 @@ namespace Interceptor {
     return nullptr;
   }
 
-  const std::string Config::ServerConfig::Site::realm(const std::string& path) const
+  const std::string Config::ServerConfig::Site::realm(const std::string& path)
+  const
   {
-	for (const auto& p : m_realms)
-	{
-	  if(StringUtils::regexMatch(p.first, path)) {
-		return p.second;
-	  }
-	}
-	return "";
+    for (const auto& p : m_realms) {
+      if (StringUtils::regexMatch(p.first, path)) {
+        return p.second;
+      }
+    }
+
+    return "";
   }
 
   bool Config::isLocalDomain(const std::string& domain)
@@ -434,10 +439,11 @@ namespace Interceptor {
                               " already defined");
       }
 
-      AuthenticationPtr authentication = std::make_shared<Authentication::Authentication>();
+      AuthenticationPtr authentication =
+        std::make_shared<Authentication::Authentication>();
       authentication->name = authName;
-	  authentication->type = Authentication::Authentication::Basic;
-	  authentication->credentials = auth["credentials"];
+      authentication->type = Authentication::Authentication::Basic;
+      authentication->credentials = auth["credentials"];
       m_authenticators[authName] = authentication;
     }
 
@@ -471,23 +477,21 @@ namespace Interceptor {
 
             s->m_modules[it.key()] = it.value()["name"];
           } else if (type == "authentication") {
-			std::string authName = it.value()["name"];
+            std::string authName = it.value()["name"];
 
-			if(m_authenticators.count(authName) == 0) {
-			  throw ConfigException("Unknown authentication");
-			}
+            if (m_authenticators.count(authName) == 0) {
+              throw ConfigException("Unknown authentication");
+            }
 
-			s->m_authenticators[it.key()] = it.value()["name"];
-			
-			if(it.value().count("realm") > 0)
-			{
-			  s->m_realms[it.key()] = it.value()["realm"];
-			} else 
-			{
-			  s->m_realms[it.key()] = "";
-			}
+            s->m_authenticators[it.key()] = it.value()["name"];
 
-		  }
+            if (it.value().count("realm") > 0) {
+              s->m_realms[it.key()] = it.value()["realm"];
+            } else {
+              s->m_realms[it.key()] = "";
+            }
+
+          }
         } else {
           s->m_locations[it.key()] = it.value().get<uint16_t>();
         }

@@ -1,7 +1,9 @@
 #ifndef SESSION_CONNECTION_H__
 #define SESSION_CONNECTION_H__
 
-#include "common/Defs.h"
+#include "common/defs.h"
+
+#include "socket/defs.h"
 
 #include <mutex>
 #include <deque>

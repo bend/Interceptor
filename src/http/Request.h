@@ -1,9 +1,11 @@
 #ifndef HTTP_REQUEST_H__
 #define HTTP_REQUEST_H__
 
-#include "common/Defs.h"
 #include "Http.h"
+#include "defs.h"
 #include "core/Config.h"
+#include "core/defs.h"
+#include "common/defs.h"
 
 #include <chrono>
 #include <queue>

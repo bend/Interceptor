@@ -3,7 +3,7 @@
 
 #include "vars.h"
 
-#include "common/Defs.h"
+#include "common/defs.h"
 
 #ifdef ENABLE_GZIP
 #include <zlib.h>

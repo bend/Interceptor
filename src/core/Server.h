@@ -1,9 +1,10 @@
 #ifndef INTERCEPTOR_H__
 #define INTERCEPTOR_H__
 
-#include "common/Defs.h"
-
+#include "defs.h"
 #include "Config.h"
+
+#include "common/defs.h"
 
 #include <boost/asio.hpp>
 

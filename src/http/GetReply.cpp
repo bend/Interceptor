@@ -1,10 +1,12 @@
 #include "GetReply.h"
 
 #include "Encoder.h"
+#include "Request.h"
+
 #include "HttpException.h"
 #include "utils/Logger.h"
 #include "utils/FileUtils.h"
-
+#include "core/Config.h"
 #include "common/Buffer.h"
 
 #include <boost/asio.hpp>

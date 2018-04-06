@@ -1,9 +1,11 @@
 #ifndef HTTP11_SESSION_HANDLER_H__
 #define HTTP11SessionHandler_H__
 
+#include "defs.h"
+
 #include "common/AbstractSessionHandler.h"
 
-#include "common/Defs.h"
+#include "core/defs.h"
 
 #include <boost/system/error_code.hpp>
 

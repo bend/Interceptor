@@ -1,11 +1,12 @@
 #ifndef COMMON_REPLY_H__
 #define COMMON_REPLY_H__
 
-#include "common/Defs.h"
-#include "common/Params.h"
-
+#include "defs.h"
 #include "Headers.h"
 #include "Encoder.h"
+
+#include "common/defs.h"
+#include "common/Params.h"
 
 #include <sstream>
 #include <bitset>

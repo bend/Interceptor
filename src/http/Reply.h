@@ -1,9 +1,11 @@
 #ifndef HTTP_REPLY_H__
 #define HTTP_REPLY_H__
 
-#include "common/Defs.h"
+#include "defs.h"
 #include "vars.h"
 #include "Http.h"
+
+#include "common/defs.h"
 #include "core/Config.h"
 
 #include <boost/asio.hpp>

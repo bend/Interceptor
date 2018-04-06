@@ -1,8 +1,11 @@
 #ifndef ABSTRACT_GATEWAY_H__
 #define ABSTRACT_GATEWAY_H__
 
-#include "http/Request.h"
-#include "AbstractConnector.h"
+#include "defs.h"
+#include "http/defs.h"
+#include "http/Http.h"
+
+#include <functional>
 
 namespace Interceptor::Backends {
 

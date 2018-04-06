@@ -3,8 +3,6 @@
 
 #include "SessionConnection.h"
 
-#include "common/Defs.h"
-
 #include <boost/asio/ssl.hpp>
 
 namespace Interceptor {

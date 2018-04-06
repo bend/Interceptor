@@ -27,7 +27,8 @@ namespace Interceptor {
   void SSLSessionConnection::initConnection()
   {
     LOG_DEBUG("SSLSessionConnection::initConnection()");
-    m_connection = std::make_shared<Network::SSLInboundConnection>(m_ioService, m_context);
+    m_connection = std::make_shared<Network::SSLInboundConnection>(m_ioService,
+                   m_context);
   }
 
   void SSLSessionConnection::init(std::function<void()> callback)

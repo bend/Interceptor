@@ -27,7 +27,7 @@ namespace Interceptor {
   }
 
   namespace Authentication {
-	class AuthenticationLoader;
+    class AuthenticationLoader;
   }
 
   class Main {
@@ -44,7 +44,7 @@ namespace Interceptor {
     bool initCache();
     bool initBackendsPool();
     bool initModules();
-	bool initAuthentication();
+    bool initAuthentication();
 
   private:
     boost::asio::io_service m_ioService;
@@ -56,7 +56,7 @@ namespace Interceptor {
     Config* m_config;
     Backends::BackendsPool* m_pool;
     Modules::ModulesLoader* m_modules;
-	Authentication::AuthenticationLoader* m_auths;
+    Authentication::AuthenticationLoader* m_auths;
 
     uint16_t m_nbThreads;
     std::vector<std::future<void>> m_futures;

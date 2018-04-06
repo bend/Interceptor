@@ -1,9 +1,10 @@
 #ifndef GATEWAY_HANDLER_H__
 #define GATEWAY_HANDLER_H__
 
-#include "common/Defs.h"
 #include "http/Http.h"
+#include "http/defs.h"
 #include "core/Config.h"
+
 
 #include <functional>
 

@@ -1,8 +1,10 @@
 #ifndef SESSION_H__
 #define SESSION_H__
 
-#include "common/Defs.h"
 #include "Config.h"
+#include "defs.h"
+
+#include "common/defs.h"
 #include <boost/asio/io_service.hpp>
 
 namespace Interceptor {

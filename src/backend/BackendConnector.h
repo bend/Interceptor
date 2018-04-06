@@ -1,14 +1,14 @@
 #ifndef BACKEND_CONNECTOR_H__
 #define BACKEND_CONNECTOR_H__
 
-#include "Backend.h"
 #include "gateway/AbstractConnector.h"
-#include "common/Defs.h"
+#include "defs.h"
+#include "socket/defs.h"
 
 #include <memory>
+#include <deque>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio.hpp>
-#include <deque>
 
 namespace Interceptor {
 

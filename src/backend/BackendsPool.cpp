@@ -1,5 +1,6 @@
 #include "BackendsPool.h"
 #include "BackendConnector.h"
+#include "Backend.h"
 #include "utils/Logger.h"
 
 namespace Interceptor::Backends {

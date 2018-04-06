@@ -1,7 +1,8 @@
 #ifndef ABSTRACT_SESSION_HANDLER_H__
 #define ABSTRACT_SESSION_HANDLER_H__
 
-#include "Defs.h"
+#include "defs.h"
+#include "core/defs.h"
 
 namespace Interceptor {
   class AbstractSessionHandler {

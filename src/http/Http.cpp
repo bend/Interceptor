@@ -28,8 +28,8 @@ namespace Interceptor::Http {
       case StatusCode::BadRequest:
         stream << "400 Bad Request" << "\r\n";
         break;
-      
-	  case StatusCode::Unauthorized:
+
+      case StatusCode::Unauthorized:
         stream << "401 Unauthorized" << "\r\n";
         break;
 

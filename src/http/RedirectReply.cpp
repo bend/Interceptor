@@ -1,5 +1,7 @@
 #include "RedirectReply.h"
 
+#include "Request.h"
+
 #include "common/Buffer.h"
 
 namespace Interceptor::Http {
