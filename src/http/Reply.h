@@ -20,8 +20,6 @@ namespace Interceptor {
 
   namespace Http {
 
-    class CommonReply;
-
     enum class StatusCode : short;
       enum class Method : char;
 
@@ -58,7 +56,6 @@ namespace Interceptor {
 
     private:
       typedef std::unique_ptr<Backends::GatewayHandler> GatewayHandlerUPtr;
-      typedef std::shared_ptr<CommonReply> CommonReplyPtr;
       HttpRequestPtr m_request;
       GatewayHandlerUPtr m_gateway;
       CommonReplyPtr m_reply;

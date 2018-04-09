@@ -11,6 +11,9 @@ set(libhttp_src
   RedirectReply.cpp
   Http.cpp
   HTTP11SessionHandler.cpp
+  HTTP2SessionHandler.cpp
+  HTTP2SessionUpgrader.cpp
+  Http2UpgradeReply.cpp
   Encoder.cpp
 )
 
