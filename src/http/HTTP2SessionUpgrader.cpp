@@ -76,6 +76,7 @@ namespace Interceptor::Http {
         m_request->parse();
         auto reply = std::make_shared<Http::Http2UpgradeReply>(m_request)->buildReply();
         m_request->connection()->postReply(reply);
+		std::make_shared<HTTP2SessionHandler>(m_request->connection())->transferSession(nullptr, 0);
       }
 
     } catch (HttpException& e) {

@@ -43,7 +43,7 @@ namespace Interceptor::Http {
   void HTTP2SessionHandler::handleHttpRequestRead(const boost::system::error_code&
       error, size_t bytesTransferred)
   {
-    LOG_DEBUG("HTTP2SessionHandlerhandleHttpRequestRead()");
+    LOG_DEBUG("HTTP2SessionHandler::handleHttpRequestRead()");
 
     if (!error) {
       processData(m_requestBuffer, bytesTransferred);
