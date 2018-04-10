@@ -1,4 +1,4 @@
-#include "HTTP2SessionHandler.h"
+#include "Http11SessionHandler.h"
 
 #include "Request.h"
 #include "Reply.h"
@@ -11,39 +11,35 @@
 
 namespace Interceptor::Http {
 
-  HTTP2SessionHandler::HTTP2SessionHandler(SessionConnectionPtr connection) :
+  Http11SessionHandler::Http11SessionHandler(SessionConnectionPtr connection) :
     AbstractSessionHandler(connection)
   {
   }
 
-  HTTP2SessionHandler::~HTTP2SessionHandler()
+  Http11SessionHandler::~Http11SessionHandler()
   {
-    LOG_DEBUG("HTTP2SessionHandler::~HTTP2SessionHandler()");
+    LOG_DEBUG("Http11SessionHandler::~Http11SessionHandler()");
   }
 
-  void HTTP2SessionHandler::transferSession(const char* data, size_t bytes)
+  void Http11SessionHandler::transferSession(const char* data, size_t bytes)
   {
-    LOG_DEBUG("HTTP2SessionHandler::transferSession()");
-
-    if (bytes > 0) {
-      processData(data, bytes);
-    }
-
+    LOG_DEBUG("Http11SessionHandler::transferSession()");
+    processData(data, bytes);
     read();
   }
 
-  void HTTP2SessionHandler::read()
+  void Http11SessionHandler::read()
   {
     m_connection->asyncReadSome(m_requestBuffer, sizeof(m_requestBuffer),
-                                std::bind(&HTTP2SessionHandler::handleHttpRequestRead, shared_from_this(),
+                                std::bind(&Http11SessionHandler::handleHttpRequestRead, shared_from_this(),
                                           std::placeholders::_1, std::placeholders::_2)
                                );
   }
 
-  void HTTP2SessionHandler::handleHttpRequestRead(const boost::system::error_code&
+  void Http11SessionHandler::handleHttpRequestRead(const boost::system::error_code&
       error, size_t bytesTransferred)
   {
-    LOG_DEBUG("HTTP2SessionHandler::handleHttpRequestRead()");
+    LOG_DEBUG("Http11SessinHandlerhandleHttpRequestRead()");
 
     if (!error) {
       processData(m_requestBuffer, bytesTransferred);
@@ -59,7 +55,7 @@ namespace Interceptor::Http {
     }
   }
 
-  void HTTP2SessionHandler::processData(const char* data, size_t length)
+  void Http11SessionHandler::processData(const char* data, size_t length)
   {
     LOG_INFO("Request read from " << m_connection->ip());
 
@@ -93,7 +89,7 @@ namespace Interceptor::Http {
     }
   }
 
-  void HTTP2SessionHandler::send101Continue()
+  void Http11SessionHandler::send101Continue()
   {
     BufferPtr buf = std::make_shared<Buffer>();
     buf->m_buffers.push_back(buf->buf("HTTP/1.1 100 Continue\r\n\r\n"));

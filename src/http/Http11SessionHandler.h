@@ -12,12 +12,12 @@
 namespace Interceptor::Http {
 
 
-  class HTTP11SessionHandler : public AbstractSessionHandler,
-    public std::enable_shared_from_this<HTTP11SessionHandler> {
+  class Http11SessionHandler : public AbstractSessionHandler,
+    public std::enable_shared_from_this<Http11SessionHandler> {
 
   public:
-    HTTP11SessionHandler(SessionConnectionPtr connection);
-    ~HTTP11SessionHandler();
+    Http11SessionHandler(SessionConnectionPtr connection);
+    ~Http11SessionHandler();
 
     virtual void transferSession(const char* data, size_t bytes) override;
 

@@ -1,10 +1,12 @@
 #include "SessionTypeDetector.h"
 
 #include "SessionConnection.cpp"
-#include "http/HTTP11SessionHandler.h"
-#include "http/HTTP2SessionHandler.h"
-#include "http/HTTP2SessionUpgrader.h"
+#include "http/Http11SessionHandler.h"
 #include "common/AbstractSessionHandler.h"
+#ifdef ENABLE_HTTP2
+#include "http/http2/Http2SessionHandler.h"
+#include "http/http2/Http2SessionUpgrader.h"
+#endif // ENABLE_HTTP2
 
 namespace Interceptor {
 
@@ -46,18 +48,20 @@ namespace Interceptor {
 
     switch (detectSessionType(m_buffer, bytesTransferred)) {
       case HTTP11:
-        handleHTTP11Session(m_buffer, bytesTransferred);
+        handleHttp11Session(m_buffer, bytesTransferred);
         break;
 
+#ifdef ENABLE_HTTP2
       case HTTP2:
         LOG_INFO("HTTP2 requested, NYI - serving HTTP/1.1");
-        handleHTTP2Session(m_buffer, bytesTransferred);
+        handleHttp2Session(m_buffer, bytesTransferred);
         break;
 
       case HTTP2Upgrade:
         LOG_INFO("HTTP2 Upgrade requested, NYI - serving HTTP/1.1");
-        handleHTTP2UpgradeSession(m_buffer, bytesTransferred);
+        handleHttp2UpgradeSession(m_buffer, bytesTransferred);
         break;
+#endif // ENABLE_HTTP2
 
       default:
         LOG_ERROR("SessionTypeDetector::handleFirstPacketRead() - Unknown packet type : "
@@ -66,24 +70,27 @@ namespace Interceptor {
     }
   }
 
-  void SessionTypeDetector::handleHTTP11Session(const char* data, size_t len)
+  void SessionTypeDetector::handleHttp11Session(const char* data, size_t len)
   {
-    m_sessionHandler = std::make_shared<Http::HTTP11SessionHandler>(m_connection);
+    m_sessionHandler = std::make_shared<Http::Http11SessionHandler>(m_connection);
     m_sessionHandler->transferSession(data, len);
   }
 
-  void SessionTypeDetector::handleHTTP2Session(const char* data, size_t len)
+#ifdef ENABLE_HTTP2
+  void SessionTypeDetector::handleHttp2Session(const char* data, size_t len)
   {
-    m_sessionHandler = std::make_shared<Http::HTTP2SessionHandler>(m_connection);
+    m_sessionHandler = std::make_shared<Http::Http2SessionHandler>(m_connection);
     m_sessionHandler->transferSession(data, len);
   }
 
-  void SessionTypeDetector::handleHTTP2UpgradeSession(const char* data,
+
+  void SessionTypeDetector::handleHttp2UpgradeSession(const char* data,
       size_t len)
   {
-    m_sessionHandler = std::make_shared<Http::HTTP2SessionUpgrader>(m_connection);
+    m_sessionHandler = std::make_shared<Http::Http2SessionUpgrader>(m_connection);
     m_sessionHandler->transferSession(data, len);
   }
+#endif // ENABLE_HTTP2
 
   SessionTypeDetector::SessionType SessionTypeDetector::detectSessionType(
     const char* data, size_t len)
@@ -100,5 +107,6 @@ namespace Interceptor {
       return Other;
     }
   }
+
 
 };

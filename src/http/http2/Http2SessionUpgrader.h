@@ -11,12 +11,12 @@
 namespace Interceptor::Http {
 
 
-  class HTTP2SessionUpgrader : public AbstractSessionHandler,
-    public std::enable_shared_from_this<HTTP2SessionUpgrader> {
+  class Http2SessionUpgrader : public AbstractSessionHandler,
+    public std::enable_shared_from_this<Http2SessionUpgrader> {
 
   public:
-    HTTP2SessionUpgrader(SessionConnectionPtr connection);
-    ~HTTP2SessionUpgrader();
+    Http2SessionUpgrader(SessionConnectionPtr connection);
+    ~Http2SessionUpgrader();
 
     virtual void transferSession(const char* data, size_t bytes) override;
 

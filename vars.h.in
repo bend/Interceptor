@@ -3,3 +3,4 @@
 #cmakedefine ENABLE_LOCAL_CACHE
 #cmakedefine DUMP_NETWORK
 #cmakedefine ENABLE_SSL
+#cmakedefine ENABLE_HTTP2

@@ -10,16 +10,17 @@ set(libhttp_src
   AuthenticationReply.cpp
   RedirectReply.cpp
   Http.cpp
-  HTTP11SessionHandler.cpp
-  HTTP2SessionHandler.cpp
-  HTTP2SessionUpgrader.cpp
-  Http2UpgradeReply.cpp
+  Http11SessionHandler.cpp
   Encoder.cpp
 )
 
 INCLUDE_DIRECTORIES(
   "."
 )
+
+if(ENABLE_HTTP2)
+	subdirs(http2)
+endif(ENABLE_HTTP2)
 
 add_library(interceptor_http STATIC ${libhttp_src})
 

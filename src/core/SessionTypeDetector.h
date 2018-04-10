@@ -2,6 +2,7 @@
 #define SESSION_TYPE_DETECTOR_H__
 
 #include "defs.h"
+#include "vars.h"
 #include <boost/system/error_code.hpp>
 
 namespace Interceptor {
@@ -27,9 +28,11 @@ namespace Interceptor {
     void readFirstPacketToIdentify();
     void handleFirstPacketRead(const boost::system::error_code& error,
                                size_t bytesTransferred);
-    void handleHTTP11Session(const char* data, size_t len);
-    void handleHTTP2Session(const char* data, size_t len);
-    void handleHTTP2UpgradeSession(const char* data, size_t len);
+    void handleHttp11Session(const char* data, size_t len);
+#ifdef ENABLE_HTTP2
+    void handleHttp2Session(const char* data, size_t len);
+    void handleHttp2UpgradeSession(const char* data, size_t len);
+#endif // ENABLE_HTTP2
     static SessionType detectSessionType(const char* data, size_t len);
 
   private:

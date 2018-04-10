@@ -12,12 +12,12 @@
 namespace Interceptor::Http {
 
 
-  class HTTP2SessionHandler : public AbstractSessionHandler,
-    public std::enable_shared_from_this<HTTP2SessionHandler> {
+  class Http2SessionHandler : public AbstractSessionHandler,
+    public std::enable_shared_from_this<Http2SessionHandler> {
 
   public:
-    HTTP2SessionHandler(SessionConnectionPtr connection);
-    ~HTTP2SessionHandler();
+    Http2SessionHandler(SessionConnectionPtr connection);
+    ~Http2SessionHandler();
 
     virtual void transferSession(const char* data, size_t bytes) override;
 
@@ -26,7 +26,6 @@ namespace Interceptor::Http {
     void read();
     void handleHttpRequestRead(const boost::system::error_code& error,
                                size_t bytesTransferred);
-    void send101Continue();
 
   private:
 

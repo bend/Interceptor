@@ -1,10 +1,10 @@
-#include "HTTP2SessionUpgrader.h"
+#include "Http2SessionUpgrader.h"
 
 #include "Request.h"
 #include "Reply.h"
 #include "Http2UpgradeReply.h"
 #include "HttpException.h"
-#include "HTTP2SessionHandler.h"
+#include "Http2SessionHandler.h"
 #include "core/SessionConnection.h"
 #include "utils/Logger.h"
 #include "common/Buffer.h"
@@ -12,35 +12,35 @@
 
 namespace Interceptor::Http {
 
-  HTTP2SessionUpgrader::HTTP2SessionUpgrader(SessionConnectionPtr connection) :
+  Http2SessionUpgrader::Http2SessionUpgrader(SessionConnectionPtr connection) :
     AbstractSessionHandler(connection)
   {
   }
 
-  HTTP2SessionUpgrader::~HTTP2SessionUpgrader()
+  Http2SessionUpgrader::~Http2SessionUpgrader()
   {
-    LOG_DEBUG("HTTP2SessionUpgrader::~HTTP2SessionUpgrader()");
+    LOG_DEBUG("Http2SessionUpgrader::~Http2SessionUpgrader()");
   }
 
-  void HTTP2SessionUpgrader::transferSession(const char* data, size_t bytes)
+  void Http2SessionUpgrader::transferSession(const char* data, size_t bytes)
   {
-    LOG_DEBUG("HTTP2SessionUpgrader::transferSession()");
+    LOG_DEBUG("Http2SessionUpgrader::transferSession()");
     processData(data, bytes);
     read();
   }
 
-  void HTTP2SessionUpgrader::read()
+  void Http2SessionUpgrader::read()
   {
     m_connection->asyncReadSome(m_requestBuffer, sizeof(m_requestBuffer),
-                                std::bind(&HTTP2SessionUpgrader::handleHttpRequestRead, shared_from_this(),
+                                std::bind(&Http2SessionUpgrader::handleHttpRequestRead, shared_from_this(),
                                           std::placeholders::_1, std::placeholders::_2)
                                );
   }
 
-  void HTTP2SessionUpgrader::handleHttpRequestRead(const boost::system::error_code&
+  void Http2SessionUpgrader::handleHttpRequestRead(const boost::system::error_code&
       error, size_t bytesTransferred)
   {
-    LOG_DEBUG("HTTP2SessionUpgraderhandleHttpRequestRead()");
+    LOG_DEBUG("Http2SessionUpgraderhandleHttpRequestRead()");
 
     if (!error) {
       processData(m_requestBuffer, bytesTransferred);
@@ -56,7 +56,7 @@ namespace Interceptor::Http {
     }
   }
 
-  void HTTP2SessionUpgrader::processData(const char* data, size_t length)
+  void Http2SessionUpgrader::processData(const char* data, size_t length)
   {
     LOG_INFO("Request read from " << m_connection->ip());
 
@@ -76,7 +76,7 @@ namespace Interceptor::Http {
         m_request->parse();
         auto reply = std::make_shared<Http::Http2UpgradeReply>(m_request)->buildReply();
         m_request->connection()->postReply(reply);
-		std::make_shared<HTTP2SessionHandler>(m_request->connection())->transferSession(nullptr, 0);
+		std::make_shared<Http2SessionHandler>(m_request->connection())->transferSession(nullptr, 0);
       }
 
     } catch (HttpException& e) {
@@ -84,7 +84,7 @@ namespace Interceptor::Http {
     }
   }
 
-  void HTTP2SessionUpgrader::send101Continue()
+  void Http2SessionUpgrader::send101Continue()
   {
     BufferPtr buf = std::make_shared<Buffer>();
     buf->m_buffers.push_back(buf->buf("HTTP/1.1 100 Continue\r\n\r\n"));

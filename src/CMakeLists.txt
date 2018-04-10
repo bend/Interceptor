@@ -39,6 +39,10 @@ if(ENABLE_LOCAL_CACHE)
   set(LIBS ${LIBS} ${FAM_LIBRARIES})
 endif(ENABLE_LOCAL_CACHE)
 
+if(ENABLE_HTTP2)
+	set(LIBS ${LIBS} interceptor_http2)
+endif(ENABLE_HTTP2)
+
 add_executable(interceptor ${src})
 target_link_libraries(interceptor ${LIBS})
 install(TARGETS interceptor DESTINATION bin)

@@ -14,6 +14,7 @@ set(DEBUG_LOGGING OFF CACHE BOOL "DEBUG_LOGGING") # Configurable by user
 set(ENABLE_LOCAL_CACHE ON CACHE BOOL "ENABLE_LOCAL_CACHE") # Configurable by user
 set(DUMP_NETWORK OFF CACHE BOOL "DUMP_NETWORK") # Configurable by user
 set(ENABLE_SSL ON CACHE BOOL "ENABLE_SSL") # Configurable by user
+set(ENABLE_HTTP2 ON CACHE BOOL "ENABLE_HTTP2") # Configurable by user
 
 include(./cmake/FindFam.cmake)
 
