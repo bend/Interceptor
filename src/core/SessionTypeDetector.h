@@ -18,8 +18,8 @@ namespace Interceptor {
   private:
     enum SessionType {
       HTTP11,
-	  HTTP2,
-	  HTTP2Upgrade,
+      HTTP2,
+      HTTP2Upgrade,
       Other
     };
 
@@ -28,8 +28,8 @@ namespace Interceptor {
     void handleFirstPacketRead(const boost::system::error_code& error,
                                size_t bytesTransferred);
     void handleHTTP11Session(const char* data, size_t len);
-	void handleHTTP2Session(const char* data, size_t len);
-	void handleHTTP2UpgradeSession(const char* data, size_t len);
+    void handleHTTP2Session(const char* data, size_t len);
+    void handleHTTP2UpgradeSession(const char* data, size_t len);
     static SessionType detectSessionType(const char* data, size_t len);
 
   private:

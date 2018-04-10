@@ -7,6 +7,7 @@
 
 namespace Interceptor::Http {
   enum class StatusCode : short {
+    SwitchingProtocol				= 101,
     Ok								= 200,
     PartialContent					= 206,
     MovedPermanently				= 301,

@@ -8,7 +8,7 @@ namespace Interceptor {
     class Request;
     class Reply;
     class Headers;
-	class CommonReply;
+    class CommonReply;
   }
 
   typedef std::shared_ptr<Http::Request> HttpRequestPtr;

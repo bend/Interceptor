@@ -5,6 +5,10 @@ namespace Interceptor::Http {
   void serializeHttpCode(StatusCode error, std::stringstream& stream)
   {
     switch (error) {
+      case StatusCode::SwitchingProtocol:
+        stream << "101 SwitchingProtocol" << "\r\n";
+        break;
+
       case StatusCode::Ok:
         stream << "200 OK" << "\r\n";
         break;

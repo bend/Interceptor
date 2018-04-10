@@ -286,7 +286,7 @@ namespace Interceptor::Http {
     if (shouldCloseConnection()) {
       m_replyHeaders->addHeader("Connection", "close");
       httpBuffer->m_flags |= Buffer::Closing;
-    } else {
+    } else if (!m_replyHeaders->getHeader("Connection")) {
       m_replyHeaders->addHeader("Connection", "keep-alive");
     }
 

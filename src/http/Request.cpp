@@ -200,7 +200,7 @@ namespace Interceptor::Http {
     }
 
     const std::string* connection =  m_headers->getHeader("Connection");
-    return connection && *connection != "keep-alive";
+    return connection && (*connection == "Close" || * connection == "close");
   }
 
   std::tuple<int64_t, int64_t> Request::getRangeRequest() const

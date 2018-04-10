@@ -48,10 +48,17 @@ namespace Interceptor {
       case HTTP11:
         handleHTTP11Session(m_buffer, bytesTransferred);
         break;
-	  case HTTP2:
-		LOG_INFO("HTTP2 Upgrade requested, NYI - serving HTTP/1.1");
-		handleHTTP2Session(m_buffer, bytesTransferred);
-		break;
+
+      case HTTP2:
+        LOG_INFO("HTTP2 requested, NYI - serving HTTP/1.1");
+        handleHTTP2Session(m_buffer, bytesTransferred);
+        break;
+
+      case HTTP2Upgrade:
+        LOG_INFO("HTTP2 Upgrade requested, NYI - serving HTTP/1.1");
+        handleHTTP2UpgradeSession(m_buffer, bytesTransferred);
+        break;
+
       default:
         LOG_ERROR("SessionTypeDetector::handleFirstPacketRead() - Unknown packet type : "
                   << bytesTransferred << " [" << std::string(m_buffer, bytesTransferred) << "]");
@@ -67,14 +74,15 @@ namespace Interceptor {
 
   void SessionTypeDetector::handleHTTP2Session(const char* data, size_t len)
   {
-	m_sessionHandler = std::make_shared<Http::HTTP2SessionHandler>(m_connection);
-	m_sessionHandler->transferSession(data, len);
+    m_sessionHandler = std::make_shared<Http::HTTP2SessionHandler>(m_connection);
+    m_sessionHandler->transferSession(data, len);
   }
-  
-  void SessionTypeDetector::handleHTTP2UpgradeSession(const char* data, size_t len)
+
+  void SessionTypeDetector::handleHTTP2UpgradeSession(const char* data,
+      size_t len)
   {
-	m_sessionHandler = std::make_shared<Http::HTTP2SessionUpgrader>(m_connection);
-	m_sessionHandler->transferSession(data, len);
+    m_sessionHandler = std::make_shared<Http::HTTP2SessionUpgrader>(m_connection);
+    m_sessionHandler->transferSession(data, len);
   }
 
   SessionTypeDetector::SessionType SessionTypeDetector::detectSessionType(
@@ -83,9 +91,10 @@ namespace Interceptor {
     LOG_DEBUG("SessionTypeDetector::detectSessionType()");
     std::string str(data, len);
 
-	if( str.find("HTTP2") != std::string::npos && str.find("Upgrade") != std::string::npos) {
-	  return HTTP2Upgrade;
-	} else if (str.find("HTTP/1.1") != std::string::npos) {
+    if ( str.find("h2c") != std::string::npos
+         && str.find("Upgrade") != std::string::npos) {
+      return HTTP2Upgrade;
+    } else if (str.find("HTTP/1.1") != std::string::npos) {
       return HTTP11;
     } else {
       return Other;

@@ -100,6 +100,7 @@ namespace Interceptor {
       boost::signals2::signal<void()> m_sig;
 
       friend class Reply;
+      friend class HTTP2SessionUpgrader;
     };
 
   }
