@@ -29,10 +29,12 @@ script: sudo docker run -v $PWD:/code -t interceptor /bin/bash -c "export ENABLE
 before_deploy:
 - git config --local user.name "bend66"
 - git config --local user.email "ben.daccache@gmail.com"
+- git tag
 deploy:
   provider: releases
   api_key:
     secure: q7I3bwYpkCHXHQfJ61LMscxdfynJiJNq2IdOvo31DmbJkfPP1VngqgvToXYjMgfA7+FiSMExvgYDOnv157i+a9dif4omhTSAdxv044llD0HCULr9iIq2pM20kALgQqux9ioRynSO3+6iSoJkgLnAg2JQqzaZa0pSXNEFTZzOnVdh2p1RQx2Q3A5QjAwpXYx+3nRMjv01RLQUfJcL+oFOqmrUlP2ggAfomtrwQtCdoB95Qcqjo9d1RlYwfBwBxc4FS04yXKqPq4wkS/5Cc0SBcYuUH0H5YPCNZPm1cbMOzekFGrUAsENaMkaqGvqKRVI8mjdfUoFCH6MpdRTlHZrcw7XFqugVaiZpsnD0zAHu8kvDu9gNH+gRSX2CEck4zEid093ytPVMIXzkVvty7LIhrjbYnCdfS1SZV/de5O7GWahUjvwZKZJClnIAETnc9FOUK8zOFDH3si8gcWzwLLfLwN7ZWhZiw4vT2Wj+ETzcFUxiHoqqhi9iMWI3bFC/h6HPQdlT0Ip7SbaPcDqjtA+cZ22rcywt70/wy5SSOXlOiB2sojvlN8vck3pYtVv3LBaprGCRtGc07mVzgC82s/vyd1hz3plvYV5lcwM4NabRKIAtEIIqH/fVQqtFLgOvYnjeEJTe9ivPQLo2J4DC8RowjZFda5pplV+12NeeCVR1UX8=
-  file: /usr/loca/bin/interceptor
+  skip_cleanup: true
+  file: /usr/local/bin/interceptor
   on:
-    repo: bend/interceptor
+    tags: true
