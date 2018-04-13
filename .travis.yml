@@ -39,7 +39,5 @@ deploy:
   on:
     repo: bend/interceptor
     tags: true
-    branches:
-      only: 
-        - master
+    branch: master
 
