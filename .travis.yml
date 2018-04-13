@@ -37,4 +37,9 @@ deploy:
   skip_cleanup: true
   file: /usr/local/bin/interceptor
   on:
+    repo: bend/interceptor
     tags: true
+  branches:
+    only: 
+      - master
+
