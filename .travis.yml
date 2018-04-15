@@ -17,7 +17,7 @@ env:
   - DEBUG_LOGGING=on
   - DEBUG_LOGGING=off
   - ENABLE_GZIP=on DEBUG_LOGGING=off
-  - ENABLE_LOCAL_CACHE=on ENABLE_GZIP=on ENABLE_SSL=on
+  - ENABLE_LOCAL_CACHE=on ENABLE_GZIP=on ENABLE_SSL=on DEBUG_LOGGING=off DEPLOY=on
   - ENABLE_LOCAL_CACHE=off ENABLE_GZIP=on ENABLE_SSL=on
   - ENABLE_LOCAL_CACHE=on ENABLE_GZIP=off ENABLE_SSL=off
   - ENABLE_LOCAL_CACHE=off ENABLE_GZIP=off ENABLE_SSL=on
@@ -29,7 +29,7 @@ script: sudo docker run -v $PWD:/code -t interceptor /bin/bash -c "export ENABLE
 before_deploy:
 - git config --local user.name "bend66"
 - git config --local user.email "ben.daccache@gmail.com"
-- export RELEASE_FILE=$(ls interceptor-*.tar.gz)
+- export RELEASE_FILE=$(ls interceptor.tar.gz)
 - sha1sum $RELEASE_FILE > $RELEASE_FILE.sha1
 - echo "Deploying $RELEASE_FILE to Github"
 deploy:
@@ -43,10 +43,12 @@ deploy:
     - "${RELEASE_FILE}.sha1"
   overwrite: true
   tag_name: $TRAVIS_TAG
-  name: interceptor_ $TRAVIS_TAG
+  name: interceptor_$TRAVIS_TAG
   body: automated build of interceptor $TRAVIS_TAG
   on:
     repo: bend/interceptor
     tags: true
     branch: master
+    condition: 
+      - $DEPLOY = on
 
