@@ -37,7 +37,7 @@ deploy:
   skip_cleanup: true
   file_glob: true
   file: 
-    -interceptor*.tar.gz
+    -code/interceptor*.tar.gz
   overwrite: true
   tag_name: $TRAVIS_TAG
   name: interceptor_ $TRAVIS_TAG
