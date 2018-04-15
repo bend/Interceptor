@@ -29,7 +29,7 @@ script: sudo docker run -v $PWD:/code -t interceptor /bin/bash -c "export ENABLE
 before_deploy:
 - git config --local user.name "bend66"
 - git config --local user.email "ben.daccache@gmail.com"
-- export RELEASE_FILE=$(ls interceptor-*.tar.gz
+- export RELEASE_FILE=$(ls interceptor-*.tar.gz)
 - echo "Deploying $RELEASE_FILE to Github"
 deploy:
   provider: releases
