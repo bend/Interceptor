@@ -24,7 +24,7 @@ env:
   - ENABLE_LOCAL_CACHE=off ENABLE_GZIP=off ENABLE_SSL=off
 script: sudo docker run -v $PWD:/code -t interceptor /bin/bash -c "export ENABLE_GZIP=$ENABLE_GZIP;
   export DEBUG_LOGGING=$DEBUG_LOGGING; export ENABLE_LOCAL_CACHE=$ENABLE_LOCAL_CACHE;
-  cd /code; cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DEBUG_LOGGING . && make
+  cd /code; cmake -DENABLE_GZIP=$ENABLE_GZIP -DDEBUG_LOGGING=$DEBUG_LOGGING -DCPACK_ENABLED=on . && make
   && make install && cpack && env CTEST_OUTPUT_ON_FAILURE=1 make test"
 before_deploy:
 - git config --local user.name "bend66"
