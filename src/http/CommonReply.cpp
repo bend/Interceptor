@@ -50,7 +50,7 @@ namespace Interceptor::Http {
 
 
   void CommonReply::requestFileContents(const std::string& page,
-                                        std::stringstream& stream, size_t bytes)
+                                        std::stringstream& stream, size_t& bytes)
   {
     StatusCode ret = m_request->cacheHandler()->read(page, stream, bytes);
 
@@ -158,6 +158,7 @@ namespace Interceptor::Http {
   std::string CommonReply::requestedPath(HttpRequestPtr request,
                                          const SiteConfig* config)
   {
+    LOG_DEBUG("CommonReply::RequestedPath()");
     std::string page;
 
     if ( CommonReply::isRequestingRoot(request, config)) {
@@ -212,7 +213,12 @@ namespace Interceptor::Http {
     }
 
     if (!found) {
-      throw HttpException(StatusCode::NotFound);
+      page = config->m_docroot + request->index();
+
+      // Are we serving an index ?
+      if (!FileUtils::exists(config->m_docroot + request->index())) {
+        throw HttpException(StatusCode::NotFound);
+      }
     }
 
     return page;

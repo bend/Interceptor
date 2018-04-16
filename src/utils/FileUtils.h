@@ -27,6 +27,10 @@ namespace Interceptor::FileUtils {
 
   bool fileSize(const std::string& path, size_t& bytes);
 
+  bool isDirectory(const std::string& path);
+
+  std::vector<std::string> directoryContents(const std::string& path);
+
   bool exists(const std::string& path);
 
   std::string mimeType(const std::string& path);

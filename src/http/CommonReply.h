@@ -57,7 +57,7 @@ namespace Interceptor::Http {
                                   size_t limit,
                                   size_t totalBytes);
     void requestFileContents(const std::string& page,
-                             std::stringstream& stream, size_t bytes);
+                             std::stringstream& stream, size_t& bytes);
 
     std::string requestedPath() const;
 

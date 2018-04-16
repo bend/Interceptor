@@ -61,7 +61,9 @@ namespace Interceptor::Http {
 
     page = requestedPath();
 
-    if (m_request->partialRequest()) {
+    if (FileUtils::isDirectory(page)) {
+      requestDirectory(page, stream, bytes);
+    } else  if (m_request->partialRequest()) {
       requestPartialFileContents(page, stream, bytes);
     } else {
       if (!m_request->cacheHandler()->size(page, bytes)) {
@@ -154,4 +156,25 @@ namespace Interceptor::Http {
 
     }
   }
+
+
+  void GetReply::requestDirectory(const std::string& path,
+                                  std::stringstream& stream, size_t& bytes)
+  {
+    if (m_config->listingAllowed(path)) {
+
+      stream << "Directory contents\n";
+      std::vector<std::string> contents = FileUtils::directoryContents(path);
+
+      for (auto& d : contents) {
+        stream << d << "\n";
+      }
+
+      setHeadersFor(path);
+      m_contentLength = stream.str().size();
+    } else {
+      throw HttpException(StatusCode::Forbidden, false);
+    }
+  }
+
 }

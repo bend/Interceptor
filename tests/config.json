@@ -52,6 +52,12 @@
 				"realm" : "Test",
 				"name" : "basic1"
 			  }
+			},
+			{
+				"/secured" : {
+					"type" : "listing",
+					"allow" : true
+				}
 			}
 		  ],
 		  

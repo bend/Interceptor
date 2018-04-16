@@ -340,6 +340,18 @@ namespace Interceptor {
     return "";
   }
 
+  const bool Config::ServerConfig::Site::listingAllowed(const std::string& path)
+  const
+  {
+    for (const auto& l : m_listing) {
+      if (StringUtils::regexMatch(l.first, path)) {
+        return l.second;
+      }
+    }
+
+    return true;
+  }
+
   bool Config::isLocalDomain(const std::string& domain)
   {
     return domain.find("127.0.0.1") != std::string::npos
@@ -491,6 +503,8 @@ namespace Interceptor {
               s->m_realms[it.key()] = "";
             }
 
+          } else if (type == "listing") {
+            s->m_listing[it.key()] = it.value()["allow"];
           }
         } else {
           s->m_locations[it.key()] = it.value().get<uint16_t>();

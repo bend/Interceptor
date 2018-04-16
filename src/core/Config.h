@@ -17,6 +17,7 @@ namespace Interceptor {
 
   typedef std::map<std::string, std::string> ErrorPageMap;
   typedef std::map<std::string, int16_t> LocationsMap;
+  typedef std::map<std::string, bool> ListingMap;
   typedef std::map<std::string, BackendPtr> BackendsMap;
   typedef std::map<std::string, ConnectorPtr> ConnectorsMap;
   typedef std::map<std::string, ModulePtr> ModulesMap;
@@ -57,6 +58,7 @@ namespace Interceptor {
         std::set<std::string> m_gzip;
         ErrorPageMap m_errorPages;
         LocationsMap m_locations;
+        ListingMap m_listing;
         std::string m_backend;
         std::map<std::string, std::string> m_connectors;
         std::map<std::string, std::string> m_modules;
@@ -76,6 +78,8 @@ namespace Interceptor {
         const Redirection* redirection(const std::string& path) const;
 
         const std::string realm(const std::string& path) const;
+
+        const bool listingAllowed(const std::string& path) const;
       };
 
       std::string m_listenHost;

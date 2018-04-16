@@ -189,6 +189,31 @@ namespace Interceptor::FileUtils {
     return filename.substr(pos + 1);
   }
 
+  bool isDirectory(const std::string& path)
+  {
+    namespace fs = boost::filesystem;
+    fs::path dataDir(path);
+    return fs::exists(dataDir) && fs::is_directory(dataDir);
+  }
+
+  std::vector<std::string> directoryContents(const std::string& path)
+  {
+    namespace fs = boost::filesystem;
+    fs::path dataDir(path);
+
+    if (!fs::exists(dataDir) && !fs::is_directory(path))
+      return {};
+
+    std::vector<std::string> result;
+
+    for (auto& i : fs::recursive_directory_iterator(dataDir)) {
+      const fs::path cp = (i);
+      result.push_back(cp.filename().string());
+    }
+
+    return result;
+  }
+
   bool exists(const std::string& filename)
   {
     namespace fs = boost::filesystem;
@@ -196,7 +221,7 @@ namespace Interceptor::FileUtils {
     try {
       fs::path dataDir(filename);
 
-      if (!fs::exists(dataDir) || fs::is_directory(dataDir)) {
+      if (!fs::exists(dataDir)) {
         return false;
       }
 

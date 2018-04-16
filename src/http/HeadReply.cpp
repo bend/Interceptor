@@ -34,6 +34,11 @@ namespace Interceptor::Http {
 
     page = requestedPath();
 
+    if (FileUtils::isDirectory(page)) {
+      //TODO
+      return;
+    }
+
     setHeadersFor(page);
 
     if (!m_request->cacheHandler()->size(page, m_contentLength)) {
