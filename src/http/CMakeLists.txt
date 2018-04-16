@@ -9,6 +9,7 @@ set(libhttp_src
   ErrorReply.cpp
   AuthenticationReply.cpp
   RedirectReply.cpp
+	DirectoryListingReply.cpp
   Http.cpp
   HTTP11SessionHandler.cpp
   Encoder.cpp

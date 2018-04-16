@@ -2,6 +2,7 @@
 
 #include "Request.h"
 #include "HttpException.h"
+#include "DirectoryListingReply.h"
 #include "utils/FileUtils.h"
 #include "common/Buffer.h"
 
@@ -34,18 +35,22 @@ namespace Interceptor::Http {
 
     page = requestedPath();
 
-    if (FileUtils::isDirectory(page)) {
-      //TODO
-      return;
-    }
-
     setHeadersFor(page);
 
-    if (!m_request->cacheHandler()->size(page, m_contentLength)) {
+    if (FileUtils::isDirectory(page)) {
+      requestDirectorySize(page);
+    } else if (!m_request->cacheHandler()->size(page, m_contentLength)) {
       throw HttpException(StatusCode::NotFound, false);
     }
 
     buildHeaders(m_httpBuffer);
+  }
+
+  void HeadReply::requestDirectorySize(const std::string& path)
+  {
+    auto ptr = std::make_shared<DirectoryListingReply>(m_request, m_config, path);
+    ptr->buildReply();
+    m_contentLength = ptr->size();
   }
 
 }

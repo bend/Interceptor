@@ -2,6 +2,7 @@
 
 #include "Encoder.h"
 #include "Request.h"
+#include "DirectoryListingReply.h"
 
 #include "HttpException.h"
 #include "utils/Logger.h"
@@ -62,7 +63,8 @@ namespace Interceptor::Http {
     page = requestedPath();
 
     if (FileUtils::isDirectory(page)) {
-      requestDirectory(page, stream, bytes);
+      requestDirectory(page);
+      return;
     } else  if (m_request->partialRequest()) {
       requestPartialFileContents(page, stream, bytes);
     } else {
@@ -157,24 +159,10 @@ namespace Interceptor::Http {
     }
   }
 
-
-  void GetReply::requestDirectory(const std::string& path,
-                                  std::stringstream& stream, size_t& bytes)
+  void GetReply::requestDirectory(const std::string& path)
   {
-    if (m_config->listingAllowed(path)) {
-
-      stream << "Directory contents\n";
-      std::vector<std::string> contents = FileUtils::directoryContents(path);
-
-      for (auto& d : contents) {
-        stream << d << "\n";
-      }
-
-      setHeadersFor(path);
-      m_contentLength = stream.str().size();
-    } else {
-      throw HttpException(StatusCode::Forbidden, false);
-    }
+    m_httpBuffer = std::make_shared<DirectoryListingReply>(m_request, m_config,
+                   path)->buildReply();
   }
 
 }

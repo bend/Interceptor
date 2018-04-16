@@ -10,7 +10,7 @@ namespace Interceptor::Authentication {
   public:
     BasicAuthentication(AuthenticationCPtr config);
     virtual ~BasicAuthentication() = default;
-    virtual bool authenticate(HttpRequestPtr request) const;
+    virtual bool authenticate(HttpRequestPtr request) const override;
 
   };
 

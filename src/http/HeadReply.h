@@ -18,6 +18,7 @@ namespace Interceptor::Http {
 
   private:
     void requestFileHeader();
+    void requestDirectorySize(const std::string& path);
 
   };
 
