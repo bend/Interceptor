@@ -6,7 +6,7 @@
 #define SERVER_NAME		"Interceptor"
 #define SERVER_VERSION_MAJOR	0
 #define SERVER_VERSION_MINOR	2
-#define SERVER_VERSION_PATCH	0
+#define SERVER_VERSION_PATCH	18
 
 namespace Interceptor::ServerInfo {
 
