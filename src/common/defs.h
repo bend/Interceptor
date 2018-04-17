@@ -2,8 +2,6 @@
 
 #include <memory>
 
-#define MAX_CHUNK_SIZE 1024 * 1024
-
 namespace Interceptor {
 
   class Params;

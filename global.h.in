@@ -1,0 +1,8 @@
+#define MAX_CHUNK_SIZE 1024 * 1024
+
+#define SERVER_NAME		"interceptor"
+
+#define SERVER_VERSION_MAJOR	0
+#define SERVER_VERSION_MINOR	2
+#define SERVER_VERSION_PATCH	19
+

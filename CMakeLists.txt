@@ -114,6 +114,7 @@ if(CPACK_ENABLED)
 endif(CPACK_ENABLED)
 
 configure_file(vars.h.in vars.h)
+configure_file(global.h.in global.h)
 
 add_test(NAME http_normal_behavior COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_valid.py)
 add_test(NAME http_invalid_behavior COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_invalid.py)

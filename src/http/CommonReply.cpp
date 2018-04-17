@@ -1,9 +1,8 @@
 #include "CommonReply.h"
 
+#include "global.h"
 #include "HttpException.h"
-
 #include "Request.h"
-
 #include "utils/Logger.h"
 #include "utils/FileUtils.h"
 #include "utils/StringUtils.h"

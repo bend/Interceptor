@@ -1,5 +1,7 @@
 #include "ServerInfo.h"
 
+#include "global.h"
+
 #include <sstream>
 #include <iomanip>
 

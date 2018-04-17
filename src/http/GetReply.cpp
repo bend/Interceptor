@@ -1,9 +1,9 @@
 #include "GetReply.h"
 
+#include "global.h"
 #include "Encoder.h"
 #include "Request.h"
 #include "DirectoryListingReply.h"
-
 #include "HttpException.h"
 #include "utils/Logger.h"
 #include "utils/FileUtils.h"

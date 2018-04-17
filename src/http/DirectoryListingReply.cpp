@@ -5,7 +5,13 @@
 #include "utils/FileUtils.h"
 #include "common/Buffer.h"
 
+
 namespace Interceptor::Http {
+
+  namespace Html {
+    extern  std::vector<const char*> HtmlHeader();
+    extern  std::vector<const char*> HtmlFooter();
+  }
 
   DirectoryListingReply::DirectoryListingReply(HttpRequestPtr request,
       const SiteConfig* config, const std::string& path)
@@ -21,15 +27,27 @@ namespace Interceptor::Http {
 
     if (m_config->listingAllowed(m_path)) {
 
-      stream << "Index of " << m_request->index();
       std::vector<std::string> contents = FileUtils::directoryContents(m_path);
 
-      for (auto& d : contents) {
-        stream << d << "\n";
+      auto header = Html::HtmlHeader();
+
+      for (auto& data : header) {
+        stream << data;
       }
 
-      setHeadersFor(m_path);
+      for (auto& d : contents) {
+        stream << "<a href=\"" << m_request->index() << "/" << d << "\">" << d <<
+               "</a>\n";
+      }
+
+      auto footer = Html::HtmlFooter();
+
+      for (auto& data : footer) {
+        stream << data;
+      }
+
       m_contentLength = stream.str().size();
+      setHeadersFor(m_path);
     } else {
       throw HttpException(StatusCode::Forbidden, false);
     }
